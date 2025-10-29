@@ -201,35 +201,36 @@
 
                     <!-- Fields List -->
                     <ScrollViewer>
-                        <!-- Empty State Message -->
-                        <Border IsVisible="{Binding !HasSelectedPage}"
-                               Background="#2B2B2B"
-                               BorderBrush="#3C3C3C"
-                               BorderThickness="1"
-                               CornerRadius="5"
-                               Padding="40"
-                               Margin="20">
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
-                                <TextBlock Text="📄" 
-                                          FontSize="48"
-                                          HorizontalAlignment="Center"/>
-                                <TextBlock Text="No Page Selected" 
-                                          FontSize="18"
-                                          FontWeight="Bold"
-                                          Foreground="#E0E0E0"
-                                          HorizontalAlignment="Center"/>
-                                <TextBlock Text="Create a new page or select one from the sidebar to begin working" 
-                                          FontSize="13"
-                                          Foreground="#A0A0A0"
-                                          HorizontalAlignment="Center"
-                                          TextWrapping="Wrap"
-                                          TextAlignment="Center"
-                                          MaxWidth="300"/>
-                            </StackPanel>
-                        </Border>
-                        
-                        <ItemsControl ItemsSource="{Binding SelectedLocbook.SelectedPage.Fields}"
-                                     IsVisible="{Binding HasSelectedPage}">
+                        <Grid>
+                            <!-- Empty State Message -->
+                            <Border IsVisible="{Binding !HasSelectedPage}"
+                                   Background="#2B2B2B"
+                                   BorderBrush="#3C3C3C"
+                                   BorderThickness="1"
+                                   CornerRadius="5"
+                                   Padding="40"
+                                   Margin="20">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
+                                    <TextBlock Text="📄" 
+                                              FontSize="48"
+                                              HorizontalAlignment="Center"/>
+                                    <TextBlock Text="No Page Selected" 
+                                              FontSize="18"
+                                              FontWeight="Bold"
+                                              Foreground="#E0E0E0"
+                                              HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Create a new page or select one from the sidebar to begin working" 
+                                              FontSize="13"
+                                              Foreground="#A0A0A0"
+                                              HorizontalAlignment="Center"
+                                              TextWrapping="Wrap"
+                                              TextAlignment="Center"
+                                              MaxWidth="300"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <ItemsControl ItemsSource="{Binding SelectedLocbook.SelectedPage.Fields}"
+                                         IsVisible="{Binding HasSelectedPage}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Expander Background="#2B2B2B" 
@@ -369,7 +370,8 @@
                                     </Expander>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                            </ItemsControl>
+                        </Grid>
                     </ScrollViewer>
                 </DockPanel>
             </Border>
