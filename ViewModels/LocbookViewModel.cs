@@ -36,8 +36,23 @@ public partial class LocbookViewModel : ViewModelBase
         // Initialize page view models
         foreach (var page in locbook.Pages)
         {
-            Pages.Add(new PageViewModel(page));
+            var pageVm = new PageViewModel(page);
+            pageVm.PropertyChanged += (s, e) => MarkAsModified();
+            Pages.Add(pageVm);
         }
+
+        // Monitor collection changes
+        Pages.CollectionChanged += (s, e) =>
+        {
+            if (e.NewItems != null)
+            {
+                foreach (PageViewModel pageVm in e.NewItems)
+                {
+                    pageVm.PropertyChanged += (s2, e2) => MarkAsModified();
+                }
+            }
+            MarkAsModified();
+        };
 
         // Select first page if available
         if (Pages.Count > 0)

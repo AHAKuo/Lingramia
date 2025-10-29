@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Lingramia.Models;
@@ -27,8 +28,26 @@ public partial class FieldViewModel : ViewModelBase
         // Initialize variant view models
         foreach (var variant in pageFile.Variants)
         {
-            Variants.Add(new VariantViewModel(variant));
+            var variantVm = new VariantViewModel(variant);
+            variantVm.PropertyChanged += (s, e) => OnPropertyChanged(nameof(Variants));
+            Variants.Add(variantVm);
         }
+
+        // Monitor collection changes
+        Variants.CollectionChanged += OnVariantsCollectionChanged;
+    }
+
+    private void OnVariantsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+        {
+            foreach (VariantViewModel variantVm in e.NewItems)
+            {
+                variantVm.PropertyChanged += (s2, e2) => OnPropertyChanged(nameof(Variants));
+            }
+        }
+        // Notify that variants have changed
+        OnPropertyChanged(nameof(Variants));
     }
 
     /// <summary>

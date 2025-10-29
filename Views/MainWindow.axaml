@@ -18,7 +18,7 @@
         <!-- Top Menu Bar -->
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
-                <MenuItem Header="New" Command="{Binding AddPageCommand}" />
+                <MenuItem Header="New" Command="{Binding NewFileCommand}" />
                 <MenuItem Header="Open" Command="{Binding OpenFileCommand}" />
                 <MenuItem Header="Save" Command="{Binding SaveFileCommand}" />
                 <Separator />
@@ -120,14 +120,36 @@
                            Padding="15"
                            Margin="0,0,0,10"
                            CornerRadius="5">
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="{Binding SelectedLocbook.SelectedPage.PageId, StringFormat='Page: {0}'}" 
-                                      FontSize="18" 
-                                      FontWeight="Bold"
-                                      Foreground="#E0E0E0"/>
-                            <TextBlock Text="{Binding SelectedLocbook.SelectedPage.AboutPage, StringFormat='About: {0}'}" 
-                                      FontSize="12"
-                                      Foreground="#A0A0A0"/>
+                        <StackPanel Spacing="10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0"
+                                          Text="Page ID:"
+                                          FontWeight="Bold"
+                                          Foreground="#E0E0E0"
+                                          VerticalAlignment="Center"/>
+                                <TextBox Grid.Row="0" Grid.Column="1"
+                                        Text="{Binding SelectedLocbook.SelectedPage.PageId, Mode=TwoWay}"
+                                        Margin="5,0,0,0"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0"
+                                          Text="About:"
+                                          FontWeight="Bold"
+                                          Foreground="#E0E0E0"
+                                          Margin="0,5,0,0"
+                                          VerticalAlignment="Center"/>
+                                <TextBox Grid.Row="1" Grid.Column="1"
+                                        Text="{Binding SelectedLocbook.SelectedPage.AboutPage, Mode=TwoWay}"
+                                        Margin="5,5,0,0"/>
+                            </Grid>
                         </StackPanel>
                     </Border>
 
@@ -209,9 +231,11 @@
                                                                     Text="{Binding Value}"
                                                                     Margin="0,0,5,0"/>
                                                             <Button Grid.Column="2" 
-                                                                   Content="🌐"
+                                                                   Content="🗑️"
                                                                    Padding="5"
-                                                                   ToolTip.Tip="Translate"/>
+                                                                   Command="{Binding $parent[Window].DataContext.DeleteVariantCommand}"
+                                                                   CommandParameter="{Binding}"
+                                                                   ToolTip.Tip="Delete Variant"/>
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -219,8 +243,14 @@
 
                                             <!-- Field Actions -->
                                             <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,5,0,0">
-                                                <Button Content="➕ Add Variant" Padding="8,4" />
-                                                <Button Content="🗑️ Delete Field" Padding="8,4" />
+                                                <Button Content="➕ Add Variant" 
+                                                       Padding="8,4"
+                                                       Command="{Binding $parent[Window].DataContext.AddVariantCommand}"
+                                                       CommandParameter="{Binding}" />
+                                                <Button Content="🗑️ Delete Field" 
+                                                       Padding="8,4"
+                                                       Command="{Binding $parent[Window].DataContext.DeleteFieldCommand}"
+                                                       CommandParameter="{Binding}" />
                                             </StackPanel>
                                         </StackPanel>
                                     </Border>

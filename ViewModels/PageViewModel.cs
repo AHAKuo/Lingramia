@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Lingramia.Models;
 
@@ -26,8 +27,26 @@ public partial class PageViewModel : ViewModelBase
         // Initialize field view models
         foreach (var pageFile in page.PageFiles)
         {
-            Fields.Add(new FieldViewModel(pageFile));
+            var fieldVm = new FieldViewModel(pageFile);
+            fieldVm.PropertyChanged += (s, e) => OnPropertyChanged(nameof(Fields));
+            Fields.Add(fieldVm);
         }
+
+        // Monitor collection changes
+        Fields.CollectionChanged += OnFieldsCollectionChanged;
+    }
+
+    private void OnFieldsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+        {
+            foreach (FieldViewModel fieldVm in e.NewItems)
+            {
+                fieldVm.PropertyChanged += (s2, e2) => OnPropertyChanged(nameof(Fields));
+            }
+        }
+        // Notify that fields have changed
+        OnPropertyChanged(nameof(Fields));
     }
 
     /// <summary>
