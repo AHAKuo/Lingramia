@@ -16,6 +16,9 @@ public partial class PageViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<FieldViewModel> _fields = new();
 
+    [ObservableProperty]
+    private bool _isSelected = false;
+
     public Page Model { get; }
 
     public PageViewModel(Page page)

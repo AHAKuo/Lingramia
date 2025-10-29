@@ -39,16 +39,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        // Initialize with a default empty locbook
-        var defaultLocbook = FileService.CreateNewLocbook();
-        var defaultVm = new LocbookViewModel(defaultLocbook);
-        OpenLocbooks.Add(defaultVm);
-        SelectedLocbook = defaultVm;
-        
-        // Load saved API key
-        _ = LoadApiKeyAsync();
-        
-        // Setup search and page selection monitoring
+        // Setup search and page selection monitoring BEFORE setting SelectedLocbook
         PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(SearchQuery))
@@ -72,6 +63,15 @@ public partial class MainWindowViewModel : ViewModelBase
                 }
             }
         };
+        
+        // Initialize with a default empty locbook
+        var defaultLocbook = FileService.CreateNewLocbook();
+        var defaultVm = new LocbookViewModel(defaultLocbook);
+        OpenLocbooks.Add(defaultVm);
+        SelectedLocbook = defaultVm;
+        
+        // Load saved API key
+        _ = LoadApiKeyAsync();
         
         UpdateFilteredPages();
     }
@@ -371,6 +371,12 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (SelectedLocbook == null) return;
 
+        // Clear previous selection
+        if (SelectedLocbook.SelectedPage != null)
+        {
+            SelectedLocbook.SelectedPage.IsSelected = false;
+        }
+
         var newPage = new Page
         {
             PageId = $"page_{DateTime.Now.Ticks}",
@@ -381,6 +387,7 @@ public partial class MainWindowViewModel : ViewModelBase
         var pageVm = new PageViewModel(newPage);
         SelectedLocbook.Pages.Add(pageVm);
         SelectedLocbook.SelectedPage = pageVm;
+        pageVm.IsSelected = true;
         SelectedLocbook.MarkAsModified();
         UpdateFilteredPages();
         StatusMessage = "Added new page.";
@@ -391,8 +398,18 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (SelectedLocbook?.SelectedPage == null) return;
 
-        SelectedLocbook.Pages.Remove(SelectedLocbook.SelectedPage);
-        SelectedLocbook.SelectedPage = SelectedLocbook.Pages.FirstOrDefault();
+        var pageToDelete = SelectedLocbook.SelectedPage;
+        pageToDelete.IsSelected = false;
+        SelectedLocbook.Pages.Remove(pageToDelete);
+        
+        // Select the first available page
+        var newSelectedPage = SelectedLocbook.Pages.FirstOrDefault();
+        SelectedLocbook.SelectedPage = newSelectedPage;
+        if (newSelectedPage != null)
+        {
+            newSelectedPage.IsSelected = true;
+        }
+        
         SelectedLocbook.MarkAsModified();
         UpdateFilteredPages();
         StatusMessage = "Deleted page.";
@@ -675,7 +692,15 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (SelectedLocbook != null && page != null)
         {
+            // Clear previous selection
+            if (SelectedLocbook.SelectedPage != null)
+            {
+                SelectedLocbook.SelectedPage.IsSelected = false;
+            }
+            
+            // Set new selection
             SelectedLocbook.SelectedPage = page;
+            page.IsSelected = true;
         }
     }
     

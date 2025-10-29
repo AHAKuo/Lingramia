@@ -130,7 +130,29 @@
                                            Margin="5"
                                            Padding="10"
                                            HorizontalAlignment="Stretch"
-                                           HorizontalContentAlignment="Left"/>
+                                           HorizontalContentAlignment="Left">
+                                        <Button.Styles>
+                                            <Style Selector="Button">
+                                                <Setter Property="Background" Value="Transparent"/>
+                                            </Style>
+                                            <Style Selector="Button[IsPressed=True]">
+                                                <Setter Property="Background" Value="#3C3C3C"/>
+                                            </Style>
+                                            <Style Selector="Button:pointerover">
+                                                <Setter Property="Background" Value="#353535"/>
+                                            </Style>
+                                            <Style Selector="Button.selected">
+                                                <Setter Property="Background" Value="#3A7CA5"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </Style>
+                                            <Style Selector="Button.selected:pointerover">
+                                                <Setter Property="Background" Value="#4A8CB5"/>
+                                            </Style>
+                                        </Button.Styles>
+                                        <Button.Classes>
+                                            <ClassBinding Name="selected" Binding="{Binding IsSelected}"/>
+                                        </Button.Classes>
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -169,6 +191,7 @@
                                           VerticalAlignment="Center"/>
                                 <TextBox Grid.Row="0" Grid.Column="1"
                                         Text="{Binding SelectedLocbook.SelectedPage.PageId, Mode=TwoWay}"
+                                        IsEnabled="{Binding HasSelectedPage}"
                                         Margin="5,0,0,0"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0"
@@ -179,6 +202,7 @@
                                           VerticalAlignment="Center"/>
                                 <TextBox Grid.Row="1" Grid.Column="1"
                                         Text="{Binding SelectedLocbook.SelectedPage.AboutPage, Mode=TwoWay}"
+                                        IsEnabled="{Binding HasSelectedPage}"
                                         Margin="5,5,0,0"/>
                             </Grid>
                         </StackPanel>
