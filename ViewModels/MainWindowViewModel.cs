@@ -101,28 +101,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task NewFileAsync()
     {
-        // Check for unsaved changes
-        if (SelectedLocbook?.HasUnsavedChanges == true)
-        {
-            if (_mainWindow == null)
-            {
-                StatusMessage = "Window not initialized.";
-                return;
-            }
-            
-            var result = await ShowUnsavedChangesDialogAsync();
-            
-            if (result == UnsavedChangesDialogResult.Cancel)
-            {
-                return;
-            }
-            else if (result == UnsavedChangesDialogResult.Save)
-            {
-                await SaveFileAsync();
-            }
-            // If Discard, continue without saving
-        }
-        
+        // In multi-locbook mode, just add a new locbook without prompting
+        // Unsaved changes are preserved in their respective locbooks
         var newLocbook = FileService.CreateNewLocbook();
         var newVm = new LocbookViewModel(newLocbook);
         OpenLocbooks.Add(newVm);
