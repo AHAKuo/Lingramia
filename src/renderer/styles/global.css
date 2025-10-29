@@ -1,0 +1,378 @@
+:root {
+  color-scheme: light dark;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body,
+html {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background: linear-gradient(180deg, #1f2937 0%, #0f172a 100%);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.top-bar {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.app-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.app-title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+}
+
+.version-tag {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.5rem;
+  background-color: rgba(125, 211, 252, 0.2);
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toolbar-btn,
+.settings-btn {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(30, 41, 59, 0.7);
+  color: inherit;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.toolbar-btn:hover,
+.settings-btn:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(96, 165, 250, 0.4);
+}
+
+.toolbar-btn.primary {
+  background: linear-gradient(135deg, #60a5fa, #38bdf8);
+  color: #0b1120;
+  border: none;
+}
+
+.tab-strip {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.5);
+  color: inherit;
+  cursor: pointer;
+}
+
+.tab.active {
+  border-color: rgba(125, 211, 252, 0.4);
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.tab.dirty .tab-title {
+  font-style: italic;
+}
+
+.tab-close {
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 240px 1fr 280px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  background: rgba(15, 23, 42, 0.8);
+  border-right: 1px solid rgba(148, 163, 184, 0.15);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-action {
+  background: rgba(59, 130, 246, 0.2);
+  border: none;
+  border-radius: 0.5rem;
+  color: inherit;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.page-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.page-list li {
+  display: grid;
+  gap: 0.5rem;
+  background: rgba(30, 41, 59, 0.6);
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+}
+
+.page-list li.active {
+  outline: 2px solid rgba(59, 130, 246, 0.6);
+}
+
+.page-select {
+  border: none;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.page-actions button {
+  border: none;
+  background: rgba(148, 163, 184, 0.2);
+  color: inherit;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.main-panel {
+  padding: 1.5rem;
+  overflow: auto;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.editor-header h2 {
+  margin: 0;
+}
+
+.editor-table-wrapper {
+  flex: 1;
+  overflow: auto;
+  border-radius: 1rem;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.editor-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: inherit;
+}
+
+.editor-table th,
+.editor-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  vertical-align: top;
+}
+
+.editor-table tr.selected {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.editor-table input,
+.editor-table textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.7);
+  color: inherit;
+  resize: vertical;
+  min-height: 2.25rem;
+}
+
+.variants-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.variant-card {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.variant-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.variant-header button {
+  border: none;
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  border-radius: 0.5rem;
+  width: 2rem;
+  cursor: pointer;
+}
+
+button.primary {
+  border: none;
+  background: linear-gradient(135deg, #22d3ee, #3b82f6);
+  color: #0f172a;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+
+button.ghost {
+  border: 1px dashed rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.4);
+  color: inherit;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+
+button.ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.add-variant {
+  justify-self: start;
+}
+
+.inspector {
+  background: rgba(15, 23, 42, 0.7);
+  border-left: 1px solid rgba(148, 163, 184, 0.15);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+}
+
+.inspector-section {
+  background: rgba(30, 41, 59, 0.7);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.inspector-section h3 {
+  margin-top: 0;
+}
+
+.inspector dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+}
+
+.status-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 0.75rem 1.5rem;
+  background: rgba(15, 23, 42, 0.85);
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 0.85rem;
+  gap: 1rem;
+}
+
+.status-message {
+  text-align: right;
+}
+
+.empty-state {
+  color: rgba(226, 232, 240, 0.7);
+  font-style: italic;
+}
+
+.panel-placeholder {
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 0.5rem;
+  height: 100%;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+textarea {
+  min-height: 4rem;
+}
