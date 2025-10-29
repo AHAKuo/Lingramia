@@ -1,21 +1,29 @@
 # Lingramia
 
 ### What This Is
-**Lingramia** is a Node.js application that provides a user-friendly and lightweight interface to create, edit, and export `.locbook` format files for use in game engines or applications for localization purposes.
+**Lingramia** is an **Avalonia-based desktop application** built on **.NET**.  
+It provides a lightweight, intuitive interface for creating, editing, and exporting `.locbook` files — structured JSON documents used for localization in games and software projects.
 
 ---
 
 ### Features
-- 🗂️ Open and edit `.locbook` format files.  
-- 📑 Support for multiple `.locbook` files opened simultaneously, each in its own tab with individual save states.  
-- 🌐 Integration with the **OpenAI API** for automatic translation of pages or page fields, depending on the language code set per field.  
-- ⚙️ Command-line arguments support — can open a `.locbook` file directly, allowing it to be set as the default "Open With" handler.
+- 🗂️ **Open and Edit `.locbook` Files**  
+  Easily view and modify localization data in a clean, structured interface.
+
+- 📑 **Multi-Locbook Editing**  
+  Manage multiple `.locbook` files simultaneously — each in its own tab with independent save states.
+
+- 🌐 **AI Translation Integration**  
+  Built-in **OpenAI API** support for automatic translation of pages or individual fields, based on the defined language code per variant.
+
+- ⚙️ **CLI & File Association**  
+  Supports command-line arguments, enabling `.locbook` files to be opened directly through “Open With” on both Windows and macOS.
 
 ---
 
 ### Locbook Format
-The app works with `.locbook` formatted JSON files.  
-While they are standard JSON files, the `.locbook` extension is used to prevent confusion and incorrect imports.
+The app uses `.locbook` JSON files for structured localization data.  
+While the format is valid JSON, the `.locbook` extension is used to clearly distinguish localization files from other data types.
 
 #### Example Format
 ```json
