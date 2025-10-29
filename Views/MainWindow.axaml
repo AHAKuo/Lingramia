@@ -130,7 +130,8 @@
                                            Margin="5"
                                            Padding="10"
                                            HorizontalAlignment="Stretch"
-                                           HorizontalContentAlignment="Left">
+                                           HorizontalContentAlignment="Left"
+                                           Classes.selected="{Binding IsSelected}">
                                         <Button.Styles>
                                             <Style Selector="Button">
                                                 <Setter Property="Background" Value="Transparent"/>
@@ -149,9 +150,6 @@
                                                 <Setter Property="Background" Value="#4A8CB5"/>
                                             </Style>
                                         </Button.Styles>
-                                        <Button.Classes>
-                                            <ClassBinding Name="selected" Binding="{Binding IsSelected}"/>
-                                        </Button.Classes>
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
