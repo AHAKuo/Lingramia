@@ -1,0 +1,106 @@
+{
+  "pages": [
+    {
+      "pageId": "intro",
+      "aboutPage": "Introduction and main menu localization",
+      "pageFiles": [
+        {
+          "key": "menu_play",
+          "originalValue": "Play",
+          "variants": [
+            {
+              "language": "en",
+              "_value": "Play"
+            },
+            {
+              "language": "jp",
+              "_value": "プレイ"
+            },
+            {
+              "language": "ar",
+              "_value": "ابدأ"
+            }
+          ]
+        },
+        {
+          "key": "menu_settings",
+          "originalValue": "Settings",
+          "variants": [
+            {
+              "language": "en",
+              "_value": "Settings"
+            },
+            {
+              "language": "jp",
+              "_value": "設定"
+            },
+            {
+              "language": "ar",
+              "_value": "إعدادات"
+            }
+          ]
+        },
+        {
+          "key": "menu_quit",
+          "originalValue": "Quit",
+          "variants": [
+            {
+              "language": "en",
+              "_value": "Quit"
+            },
+            {
+              "language": "jp",
+              "_value": "終了"
+            },
+            {
+              "language": "ar",
+              "_value": "خروج"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "gameplay",
+      "aboutPage": "In-game UI elements",
+      "pageFiles": [
+        {
+          "key": "ui_health",
+          "originalValue": "Health",
+          "variants": [
+            {
+              "language": "en",
+              "_value": "Health"
+            },
+            {
+              "language": "jp",
+              "_value": "体力"
+            },
+            {
+              "language": "ar",
+              "_value": "الصحة"
+            }
+          ]
+        },
+        {
+          "key": "ui_score",
+          "originalValue": "Score",
+          "variants": [
+            {
+              "language": "en",
+              "_value": "Score"
+            },
+            {
+              "language": "jp",
+              "_value": "スコア"
+            },
+            {
+              "language": "ar",
+              "_value": "النقاط"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
