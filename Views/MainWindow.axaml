@@ -99,12 +99,25 @@
             <!-- Left Sidebar - Locbooks and Pages -->
             <Border Grid.Column="0" Background="#2B2B2B" BorderBrush="#3C3C3C" BorderThickness="0,0,1,0">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" 
-                              Text="Locbooks" 
-                              FontSize="16" 
-                              FontWeight="Bold"
-                              Margin="10"
-                              Foreground="#E0E0E0"/>
+                    <StackPanel DockPanel.Dock="Top" Margin="10" Spacing="10">
+                        <TextBlock Text="Locbooks" 
+                                  FontSize="16" 
+                                  FontWeight="Bold"
+                                  Foreground="#E0E0E0"/>
+                        <!-- Locbook Actions -->
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <Button Content="📂 Open" 
+                                   Command="{Binding OpenFileCommand}"
+                                   Padding="8,4"
+                                   FontSize="12"
+                                   ToolTip.Tip="Open existing locbook file"/>
+                            <Button Content="➕ New" 
+                                   Command="{Binding NewFileCommand}"
+                                   Padding="8,4"
+                                   FontSize="12"
+                                   ToolTip.Tip="Create new locbook"/>
+                        </StackPanel>
+                    </StackPanel>
                     
                     <!-- Page Actions -->
                     <StackPanel DockPanel.Dock="Bottom" 
@@ -126,26 +139,62 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
-                                             Margin="5">
+                                             Margin="5"
+                                             Background="#2B2B2B"
+                                             BorderBrush="#3C3C3C"
+                                             BorderThickness="1"
+                                             CornerRadius="3">
                                         <Expander.Header>
-                                            <Grid>
+                                            <Grid Margin="5,2">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <Button Grid.Column="0"
-                                                       Content="{Binding DisplayName}"
-                                                       FontSize="14"
+                                                <TextBlock Grid.Column="0"
+                                                          Text="{Binding DisplayName}"
+                                                          FontSize="13"
+                                                          FontWeight="SemiBold"
+                                                          Foreground="#E0E0E0"
+                                                          VerticalAlignment="Center"
+                                                          TextTrimming="CharacterEllipsis"
+                                                          ToolTip.Tip="{Binding DisplayName}">
+                                                    <TextBlock.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Save" 
+                                                                     Command="{Binding $parent[Window].DataContext.SaveLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <MenuItem Header="Save As..." 
+                                                                     Command="{Binding $parent[Window].DataContext.SaveAsLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <MenuItem Header="Export" 
+                                                                     Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <Separator />
+                                                            <MenuItem Header="Close Locbook" 
+                                                                     Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                        </ContextMenu>
+                                                    </TextBlock.ContextMenu>
+                                                </TextBlock>
+                                                <Button Grid.Column="1"
+                                                       Content="⋮"
+                                                       FontSize="16"
                                                        FontWeight="Bold"
-                                                       HorizontalAlignment="Stretch"
-                                                       HorizontalContentAlignment="Left"
-                                                       Padding="5"
+                                                       Padding="8,2"
+                                                       Margin="5,0,0,0"
                                                        Background="Transparent"
                                                        BorderThickness="0"
-                                                       Command="{Binding $parent[Window].DataContext.SelectLocbookCommand}"
-                                                       CommandParameter="{Binding}">
+                                                       Foreground="#A0A0A0"
+                                                       ToolTip.Tip="Locbook Actions (click for menu)"
+                                                       Name="LocbookMenuButton">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                                                            <Setter Property="Background" Value="#3C3C3C"/>
+                                                        </Style>
+                                                    </Button.Styles>
                                                     <Button.ContextMenu>
-                                                        <ContextMenu>
+                                                        <ContextMenu Name="LocbookContextMenu">
                                                             <MenuItem Header="Save" 
                                                                      Command="{Binding $parent[Window].DataContext.SaveLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
@@ -161,13 +210,8 @@
                                                                      CommandParameter="{Binding}" />
                                                         </ContextMenu>
                                                     </Button.ContextMenu>
-                                                </Button>
-                                                <Button Grid.Column="1"
-                                                       Content="⚙"
-                                                       Padding="5"
-                                                       ToolTip.Tip="Locbook Actions">
-                                                    <Button.ContextMenu>
-                                                        <ContextMenu>
+                                                    <Button.Flyout>
+                                                        <MenuFlyout Placement="BottomEdgeAlignedRight">
                                                             <MenuItem Header="Save" 
                                                                      Command="{Binding $parent[Window].DataContext.SaveLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
@@ -181,8 +225,8 @@
                                                             <MenuItem Header="Close Locbook" 
                                                                      Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
-                                                        </ContextMenu>
-                                                    </Button.ContextMenu>
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
                                                 </Button>
                                             </Grid>
                                         </Expander.Header>
