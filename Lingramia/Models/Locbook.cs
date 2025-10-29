@@ -1,0 +1,43 @@
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+namespace Lingramia.Models;
+
+public class Locbook
+{
+    [JsonPropertyName("pages")]
+    public List<Page> Pages { get; set; } = new();
+}
+
+public class Page
+{
+    [JsonPropertyName("pageId")]
+    public string PageId { get; set; } = string.Empty;
+
+    [JsonPropertyName("aboutPage")]
+    public string AboutPage { get; set; } = string.Empty;
+
+    [JsonPropertyName("pageFiles")]
+    public List<PageFile> PageFiles { get; set; } = new();
+}
+
+public class PageFile
+{
+    [JsonPropertyName("key")]
+    public string Key { get; set; } = string.Empty;
+
+    [JsonPropertyName("originalValue")]
+    public string OriginalValue { get; set; } = string.Empty;
+
+    [JsonPropertyName("variants")]
+    public List<Variant> Variants { get; set; } = new();
+}
+
+public class Variant
+{
+    [JsonPropertyName("language")]
+    public string Language { get; set; } = string.Empty;
+
+    [JsonPropertyName("_value")]
+    public string Value { get; set; } = string.Empty;
+}
