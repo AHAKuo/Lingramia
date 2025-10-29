@@ -1,0 +1,38 @@
+{
+  "name": "lingramia",
+  "version": "0.1.0",
+  "description": "Lingramia localization editor desktop app built with Electron and React.",
+  "main": "src/main/main.ts",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron-forge start",
+    "lint": "eslint .",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.4.2",
+    "@electron-forge/maker-deb": "^6.4.2",
+    "@electron-forge/maker-rpm": "^6.4.2",
+    "@electron-forge/maker-squirrel": "^6.4.2",
+    "@electron-forge/maker-zip": "^6.4.2",
+    "@electron-forge/plugin-vite": "^6.4.2",
+    "@types/node": "^20.12.7",
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
+    "electron": "^28.2.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.33.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.8",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@typescript-eslint/parser": "^7.6.0",
+    "@typescript-eslint/eslint-plugin": "^7.6.0"
+  }
+}
