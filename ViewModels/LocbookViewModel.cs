@@ -58,6 +58,7 @@ public partial class LocbookViewModel : ViewModelBase
         if (Pages.Count > 0)
         {
             SelectedPage = Pages[0];
+            SelectedPage.IsSelected = true;
         }
     }
 
