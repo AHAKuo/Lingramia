@@ -1,61 +1,157 @@
 # Lingramia
 
-### What This Is
-**Lingramia** is a Node.js application that provides a user-friendly and lightweight interface to create, edit, and export `.locbook` format files for use in game engines or applications for localization purposes.
+**Version:** 1.0.0
 
----
+A desktop localization editor for `.locbook` files, built with Electron, React, and JavaScript.
 
-### Features
-- 🗂️ Open and edit `.locbook` format files.  
-- 📑 Support for multiple `.locbook` files opened simultaneously, each in its own tab with individual save states.  
-- 🌐 Integration with the **OpenAI API** for automatic translation of pages or page fields, depending on the language code set per field.  
-- ⚙️ Command-line arguments support — can open a `.locbook` file directly, allowing it to be set as the default "Open With" handler.
+## Overview
 
----
+Lingramia is a user-friendly desktop application designed to manage, edit, and translate `.locbook` files. These files are JSON-based structures used for localization in game engines, notably the Signalia Framework for Unity.
 
-### Locbook Format
-The app works with `.locbook` formatted JSON files.  
-While they are standard JSON files, the `.locbook` extension is used to prevent confusion and incorrect imports.
+## Features
 
-#### Example Format
+- ✨ Create, open, and save `.locbook` files
+- 📄 Manage multiple pages and translation fields
+- 🌐 Support for multiple language variants per field
+- 🎨 Clean, intuitive user interface
+- ⌨️ Keyboard shortcuts (Ctrl+N, Ctrl+O, Ctrl+S)
+- 💾 Auto-save indicators and file status tracking
+- 📝 Command-line support for opening files directly
+
+## Installation
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+## Development
+
+Run the app in development mode:
+```bash
+npm start
+```
+
+## Building
+
+Package the app for distribution:
+```bash
+npm run package
+```
+
+Create distributable installers:
+```bash
+npm run make
+```
+
+## Usage
+
+### Creating a New File
+
+1. Click **New** in the header or press `Ctrl+N`
+2. Add pages using the **+ Add** button in the left sidebar
+3. Select a page and add fields using **+ Add Field**
+4. Add language variants to each field
+
+### Opening an Existing File
+
+1. Click **Open** or press `Ctrl+O`
+2. Select a `.locbook` or `.json` file
+3. Edit pages, fields, and variants as needed
+
+### Saving Changes
+
+- Click **Save** or press `Ctrl+S` to save to the current file
+- Click **Save As...** to save to a new location
+- The app shows an indicator (●) when there are unsaved changes
+
+### Keyboard Shortcuts
+
+- `Ctrl+N` / `Cmd+N` - New file
+- `Ctrl+O` / `Cmd+O` - Open file
+- `Ctrl+S` / `Cmd+S` - Save file
+
+### Command Line Usage
+
+Open a file directly from the command line:
+```bash
+lingramia path/to/file.locbook
+```
+
+## File Format
+
+Lingramia works with `.locbook` files, which are JSON files with the following structure:
+
 ```json
 {
-    "pages": [
+  "pages": [
+    {
+      "aboutPage": "Description of the page",
+      "pageId": "unique-id",
+      "pageFiles": [
         {
-            "aboutPage": "",
-            "pageId": "-4302",
-            "pageFiles": [
-                {
-                    "key": "greeting_hello",
-                    "originalValue": "Hello World",
-                    "variants": [
-                        {"_value": "Hello World", "language": "en"},
-                        {"_value": "こんにちわ", "language": "jp"},
-                        {"_value": "أهلا و سهلا", "language": "ar"}
-                    ]
-                }
-            ]
-        },
-        {
-            "aboutPage": "",
-            "pageId": "27492",
-            "pageFiles": [
-                {
-                    "key": "ui_description",
-                    "originalValue": "Signalia is a UI system",
-                    "variants": [
-                        {"_value": "Signalia is a GUI system", "language": "en"},
-                        {"_value": "シグナリア は GUI システムです。", "language": "jp"},
-                        {"_value": "سيغنالـيا هو نظام واجهة مستخدم (GUI).", "language": "ar"}
-                    ]
-                }
-            ]
+          "key": "translation_key",
+          "originalValue": "Original text",
+          "variants": [
+            {
+              "_value": "Translated text",
+              "language": "en"
+            }
+          ]
         }
-    ]
+      ]
+    }
+  ]
 }
 ```
 
-### Compatibility
-The app is mainly designed for the Signalia framework in unity, as that is the only framework at the moment that supports opening and using that file format, deserializing and serializing it.
+## Project Structure
 
-Ownership of AHAKuo Creations, or AHAKuo.
+```
+lingramia/
+├── src/
+│   ├── main.js              # Electron main process
+│   ├── preload.js           # Preload script for IPC
+│   ├── renderer.js          # React app entry point
+│   ├── index.html           # HTML template
+│   ├── index.css            # Application styles
+│   ├── components/          # React components
+│   │   ├── App.jsx
+│   │   ├── Header.jsx
+│   │   ├── LeftSidebar.jsx
+│   │   ├── MainEditor.jsx
+│   │   ├── RightSidebar.jsx
+│   │   └── BottomBar.jsx
+│   ├── models/              # Data models
+│   │   └── locbookModel.js
+│   └── services/            # Services
+│       ├── fileHandler.js
+│       └── configManager.js
+├── package.json
+└── README.md
+```
+
+## Technology Stack
+
+- **Framework:** Electron
+- **Build Tool:** Electron Forge with Webpack
+- **UI Library:** React 18
+- **Language:** JavaScript (ES6+)
+- **Styling:** CSS3
+
+## Author
+
+**Abdulmuhsen Hatim Alwagdani**  
+© 2025 AHAKuo Creations
+
+## License
+
+MIT
+
+## Compatibility
+
+This application is primarily designed for the Signalia Framework in Unity, which natively supports reading and writing `.locbook` files.
+
+## Sample File
+
+A sample `.locbook` file is included in the project root (`sample.locbook`) for testing and reference.

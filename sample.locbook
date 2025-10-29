@@ -1,0 +1,52 @@
+{
+  "pages": [
+    {
+      "aboutPage": "Main menu translations",
+      "pageId": "-4302",
+      "pageFiles": [
+        {
+          "key": "greeting_hello",
+          "originalValue": "Hello World",
+          "variants": [
+            {
+              "_value": "Hello World",
+              "language": "en"
+            },
+            {
+              "_value": "こんにちわ",
+              "language": "jp"
+            },
+            {
+              "_value": "أهلا و سهلا",
+              "language": "ar"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "aboutPage": "UI system descriptions",
+      "pageId": "27492",
+      "pageFiles": [
+        {
+          "key": "ui_description",
+          "originalValue": "Signalia is a UI system",
+          "variants": [
+            {
+              "_value": "Signalia is a GUI system",
+              "language": "en"
+            },
+            {
+              "_value": "シグナリア は GUI システムです。",
+              "language": "jp"
+            },
+            {
+              "_value": "سيغناليا هو نظام واجهة مستخدم (GUI).",
+              "language": "ar"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
