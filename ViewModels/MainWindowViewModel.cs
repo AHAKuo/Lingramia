@@ -32,6 +32,8 @@ public partial class MainWindowViewModel : ViewModelBase
     
     [ObservableProperty]
     private ObservableCollection<PageViewModel> _filteredPages = new();
+    
+    public bool HasSelectedPage => SelectedLocbook?.SelectedPage != null;
 
     private Window? _mainWindow;
 
@@ -46,7 +48,7 @@ public partial class MainWindowViewModel : ViewModelBase
         // Load saved API key
         _ = LoadApiKeyAsync();
         
-        // Setup search
+        // Setup search and page selection monitoring
         PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(SearchQuery))
@@ -56,9 +58,17 @@ public partial class MainWindowViewModel : ViewModelBase
             else if (e.PropertyName == nameof(SelectedLocbook))
             {
                 UpdateFilteredPages();
+                OnPropertyChanged(nameof(HasSelectedPage));
                 if (SelectedLocbook != null)
                 {
                     SelectedLocbook.Pages.CollectionChanged += (s2, e2) => UpdateFilteredPages();
+                    SelectedLocbook.PropertyChanged += (s3, e3) =>
+                    {
+                        if (e3.PropertyName == nameof(SelectedLocbook.SelectedPage))
+                        {
+                            OnPropertyChanged(nameof(HasSelectedPage));
+                        }
+                    };
                 }
             }
         };
@@ -437,9 +447,10 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
+        Window? loadingDialog = null;
         try
         {
-            StatusMessage = "Translating field...";
+            loadingDialog = ShowLoadingDialog("Translating field...", "Translating all empty variants using the original value as source.");
             TranslationService.LoadConfig(ApiKey);
 
             foreach (var variant in field.Variants)
@@ -458,6 +469,10 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             StatusMessage = $"Translation error: {ex.Message}";
         }
+        finally
+        {
+            loadingDialog?.Close();
+        }
     }
     
     [RelayCommand]
@@ -475,9 +490,10 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
+        Window? loadingDialog = null;
         try
         {
-            StatusMessage = "Translating page...";
+            loadingDialog = ShowLoadingDialog("Translating page...", "Translating all empty variants in this page using each field's original value as source.");
             TranslationService.LoadConfig(ApiKey);
             
             int fieldCount = 0;
@@ -500,6 +516,10 @@ public partial class MainWindowViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = $"Translation error: {ex.Message}";
+        }
+        finally
+        {
+            loadingDialog?.Close();
         }
     }
 
@@ -1012,5 +1032,343 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         
         return result;
+    }
+    
+    [RelayCommand]
+    private async Task TranslateVariantAsync(VariantViewModel? variant)
+    {
+        if (variant == null)
+        {
+            StatusMessage = "No variant selected.";
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(ApiKey))
+        {
+            StatusMessage = "Please configure API key first.";
+            return;
+        }
+        
+        if (SelectedLocbook?.SelectedPage == null)
+        {
+            StatusMessage = "No page selected.";
+            return;
+        }
+
+        // Find the field containing this variant to get the original value
+        FieldViewModel? parentField = null;
+        foreach (var field in SelectedLocbook.SelectedPage.Fields)
+        {
+            if (field.Variants.Contains(variant))
+            {
+                parentField = field;
+                break;
+            }
+        }
+        
+        if (parentField == null)
+        {
+            StatusMessage = "Could not find parent field.";
+            return;
+        }
+
+        Window? loadingDialog = null;
+        try
+        {
+            loadingDialog = ShowLoadingDialog("Translating variant...", $"Translating to {variant.Language} using the original value as source.");
+            TranslationService.LoadConfig(ApiKey);
+            
+            var translated = await TranslationService.TranslateAsync(parentField.OriginalValue, variant.Language);
+            variant.Value = translated;
+
+            SelectedLocbook.MarkAsModified();
+            StatusMessage = $"Translated to {variant.Language}.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Translation error: {ex.Message}";
+        }
+        finally
+        {
+            loadingDialog?.Close();
+        }
+    }
+    
+    [RelayCommand]
+    private async Task ShowUsageGuideAsync()
+    {
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+        
+        try
+        {
+            var dialog = new Window
+            {
+                Title = "Usage Guide",
+                Width = 650,
+                Height = 500,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                CanResize = true
+            };
+
+            var scrollViewer = new ScrollViewer
+            {
+                Padding = new Avalonia.Thickness(30)
+            };
+
+            var stackPanel = new StackPanel
+            {
+                Spacing = 15
+            };
+
+            var title = new TextBlock
+            {
+                Text = "Lingramia Usage Guide",
+                FontSize = 22,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                Margin = new Avalonia.Thickness(0, 0, 0, 10)
+            };
+
+            var section1Title = new TextBlock
+            {
+                Text = "📝 Creating Localization Files",
+                FontSize = 16,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                Margin = new Avalonia.Thickness(0, 10, 0, 5)
+            };
+
+            var section1Text = new TextBlock
+            {
+                Text = "1. Create pages to organize your content\\n2. Add fields with keys and original values\\n3. Add language variants for each field\\n4. Use AI translation or manually enter translations\\n5. Save your work as a .locbook file",
+                FontSize = 13,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var section2Title = new TextBlock
+            {
+                Text = "🎮 Exporting for Game Engines",
+                FontSize = 16,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                Margin = new Avalonia.Thickness(0, 10, 0, 5)
+            };
+
+            var section2Text = new TextBlock
+            {
+                Text = "Use File → Export (Per-Language JSON) to generate separate JSON files for each language. These files contain key-value pairs ready for your game engine.",
+                FontSize = 13,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var section3Title = new TextBlock
+            {
+                Text = "🔧 Unity Integration (Recommended)",
+                FontSize = 16,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                Margin = new Avalonia.Thickness(0, 10, 0, 5)
+            };
+
+            var section3Text = new TextBlock
+            {
+                Text = "For Unity users, we recommend using Signalia - a powerful localization framework that seamlessly integrates with .locbook files. Signalia provides automatic loading, language switching, and real-time updates.",
+                FontSize = 13,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var section4Title = new TextBlock
+            {
+                Text = "⚙️ Other Game Engines",
+                FontSize = 16,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                Margin = new Avalonia.Thickness(0, 10, 0, 5)
+            };
+
+            var section4Text = new TextBlock
+            {
+                Text = "For other engines, you have two options:\\n\\n1. Use the exported per-language JSON files directly\\n2. Build a custom reader framework that parses .locbook files\\n\\nThe .locbook format is JSON-based with the following structure:\\n- pages[] - array of content pages\\n- pageFiles[] - array of fields per page\\n- variants[] - array of language translations per field\\n\\nImplementation is flexible - design it to fit your game's architecture.",
+                FontSize = 13,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var okButton = new Button
+            {
+                Content = "Got it!",
+                Width = 120,
+                Padding = new Avalonia.Thickness(15, 8),
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                Margin = new Avalonia.Thickness(0, 20, 0, 0)
+            };
+
+            okButton.Click += (s, e) => dialog.Close();
+
+            stackPanel.Children.Add(title);
+            stackPanel.Children.Add(section1Title);
+            stackPanel.Children.Add(section1Text);
+            stackPanel.Children.Add(section2Title);
+            stackPanel.Children.Add(section2Text);
+            stackPanel.Children.Add(section3Title);
+            stackPanel.Children.Add(section3Text);
+            stackPanel.Children.Add(section4Title);
+            stackPanel.Children.Add(section4Text);
+            stackPanel.Children.Add(okButton);
+
+            scrollViewer.Content = stackPanel;
+            dialog.Content = scrollViewer;
+
+            await dialog.ShowDialog(_mainWindow);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error showing usage guide: {ex.Message}";
+        }
+    }
+    
+    [RelayCommand]
+    private async Task ShowTranslationHelpAsync()
+    {
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+        
+        try
+        {
+            var dialog = new Window
+            {
+                Title = "Translation Help",
+                Width = 550,
+                Height = 350,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                CanResize = false
+            };
+
+            var stackPanel = new StackPanel
+            {
+                Margin = new Avalonia.Thickness(30),
+                Spacing = 15
+            };
+
+            var title = new TextBlock
+            {
+                Text = "How Translation Works",
+                FontSize = 20,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+
+            var separator = new Avalonia.Controls.Separator
+            {
+                Margin = new Avalonia.Thickness(0, 10)
+            };
+
+            var infoText = new TextBlock
+            {
+                Text = "AI translation in Lingramia uses the Original Value field as the source text for translation.\\n\\nWhen you translate:\\n\\n• Field Translation: Translates all empty variant values using that field's original value\\n\\n• Page Translation: Translates all empty variants in all fields on the page\\n\\n• Single Variant: Translates only that specific language variant\\n\\nTranslation will only fill in empty text areas - existing translations are preserved.",
+                FontSize = 13,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                Margin = new Avalonia.Thickness(0, 10)
+            };
+
+            var tipBox = new Border
+            {
+                Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#2B4B6B")),
+                CornerRadius = new Avalonia.CornerRadius(5),
+                Padding = new Avalonia.Thickness(15),
+                Margin = new Avalonia.Thickness(0, 10)
+            };
+
+            var tipText = new TextBlock
+            {
+                Text = "💡 Tip: Make sure your API key is configured in Translation → Configure API Key before attempting to translate.",
+                FontSize = 12,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                Foreground = Avalonia.Media.Brushes.LightBlue
+            };
+
+            tipBox.Child = tipText;
+
+            var okButton = new Button
+            {
+                Content = "Got it!",
+                Width = 120,
+                Padding = new Avalonia.Thickness(15, 8),
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+
+            okButton.Click += (s, e) => dialog.Close();
+
+            stackPanel.Children.Add(title);
+            stackPanel.Children.Add(separator);
+            stackPanel.Children.Add(infoText);
+            stackPanel.Children.Add(tipBox);
+            stackPanel.Children.Add(okButton);
+
+            dialog.Content = stackPanel;
+
+            await dialog.ShowDialog(_mainWindow);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error showing translation help: {ex.Message}";
+        }
+    }
+    
+    private Window ShowLoadingDialog(string title, string message)
+    {
+        var dialog = new Window
+        {
+            Title = title,
+            Width = 400,
+            Height = 180,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false,
+            SystemDecorations = Avalonia.Controls.SystemDecorations.BorderOnly
+        };
+
+        var stackPanel = new StackPanel
+        {
+            Margin = new Avalonia.Thickness(30),
+            Spacing = 20,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+
+        var progressRing = new Avalonia.Controls.ProgressBar
+        {
+            IsIndeterminate = true,
+            Width = 300
+        };
+
+        var titleText = new TextBlock
+        {
+            Text = title,
+            FontSize = 16,
+            FontWeight = Avalonia.Media.FontWeight.Bold,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+
+        var messageText = new TextBlock
+        {
+            Text = message,
+            FontSize = 12,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            TextAlignment = Avalonia.Media.TextAlignment.Center
+        };
+
+        stackPanel.Children.Add(titleText);
+        stackPanel.Children.Add(progressRing);
+        stackPanel.Children.Add(messageText);
+
+        dialog.Content = stackPanel;
+        
+        // Show the dialog without blocking
+        dialog.Show(_mainWindow);
+        
+        return dialog;
     }
 }
