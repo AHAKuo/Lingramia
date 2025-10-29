@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -446,38 +447,6 @@ public partial class MainWindowViewModel : ViewModelBase
                 StatusMessage = "Deleted variant.";
                 break;
             }
-        }
-    }
-
-    [RelayCommand]
-    private async Task TranslateFieldAsync(FieldViewModel? field)
-    {
-        if (field == null || string.IsNullOrEmpty(ApiKey))
-        {
-            StatusMessage = "Please configure API key first.";
-            return;
-        }
-
-        try
-        {
-            TranslationService.LoadConfig(ApiKey);
-            StatusMessage = "Translating...";
-
-            foreach (var variant in field.Variants)
-            {
-                if (string.IsNullOrEmpty(variant.Value))
-                {
-                    var translated = await TranslationService.TranslateAsync(field.OriginalValue, variant.Language);
-                    variant.Value = translated;
-                }
-            }
-
-            SelectedLocbook?.MarkAsModified();
-            StatusMessage = "Translation completed.";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Translation error: {ex.Message}";
         }
     }
 
