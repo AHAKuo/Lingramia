@@ -22,14 +22,16 @@
                 <MenuItem Header="Open" Command="{Binding OpenFileCommand}" />
                 <MenuItem Header="Save" Command="{Binding SaveFileCommand}" />
                 <Separator />
-                <MenuItem Header="Export" Command="{Binding ExportFileCommand}" />
+                <MenuItem Header="Save As" Command="{Binding SaveAsFileCommand}" />
+                <Separator />
+                <MenuItem Header="Export (Per-Language JSON)" Command="{Binding ExportFileCommand}" />
             </MenuItem>
             <MenuItem Header="Translation">
                 <MenuItem Header="Configure API Key" Command="{Binding ConfigureApiKeyCommand}" />
-                <MenuItem Header="Translate Selected Field" />
+                <MenuItem Header="Clear API Key" Command="{Binding ClearApiKeyCommand}" />
             </MenuItem>
             <MenuItem Header="Help">
-                <MenuItem Header="About" />
+                <MenuItem Header="About" Command="{Binding ShowAboutDialogCommand}" />
             </MenuItem>
         </Menu>
 
@@ -53,6 +55,32 @@
                               VerticalAlignment="Center"
                               IsVisible="{Binding SelectedLocbook.HasUnsavedChanges}"/>
                 </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Search Bar -->
+        <Border DockPanel.Dock="Top" Background="#2B2B2B" Padding="10" BorderBrush="#3C3C3C" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" 
+                          Text="🔍 Search:" 
+                          FontSize="14"
+                          Foreground="#E0E0E0"
+                          VerticalAlignment="Center"
+                          Margin="0,0,10,0"/>
+                <TextBox Grid.Column="1" 
+                        Text="{Binding SearchQuery, Mode=TwoWay}"
+                        Watermark="Search by Page ID, About, or Key..."
+                        VerticalAlignment="Center"/>
+                <Button Grid.Column="2" 
+                       Content="Clear"
+                       Command="{Binding ClearSearchCommand}"
+                       Margin="10,0,0,0"
+                       Padding="15,5"/>
             </Grid>
         </Border>
 
@@ -90,7 +118,7 @@
 
                     <!-- Pages List -->
                     <ScrollViewer>
-                        <ItemsControl ItemsSource="{Binding SelectedLocbook.Pages}">
+                        <ItemsControl ItemsSource="{Binding FilteredPages}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Button Content="{Binding PageId}"
@@ -162,6 +190,7 @@
                                Command="{Binding AddFieldCommand}"
                                Padding="10,5"/>
                         <Button Content="🌐 Translate Page" 
+                               Command="{Binding TranslatePageCommand}"
                                Padding="10,5"/>
                     </StackPanel>
 
@@ -176,6 +205,13 @@
                                            Padding="15"
                                            Margin="0,0,0,10"
                                            CornerRadius="5">
+                                        <Border.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Translate This Field" 
+                                                         Command="{Binding $parent[Window].DataContext.TranslateFieldCommand}"
+                                                         CommandParameter="{Binding}" />
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
                                         <StackPanel Spacing="10">
                                             <!-- Field Key and Original Value -->
                                             <Grid>
