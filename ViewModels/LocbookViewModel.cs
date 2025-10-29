@@ -18,6 +18,9 @@ public partial class LocbookViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isExpanded = true;
     
+    [ObservableProperty]
+    private bool _isSelected = false;
+    
     public string DisplayName => HasUnsavedChanges ? $"{FileName}*" : FileName;
 
     [ObservableProperty]

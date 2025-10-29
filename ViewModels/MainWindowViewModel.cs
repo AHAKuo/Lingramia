@@ -67,6 +67,7 @@ public partial class MainWindowViewModel : ViewModelBase
         // Initialize with a default empty locbook
         var defaultLocbook = FileService.CreateNewLocbook();
         var defaultVm = new LocbookViewModel(defaultLocbook);
+        defaultVm.IsSelected = true;
         OpenLocbooks.Add(defaultVm);
         SelectedLocbook = defaultVm;
         
@@ -105,6 +106,14 @@ public partial class MainWindowViewModel : ViewModelBase
         // Unsaved changes are preserved in their respective locbooks
         var newLocbook = FileService.CreateNewLocbook();
         var newVm = new LocbookViewModel(newLocbook);
+        
+        // Clear previous selection
+        foreach (var lb in OpenLocbooks)
+        {
+            lb.IsSelected = false;
+        }
+        
+        newVm.IsSelected = true;
         OpenLocbooks.Add(newVm);
         SelectedLocbook = newVm;
         UpdateFilteredPages();
@@ -148,6 +157,14 @@ public partial class MainWindowViewModel : ViewModelBase
                 if (locbook != null)
                 {
                     var locbookVm = new LocbookViewModel(locbook, filePath);
+                    
+                    // Clear previous selection
+                    foreach (var lb in OpenLocbooks)
+                    {
+                        lb.IsSelected = false;
+                    }
+                    
+                    locbookVm.IsSelected = true;
                     OpenLocbooks.Add(locbookVm);
                     SelectedLocbook = locbookVm;
                     UpdateFilteredPages();
@@ -720,6 +737,14 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (locbook != null)
         {
+            // Clear previous selection
+            foreach (var lb in OpenLocbooks)
+            {
+                lb.IsSelected = false;
+            }
+            
+            // Set new selection
+            locbook.IsSelected = true;
             SelectedLocbook = locbook;
             UpdateFilteredPages();
         }
