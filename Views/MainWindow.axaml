@@ -21,6 +21,7 @@
                 <MenuItem Header="New" Command="{Binding NewFileCommand}" />
                 <MenuItem Header="Open" Command="{Binding OpenFileCommand}" />
                 <MenuItem Header="Save" Command="{Binding SaveFileCommand}" />
+                <MenuItem Header="Save All" Command="{Binding SaveAllLocbooksCommand}" />
                 <Separator />
                 <MenuItem Header="Save As" Command="{Binding SaveAsFileCommand}" />
                 <Separator />
@@ -95,11 +96,11 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Left Sidebar - Pages -->
+            <!-- Left Sidebar - Locbooks and Pages -->
             <Border Grid.Column="0" Background="#2B2B2B" BorderBrush="#3C3C3C" BorderThickness="0,0,1,0">
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Top" 
-                              Text="Pages" 
+                              Text="Locbooks" 
                               FontSize="16" 
                               FontWeight="Bold"
                               Margin="10"
@@ -119,38 +120,106 @@
                                Padding="10,5"/>
                     </StackPanel>
 
-                    <!-- Pages List -->
+                    <!-- Locbooks List -->
                     <ScrollViewer>
-                        <ItemsControl ItemsSource="{Binding FilteredPages}">
+                        <ItemsControl ItemsSource="{Binding OpenLocbooks}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Content="{Binding PageId}"
-                                           Command="{Binding $parent[Window].DataContext.SelectPageCommand}"
-                                           CommandParameter="{Binding}"
-                                           Margin="5"
-                                           Padding="10"
-                                           HorizontalAlignment="Stretch"
-                                           HorizontalContentAlignment="Left"
-                                           Classes.selected="{Binding IsSelected}">
-                                        <Button.Styles>
-                                            <Style Selector="Button">
-                                                <Setter Property="Background" Value="Transparent"/>
-                                            </Style>
-                                            <Style Selector="Button[IsPressed=True]">
-                                                <Setter Property="Background" Value="#3C3C3C"/>
-                                            </Style>
-                                            <Style Selector="Button:pointerover">
-                                                <Setter Property="Background" Value="#353535"/>
-                                            </Style>
-                                            <Style Selector="Button.selected">
-                                                <Setter Property="Background" Value="#3A7CA5"/>
-                                                <Setter Property="Foreground" Value="White"/>
-                                            </Style>
-                                            <Style Selector="Button.selected:pointerover">
-                                                <Setter Property="Background" Value="#4A8CB5"/>
-                                            </Style>
-                                        </Button.Styles>
-                                    </Button>
+                                    <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                                             Margin="5">
+                                        <Expander.Header>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Button Grid.Column="0"
+                                                       Content="{Binding DisplayName}"
+                                                       FontSize="14"
+                                                       FontWeight="Bold"
+                                                       HorizontalAlignment="Stretch"
+                                                       HorizontalContentAlignment="Left"
+                                                       Padding="5"
+                                                       Background="Transparent"
+                                                       BorderThickness="0"
+                                                       Command="{Binding $parent[Window].DataContext.SelectLocbookCommand}"
+                                                       CommandParameter="{Binding}">
+                                                    <Button.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Save" 
+                                                                     Command="{Binding $parent[Window].DataContext.SaveLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <MenuItem Header="Save As..." 
+                                                                     Command="{Binding $parent[Window].DataContext.SaveAsLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <MenuItem Header="Export" 
+                                                                     Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <Separator />
+                                                            <MenuItem Header="Close Locbook" 
+                                                                     Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                        </ContextMenu>
+                                                    </Button.ContextMenu>
+                                                </Button>
+                                                <Button Grid.Column="1"
+                                                       Content="⚙"
+                                                       Padding="5"
+                                                       ToolTip.Tip="Locbook Actions">
+                                                    <Button.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Save" 
+                                                                     Command="{Binding $parent[Window].DataContext.SaveLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <MenuItem Header="Save As..." 
+                                                                     Command="{Binding $parent[Window].DataContext.SaveAsLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <MenuItem Header="Export" 
+                                                                     Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <Separator />
+                                                            <MenuItem Header="Close Locbook" 
+                                                                     Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                        </ContextMenu>
+                                                    </Button.ContextMenu>
+                                                </Button>
+                                            </Grid>
+                                        </Expander.Header>
+                                        <ItemsControl ItemsSource="{Binding Pages}" Margin="10,0,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="{Binding PageId}"
+                                                           Command="{Binding $parent[Window].DataContext.SelectPageCommand}"
+                                                           CommandParameter="{Binding}"
+                                                           Margin="5,2"
+                                                           Padding="8"
+                                                           HorizontalAlignment="Stretch"
+                                                           HorizontalContentAlignment="Left"
+                                                           Classes.selected="{Binding IsSelected}">
+                                                        <Button.Styles>
+                                                            <Style Selector="Button">
+                                                                <Setter Property="Background" Value="Transparent"/>
+                                                            </Style>
+                                                            <Style Selector="Button[IsPressed=True]">
+                                                                <Setter Property="Background" Value="#3C3C3C"/>
+                                                            </Style>
+                                                            <Style Selector="Button:pointerover">
+                                                                <Setter Property="Background" Value="#353535"/>
+                                                            </Style>
+                                                            <Style Selector="Button.selected">
+                                                                <Setter Property="Background" Value="#3A7CA5"/>
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                            </Style>
+                                                            <Style Selector="Button.selected:pointerover">
+                                                                <Setter Property="Background" Value="#4A8CB5"/>
+                                                            </Style>
+                                                        </Button.Styles>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Expander>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

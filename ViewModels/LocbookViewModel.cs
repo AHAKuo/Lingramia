@@ -14,6 +14,11 @@ public partial class LocbookViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _hasUnsavedChanges = false;
+    
+    [ObservableProperty]
+    private bool _isExpanded = true;
+    
+    public string DisplayName => HasUnsavedChanges ? $"{FileName}*" : FileName;
 
     [ObservableProperty]
     private ObservableCollection<PageViewModel> _pages = new();
@@ -82,6 +87,7 @@ public partial class LocbookViewModel : ViewModelBase
     public void MarkAsModified()
     {
         HasUnsavedChanges = true;
+        OnPropertyChanged(nameof(DisplayName));
     }
 
     /// <summary>
@@ -90,5 +96,6 @@ public partial class LocbookViewModel : ViewModelBase
     public void MarkAsSaved()
     {
         HasUnsavedChanges = false;
+        OnPropertyChanged(nameof(DisplayName));
     }
 }

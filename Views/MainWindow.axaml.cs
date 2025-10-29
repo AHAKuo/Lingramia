@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Avalonia.Controls;
 using Lingramia.ViewModels;
 
@@ -17,5 +18,25 @@ public partial class MainWindow : Window
                 viewModel.SetMainWindow(this);
             }
         };
+        
+        // Handle window closing
+        Closing += OnWindowClosing;
+    }
+    
+    private async void OnWindowClosing(object? sender, CancelEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            e.Cancel = true; // Cancel the close first
+            
+            var canClose = await viewModel.CheckUnsavedChangesOnExitAsync();
+            
+            if (canClose)
+            {
+                // Remove the handler to avoid infinite loop
+                Closing -= OnWindowClosing;
+                Close();
+            }
+        }
     }
 }

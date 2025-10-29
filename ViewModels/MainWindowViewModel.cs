@@ -188,7 +188,13 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task SaveFileAsync()
     {
-        if (SelectedLocbook == null)
+        await SaveLocbookAsync(SelectedLocbook);
+    }
+    
+    [RelayCommand]
+    private async Task SaveLocbookAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
         {
             StatusMessage = "No file to save.";
             return;
@@ -196,7 +202,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         try
         {
-            string filePath = SelectedLocbook.FilePath;
+            string filePath = locbook.FilePath;
 
             // If no file path exists, show Save As dialog
             if (string.IsNullOrEmpty(filePath))
@@ -225,8 +231,8 @@ public partial class MainWindowViewModel : ViewModelBase
                 if (file != null)
                 {
                     filePath = file.Path.LocalPath;
-                    SelectedLocbook.FilePath = filePath;
-                    SelectedLocbook.FileName = Path.GetFileName(filePath);
+                    locbook.FilePath = filePath;
+                    locbook.FileName = Path.GetFileName(filePath);
                 }
                 else
                 {
@@ -235,13 +241,13 @@ public partial class MainWindowViewModel : ViewModelBase
                 }
             }
 
-            SelectedLocbook.UpdateModel();
-            var success = await FileService.SaveLocbookAsync(filePath, SelectedLocbook.Model);
+            locbook.UpdateModel();
+            var success = await FileService.SaveLocbookAsync(filePath, locbook.Model);
 
             if (success)
             {
-                SelectedLocbook.MarkAsSaved();
-                StatusMessage = $"Saved: {SelectedLocbook.FileName}";
+                locbook.MarkAsSaved();
+                StatusMessage = $"Saved: {locbook.FileName}";
             }
             else
             {
@@ -257,7 +263,13 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task SaveAsFileAsync()
     {
-        if (SelectedLocbook == null)
+        await SaveAsLocbookAsync(SelectedLocbook);
+    }
+    
+    [RelayCommand]
+    private async Task SaveAsLocbookAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
         {
             StatusMessage = "No file to save.";
             return;
@@ -275,7 +287,7 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 Title = "Save Locbook As",
                 DefaultExtension = "locbook",
-                SuggestedFileName = string.IsNullOrEmpty(SelectedLocbook.FileName) ? "untitled.locbook" : SelectedLocbook.FileName,
+                SuggestedFileName = string.IsNullOrEmpty(locbook.FileName) ? "untitled.locbook" : locbook.FileName,
                 FileTypeChoices = new[]
                 {
                     new FilePickerFileType("Locbook Files")
@@ -289,16 +301,16 @@ public partial class MainWindowViewModel : ViewModelBase
             if (file != null)
             {
                 var filePath = file.Path.LocalPath;
-                SelectedLocbook.FilePath = filePath;
-                SelectedLocbook.FileName = Path.GetFileName(filePath);
+                locbook.FilePath = filePath;
+                locbook.FileName = Path.GetFileName(filePath);
                 
-                SelectedLocbook.UpdateModel();
-                var success = await FileService.SaveLocbookAsync(filePath, SelectedLocbook.Model);
+                locbook.UpdateModel();
+                var success = await FileService.SaveLocbookAsync(filePath, locbook.Model);
 
                 if (success)
                 {
-                    SelectedLocbook.MarkAsSaved();
-                    StatusMessage = $"Saved as: {SelectedLocbook.FileName}";
+                    locbook.MarkAsSaved();
+                    StatusMessage = $"Saved as: {locbook.FileName}";
                 }
                 else
                 {
@@ -319,7 +331,13 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task ExportFileAsync()
     {
-        if (SelectedLocbook == null)
+        await ExportLocbookAsync(SelectedLocbook);
+    }
+    
+    [RelayCommand]
+    private async Task ExportLocbookAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
         {
             StatusMessage = "No file to export.";
             return;
@@ -343,8 +361,8 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 var exportFolder = folders[0].Path.LocalPath;
                 
-                SelectedLocbook.UpdateModel();
-                var success = await ExportService.ExportPerLanguageAsync(SelectedLocbook.Model, exportFolder);
+                locbook.UpdateModel();
+                var success = await ExportService.ExportPerLanguageAsync(locbook.Model, exportFolder);
 
                 if (success)
                 {
@@ -690,18 +708,110 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void SelectPage(PageViewModel? page)
     {
-        if (SelectedLocbook != null && page != null)
+        if (page == null) return;
+
+        // Find which locbook contains this page
+        var locbookContainingPage = OpenLocbooks.FirstOrDefault(lb => lb.Pages.Contains(page));
+        
+        if (locbookContainingPage != null)
         {
-            // Clear previous selection
-            if (SelectedLocbook.SelectedPage != null)
+            // Clear previous selection in all locbooks
+            foreach (var locbook in OpenLocbooks)
             {
-                SelectedLocbook.SelectedPage.IsSelected = false;
+                if (locbook.SelectedPage != null)
+                {
+                    locbook.SelectedPage.IsSelected = false;
+                }
             }
             
-            // Set new selection
-            SelectedLocbook.SelectedPage = page;
+            // Set the locbook as selected
+            SelectedLocbook = locbookContainingPage;
+            
+            // Set new page selection
+            locbookContainingPage.SelectedPage = page;
             page.IsSelected = true;
+            
+            UpdateFilteredPages();
         }
+    }
+    
+    [RelayCommand]
+    private void SelectLocbook(LocbookViewModel? locbook)
+    {
+        if (locbook != null)
+        {
+            SelectedLocbook = locbook;
+            UpdateFilteredPages();
+        }
+    }
+    
+    [RelayCommand]
+    private async Task CloseLocbookAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null) return;
+
+        // Check for unsaved changes
+        if (locbook.HasUnsavedChanges)
+        {
+            if (_mainWindow == null)
+            {
+                StatusMessage = "Window not initialized.";
+                return;
+            }
+            
+            var result = await ShowUnsavedChangesForLocbookDialogAsync(locbook.FileName);
+            
+            if (result == UnsavedChangesDialogResult.Cancel)
+            {
+                return;
+            }
+            else if (result == UnsavedChangesDialogResult.Save)
+            {
+                await SaveLocbookAsync(locbook);
+            }
+            // If Discard, continue without saving
+        }
+        
+        OpenLocbooks.Remove(locbook);
+        
+        // If we removed the selected locbook, select another one
+        if (SelectedLocbook == locbook)
+        {
+            SelectedLocbook = OpenLocbooks.FirstOrDefault();
+        }
+        
+        UpdateFilteredPages();
+        StatusMessage = $"Closed: {locbook.FileName}";
+    }
+    
+    [RelayCommand]
+    private async Task SaveAllLocbooksAsync()
+    {
+        if (!OpenLocbooks.Any())
+        {
+            StatusMessage = "No locbooks to save.";
+            return;
+        }
+
+        int savedCount = 0;
+        var locbooksToSave = OpenLocbooks.Where(l => l.HasUnsavedChanges).ToList();
+        
+        if (!locbooksToSave.Any())
+        {
+            StatusMessage = "No unsaved changes.";
+            return;
+        }
+
+        foreach (var locbook in locbooksToSave)
+        {
+            await SaveLocbookAsync(locbook);
+            if (!locbook.HasUnsavedChanges)
+            {
+                savedCount++;
+            }
+        }
+
+        StatusMessage = $"Saved {savedCount} of {locbooksToSave.Count} locbook(s).";
     }
     
     [RelayCommand]
@@ -961,6 +1071,13 @@ public partial class MainWindowViewModel : ViewModelBase
         Cancel
     }
     
+    private enum MultiUnsavedChangesDialogResult
+    {
+        SaveAll,
+        Discard,
+        Cancel
+    }
+    
     private async Task<UnsavedChangesDialogResult> ShowUnsavedChangesDialogAsync()
     {
         if (_mainWindow == null)
@@ -1057,6 +1174,240 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         
         return result;
+    }
+    
+    private async Task<UnsavedChangesDialogResult> ShowUnsavedChangesForLocbookDialogAsync(string locbookName)
+    {
+        if (_mainWindow == null)
+        {
+            return UnsavedChangesDialogResult.Cancel;
+        }
+        
+        var result = UnsavedChangesDialogResult.Cancel;
+        
+        try
+        {
+            var dialog = new Window
+            {
+                Title = "Unsaved Changes",
+                Width = 450,
+                Height = 180,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                CanResize = false
+            };
+
+            var stackPanel = new StackPanel
+            {
+                Margin = new Avalonia.Thickness(20),
+                Spacing = 15
+            };
+
+            var label = new TextBlock
+            {
+                Text = $"{locbookName} has unsaved changes. What would you like to do?",
+                FontSize = 14,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                Spacing = 10
+            };
+
+            var saveButton = new Button
+            {
+                Content = "Save",
+                Width = 80,
+                Padding = new Avalonia.Thickness(10, 5)
+            };
+
+            var discardButton = new Button
+            {
+                Content = "Discard",
+                Width = 80,
+                Padding = new Avalonia.Thickness(10, 5)
+            };
+            
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Width = 80,
+                Padding = new Avalonia.Thickness(10, 5)
+            };
+
+            saveButton.Click += (s, e) =>
+            {
+                result = UnsavedChangesDialogResult.Save;
+                dialog.Close();
+            };
+
+            discardButton.Click += (s, e) =>
+            {
+                result = UnsavedChangesDialogResult.Discard;
+                dialog.Close();
+            };
+            
+            cancelButton.Click += (s, e) =>
+            {
+                result = UnsavedChangesDialogResult.Cancel;
+                dialog.Close();
+            };
+
+            buttonPanel.Children.Add(saveButton);
+            buttonPanel.Children.Add(discardButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            stackPanel.Children.Add(label);
+            stackPanel.Children.Add(buttonPanel);
+
+            dialog.Content = stackPanel;
+
+            await dialog.ShowDialog(_mainWindow);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error showing dialog: {ex.Message}";
+        }
+        
+        return result;
+    }
+    
+    public async Task<bool> CheckUnsavedChangesOnExitAsync()
+    {
+        var unsavedLocbooks = OpenLocbooks.Where(l => l.HasUnsavedChanges).ToList();
+        
+        if (!unsavedLocbooks.Any())
+        {
+            return true; // Allow exit
+        }
+        
+        if (_mainWindow == null)
+        {
+            return false;
+        }
+        
+        var result = MultiUnsavedChangesDialogResult.Cancel;
+        
+        try
+        {
+            var dialog = new Window
+            {
+                Title = "Unsaved Changes",
+                Width = 500,
+                Height = 300,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                CanResize = false
+            };
+
+            var stackPanel = new StackPanel
+            {
+                Margin = new Avalonia.Thickness(20),
+                Spacing = 15
+            };
+
+            var label = new TextBlock
+            {
+                Text = "The following locbooks have unsaved changes:",
+                FontSize = 14,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var listBox = new TextBlock
+            {
+                Text = string.Join("\n", unsavedLocbooks.Select(l => $"• {l.FileName}")),
+                FontSize = 13,
+                Margin = new Avalonia.Thickness(10, 0, 0, 0),
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var question = new TextBlock
+            {
+                Text = "Would you like to save them before exiting?",
+                FontSize = 14,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                Spacing = 10
+            };
+
+            var saveAllButton = new Button
+            {
+                Content = "Save All",
+                Width = 90,
+                Padding = new Avalonia.Thickness(10, 5)
+            };
+
+            var discardButton = new Button
+            {
+                Content = "Discard",
+                Width = 90,
+                Padding = new Avalonia.Thickness(10, 5)
+            };
+            
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Width = 90,
+                Padding = new Avalonia.Thickness(10, 5)
+            };
+
+            saveAllButton.Click += (s, e) =>
+            {
+                result = MultiUnsavedChangesDialogResult.SaveAll;
+                dialog.Close();
+            };
+
+            discardButton.Click += (s, e) =>
+            {
+                result = MultiUnsavedChangesDialogResult.Discard;
+                dialog.Close();
+            };
+            
+            cancelButton.Click += (s, e) =>
+            {
+                result = MultiUnsavedChangesDialogResult.Cancel;
+                dialog.Close();
+            };
+
+            buttonPanel.Children.Add(saveAllButton);
+            buttonPanel.Children.Add(discardButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            stackPanel.Children.Add(label);
+            stackPanel.Children.Add(listBox);
+            stackPanel.Children.Add(question);
+            stackPanel.Children.Add(buttonPanel);
+
+            dialog.Content = stackPanel;
+
+            await dialog.ShowDialog(_mainWindow);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error showing dialog: {ex.Message}";
+            return false;
+        }
+        
+        if (result == MultiUnsavedChangesDialogResult.SaveAll)
+        {
+            await SaveAllLocbooksAsync();
+            return true; // Allow exit after saving
+        }
+        else if (result == MultiUnsavedChangesDialogResult.Discard)
+        {
+            return true; // Allow exit without saving
+        }
+        else // Cancel
+        {
+            return false; // Don't exit
+        }
     }
     
     [RelayCommand]
