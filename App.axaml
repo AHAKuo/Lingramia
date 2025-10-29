@@ -2,8 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Lingramia.App"
              xmlns:local="using:Lingramia"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Dark">
+             <!-- Dark theme for elegant, cohesive visual style -->
 
     <Application.DataTemplates>
         <local:ViewLocator/>
@@ -11,5 +11,55 @@
   
     <Application.Styles>
         <FluentTheme />
+        
+        <!-- Custom Dark Theme Resources -->
+        <Style Selector="Window">
+            <Setter Property="Background" Value="#1E1E1E"/>
+        </Style>
+        
+        <Style Selector="Border">
+            <Setter Property="BorderBrush" Value="#3C3C3C"/>
+        </Style>
+        
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+        </Style>
+        
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#2B2B2B"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="BorderBrush" Value="#3C3C3C"/>
+        </Style>
+        
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#2B2B2B"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="BorderBrush" Value="#3C3C3C"/>
+        </Style>
+        
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#3A7CA5"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+        
+        <Style Selector="Button:pressed">
+            <Setter Property="Background" Value="#7B61FF"/>
+        </Style>
+        
+        <Style Selector="Menu">
+            <Setter Property="Background" Value="#2B2B2B"/>
+        </Style>
+        
+        <Style Selector="MenuItem">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+        </Style>
+        
+        <Style Selector="MenuItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="#3A7CA5"/>
+        </Style>
+        
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="#3A7CA5"/>
+        </Style>
     </Application.Styles>
 </Application>

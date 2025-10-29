@@ -34,7 +34,7 @@
         </Menu>
 
         <!-- Bottom Status Bar -->
-        <Border DockPanel.Dock="Bottom" Background="#2C2C2C" Padding="10,5">
+        <Border DockPanel.Dock="Bottom" Background="#2B2B2B" Padding="10,5" BorderBrush="#3C3C3C" BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -42,14 +42,14 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" 
                           Text="{Binding StatusMessage}" 
-                          Foreground="White"
+                          Foreground="#E0E0E0"
                           VerticalAlignment="Center"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
                     <TextBlock Text="{Binding SelectedLocbook.FileName}" 
-                              Foreground="White"
+                              Foreground="#E0E0E0"
                               VerticalAlignment="Center"/>
                     <TextBlock Text="●" 
-                              Foreground="Orange"
+                              Foreground="#3A7CA5"
                               VerticalAlignment="Center"
                               IsVisible="{Binding SelectedLocbook.HasUnsavedChanges}"/>
                 </StackPanel>
@@ -65,14 +65,14 @@
             </Grid.ColumnDefinitions>
 
             <!-- Left Sidebar - Pages -->
-            <Border Grid.Column="0" Background="#F5F5F5" BorderBrush="#CCCCCC" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0" Background="#2B2B2B" BorderBrush="#3C3C3C" BorderThickness="0,0,1,0">
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Top" 
                               Text="Pages" 
                               FontSize="16" 
                               FontWeight="Bold"
                               Margin="10"
-                              Foreground="#333333"/>
+                              Foreground="#E0E0E0"/>
                     
                     <!-- Page Actions -->
                     <StackPanel DockPanel.Dock="Bottom" 
@@ -107,24 +107,27 @@
                 </DockPanel>
             </Border>
 
-            <GridSplitter Grid.Column="1" Width="4" Background="#CCCCCC" />
+            <GridSplitter Grid.Column="1" Width="4" Background="#3C3C3C" />
 
             <!-- Main Panel - Fields -->
-            <Border Grid.Column="2" Background="White" Padding="10">
+            <Border Grid.Column="2" Background="#1E1E1E" Padding="10">
                 <DockPanel>
                     <!-- Page Info Header -->
                     <Border DockPanel.Dock="Top" 
-                           Background="#E8E8E8" 
+                           Background="#2B2B2B" 
+                           BorderBrush="#3C3C3C"
+                           BorderThickness="1"
                            Padding="15"
                            Margin="0,0,0,10"
                            CornerRadius="5">
                         <StackPanel Spacing="5">
                             <TextBlock Text="{Binding SelectedLocbook.SelectedPage.PageId, StringFormat='Page: {0}'}" 
                                       FontSize="18" 
-                                      FontWeight="Bold"/>
+                                      FontWeight="Bold"
+                                      Foreground="#E0E0E0"/>
                             <TextBlock Text="{Binding SelectedLocbook.SelectedPage.AboutPage, StringFormat='About: {0}'}" 
                                       FontSize="12"
-                                      Foreground="#666666"/>
+                                      Foreground="#A0A0A0"/>
                         </StackPanel>
                     </Border>
 
@@ -145,8 +148,8 @@
                         <ItemsControl ItemsSource="{Binding SelectedLocbook.SelectedPage.Fields}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#FAFAFA" 
-                                           BorderBrush="#DDDDDD" 
+                                    <Border Background="#2B2B2B" 
+                                           BorderBrush="#3C3C3C" 
                                            BorderThickness="1"
                                            Padding="15"
                                            Margin="0,0,0,10"
@@ -166,6 +169,7 @@
                                                 <TextBlock Grid.Row="0" Grid.Column="0" 
                                                           Text="Key:" 
                                                           FontWeight="Bold"
+                                                          Foreground="#E0E0E0"
                                                           VerticalAlignment="Center"/>
                                                 <TextBox Grid.Row="0" Grid.Column="1" 
                                                         Text="{Binding Key}"
@@ -174,6 +178,7 @@
                                                 <TextBlock Grid.Row="1" Grid.Column="0" 
                                                           Text="Original:" 
                                                           FontWeight="Bold"
+                                                          Foreground="#E0E0E0"
                                                           Margin="0,5,0,0"
                                                           VerticalAlignment="Center"/>
                                                 <TextBox Grid.Row="1" Grid.Column="1" 
@@ -184,6 +189,7 @@
                                             <!-- Variants -->
                                             <TextBlock Text="Translations:" 
                                                       FontWeight="Bold"
+                                                      Foreground="#E0E0E0"
                                                       Margin="0,5,0,0"/>
                                             <ItemsControl ItemsSource="{Binding Variants}">
                                                 <ItemsControl.ItemTemplate>
