@@ -1,0 +1,302 @@
+:root {
+  color-scheme: light dark;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #11131a;
+  color: #f5f7ff;
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--background, #11131a);
+}
+
+body {
+  overflow: hidden;
+}
+
+#root input,
+#root textarea,
+#root select {
+  background: rgba(15, 20, 32, 0.85);
+  border: 1px solid rgba(62, 119, 255, 0.25);
+  border-radius: 8px;
+  color: #f5f7ff;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+#root input:focus,
+#root textarea:focus,
+#root select:focus {
+  outline: none;
+  border-color: rgba(114, 158, 255, 0.8);
+  box-shadow: 0 0 0 3px rgba(62, 119, 255, 0.2);
+}
+
+#root {
+  height: 100%;
+  display: flex;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr 320px;
+  grid-template-rows: 64px 1fr 160px;
+  grid-template-areas:
+    'header header header'
+    'sidebar main inspector'
+    'status status status';
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #141a29 0%, #1b2235 50%, #111722 100%);
+  color: #f5f7ff;
+}
+
+.header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  background: rgba(16, 20, 31, 0.8);
+}
+
+.header .left,
+.header .right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header button,
+.sidebar button,
+.main-panel button,
+.inspector button {
+  background: rgba(62, 119, 255, 0.2);
+  border: 1px solid rgba(62, 119, 255, 0.3);
+  color: #e3edff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.header button:hover,
+.sidebar button:hover,
+.main-panel button:hover,
+.inspector button:hover {
+  background: rgba(62, 119, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.tab-strip {
+  display: flex;
+  gap: 8px;
+  margin-left: 24px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tab.active {
+  background: rgba(62, 119, 255, 0.25);
+  color: #fff;
+}
+
+.tab button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  line-height: 1;
+}
+
+.tab button:hover {
+  color: #fff;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  padding: 16px;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.sidebar h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.page-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-item.active {
+  background: rgba(62, 119, 255, 0.25);
+}
+
+.main-panel {
+  grid-area: main;
+  padding: 16px 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.editor-table {
+  flex: 1;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.editor-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.editor-table th,
+.editor-table td {
+  padding: 12px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.editor-table thead {
+  background: rgba(255, 255, 255, 0.05);
+  position: sticky;
+  top: 0;
+  backdrop-filter: blur(8px);
+}
+
+.editor-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.inspector {
+  grid-area: inspector;
+  padding: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.inspector h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-group label {
+  font-size: 13px;
+  color: rgba(229, 234, 255, 0.8);
+}
+
+.input-group textarea {
+  resize: vertical;
+}
+
+.status-bar {
+  grid-area: status;
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  gap: 16px;
+  padding: 12px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(14, 18, 30, 0.85);
+  font-size: 12px;
+}
+
+.status-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-title {
+  font-weight: 600;
+  color: rgba(129, 160, 255, 0.9);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(62, 119, 255, 0.18);
+  font-size: 11px;
+  color: rgba(222, 229, 255, 0.9);
+}
+
+.scrollable {
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.log {
+  background: rgba(0, 0, 0, 0.25);
+  padding: 8px;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
