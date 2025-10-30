@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -39,42 +41,61 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        // Setup search and page selection monitoring BEFORE setting SelectedLocbook
-        PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(SearchQuery))
-            {
-                UpdateFilteredPages();
-            }
-            else if (e.PropertyName == nameof(SelectedLocbook))
-            {
-                UpdateFilteredPages();
-                OnPropertyChanged(nameof(HasSelectedPage));
-                if (SelectedLocbook != null)
-                {
-                    SelectedLocbook.Pages.CollectionChanged += (s2, e2) => UpdateFilteredPages();
-                    SelectedLocbook.PropertyChanged += (s3, e3) =>
-                    {
-                        if (e3.PropertyName == nameof(SelectedLocbook.SelectedPage))
-                        {
-                            OnPropertyChanged(nameof(HasSelectedPage));
-                        }
-                    };
-                }
-            }
-        };
-        
         // Initialize with a default empty locbook
         var defaultLocbook = FileService.CreateNewLocbook();
         var defaultVm = new LocbookViewModel(defaultLocbook);
-        defaultVm.IsSelected = true;
         OpenLocbooks.Add(defaultVm);
         SelectedLocbook = defaultVm;
         
         // Load saved API key
         _ = LoadApiKeyAsync();
-        
+
         UpdateFilteredPages();
+    }
+
+    partial void OnSearchQueryChanged(string value)
+    {
+        UpdateFilteredPages();
+    }
+
+    partial void OnSelectedLocbookChanging(LocbookViewModel? value)
+    {
+        if (SelectedLocbook != null)
+        {
+            SelectedLocbook.Pages.CollectionChanged -= OnSelectedLocbookPagesChanged;
+            SelectedLocbook.PropertyChanged -= OnSelectedLocbookPropertyChanged;
+            SelectedLocbook.IsSelected = false;
+        }
+    }
+
+    partial void OnSelectedLocbookChanged(LocbookViewModel? value)
+    {
+        foreach (var locbook in OpenLocbooks)
+        {
+            locbook.IsSelected = locbook == value;
+        }
+
+        if (value != null)
+        {
+            value.Pages.CollectionChanged += OnSelectedLocbookPagesChanged;
+            value.PropertyChanged += OnSelectedLocbookPropertyChanged;
+        }
+
+        UpdateFilteredPages();
+        OnPropertyChanged(nameof(HasSelectedPage));
+    }
+
+    private void OnSelectedLocbookPagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        UpdateFilteredPages();
+    }
+
+    private void OnSelectedLocbookPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(LocbookViewModel.SelectedPage))
+        {
+            OnPropertyChanged(nameof(HasSelectedPage));
+        }
     }
     
     private async Task LoadApiKeyAsync()
@@ -106,17 +127,9 @@ public partial class MainWindowViewModel : ViewModelBase
         // Unsaved changes are preserved in their respective locbooks
         var newLocbook = FileService.CreateNewLocbook();
         var newVm = new LocbookViewModel(newLocbook);
-        
-        // Clear previous selection
-        foreach (var lb in OpenLocbooks)
-        {
-            lb.IsSelected = false;
-        }
-        
-        newVm.IsSelected = true;
+
         OpenLocbooks.Add(newVm);
         SelectedLocbook = newVm;
-        UpdateFilteredPages();
         StatusMessage = "Created new locbook.";
     }
 
@@ -157,17 +170,9 @@ public partial class MainWindowViewModel : ViewModelBase
                 if (locbook != null)
                 {
                     var locbookVm = new LocbookViewModel(locbook, filePath);
-                    
-                    // Clear previous selection
-                    foreach (var lb in OpenLocbooks)
-                    {
-                        lb.IsSelected = false;
-                    }
-                    
-                    locbookVm.IsSelected = true;
+
                     OpenLocbooks.Add(locbookVm);
                     SelectedLocbook = locbookVm;
-                    UpdateFilteredPages();
                     StatusMessage = $"Opened: {locbookVm.FileName}";
                 }
                 else
@@ -737,16 +742,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (locbook != null)
         {
-            // Clear previous selection
-            foreach (var lb in OpenLocbooks)
-            {
-                lb.IsSelected = false;
-            }
-            
-            // Set new selection
-            locbook.IsSelected = true;
             SelectedLocbook = locbook;
-            UpdateFilteredPages();
         }
     }
     
