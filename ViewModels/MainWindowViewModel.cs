@@ -423,7 +423,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var newPage = new Page
         {
-            PageId = $"page_{DateTime.Now.Ticks}",
+            PageId = string.Empty,
             AboutPage = "New Page",
             PageFiles = new()
         };
@@ -478,7 +478,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var newField = new PageFile
         {
-            Key = $"key_{DateTime.Now.Ticks}",
+            Key = "key",
             OriginalValue = "New Field",
             Variants = existingLanguages.Select(lang => new Variant
             {
@@ -1040,61 +1040,69 @@ public partial class MainWindowViewModel : ViewModelBase
     
     private void UpdateFilteredPages()
     {
-        FilteredPages.Clear();
-        
-        if (SelectedLocbook == null)
-        {
-            return;
-        }
-        
         var query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
-        
+
         if (string.IsNullOrEmpty(query))
         {
-            // Show all pages
-            foreach (var page in SelectedLocbook.Pages)
+            // No filter: show all pages and keep expansion state
+            foreach (var locbook in OpenLocbooks)
             {
-                FilteredPages.Add(page);
+                foreach (var page in locbook.Pages)
+                {
+                    page.IsSearchMatch = true;
+                }
             }
+            return;
         }
-        else
+
+        foreach (var locbook in OpenLocbooks)
         {
-            // Filter pages based on query
-            foreach (var page in SelectedLocbook.Pages)
+            bool hasMatches = false;
+
+            foreach (var page in locbook.Pages)
             {
                 bool matches = false;
-                
-                // Check page ID
-                if (page.PageId.ToLowerInvariant().Contains(query))
+
+                // Check page properties
+                if (!string.IsNullOrEmpty(page.PageId) && page.PageId.ToLowerInvariant().Contains(query))
                 {
                     matches = true;
                 }
-                
-                // Check about page
-                if (!matches && page.AboutPage.ToLowerInvariant().Contains(query))
+                else if (!string.IsNullOrEmpty(page.AboutPage) && page.AboutPage.ToLowerInvariant().Contains(query))
                 {
                     matches = true;
                 }
-                
-                // Check field keys and values
-                if (!matches)
+                else
                 {
+                    // Check fields and variants
                     foreach (var field in page.Fields)
                     {
-                        if (field.Key.ToLowerInvariant().Contains(query) ||
-                            field.OriginalValue.ToLowerInvariant().Contains(query))
+                        if ((!string.IsNullOrEmpty(field.Key) && field.Key.ToLowerInvariant().Contains(query)) ||
+                            (!string.IsNullOrEmpty(field.OriginalValue) && field.OriginalValue.ToLowerInvariant().Contains(query)))
                         {
                             matches = true;
                             break;
                         }
+
+                        foreach (var variant in field.Variants)
+                        {
+                            if (!string.IsNullOrEmpty(variant.Value) && variant.Value.ToLowerInvariant().Contains(query))
+                            {
+                                matches = true;
+                                break;
+                            }
+                        }
+
+                        if (matches) break;
                     }
                 }
-                
-                if (matches)
-                {
-                    FilteredPages.Add(page);
-                }
+
+                page.IsSearchMatch = matches;
+                if (matches) hasMatches = true;
             }
+
+            // Auto-expand locbooks that have matches
+            locbook.IsExpanded = hasMatches;
         }
     }
     

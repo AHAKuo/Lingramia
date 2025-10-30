@@ -61,7 +61,16 @@ public partial class LocbookViewModel : ViewModelBase
         foreach (var page in locbook.Pages)
         {
             var pageVm = new PageViewModel(page);
-            pageVm.PropertyChanged += (s, e) => MarkAsModified();
+            // Only mark as modified for content-related property changes
+            pageVm.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(PageViewModel.PageId)
+                    || e.PropertyName == nameof(PageViewModel.AboutPage)
+                    || e.PropertyName == nameof(PageViewModel.Fields))
+                {
+                    MarkAsModified();
+                }
+            };
             Pages.Add(pageVm);
         }
 
@@ -72,9 +81,18 @@ public partial class LocbookViewModel : ViewModelBase
             {
                 foreach (PageViewModel pageVm in e.NewItems)
                 {
-                    pageVm.PropertyChanged += (s2, e2) => MarkAsModified();
+                    pageVm.PropertyChanged += (s2, e2) =>
+                    {
+                        if (e2.PropertyName == nameof(PageViewModel.PageId)
+                            || e2.PropertyName == nameof(PageViewModel.AboutPage)
+                            || e2.PropertyName == nameof(PageViewModel.Fields))
+                        {
+                            MarkAsModified();
+                        }
+                    };
                 }
             }
+            // Adding/removing pages is a content change
             MarkAsModified();
         };
 

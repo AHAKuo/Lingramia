@@ -6,8 +6,8 @@
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
         x:Class="Lingramia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="Lingramia - Localization Editor"
+        Icon="/Assets/lingramia-logo.ico"
+        Title="Lingramia"
         MinWidth="1000" MinHeight="600">
 
     <Design.DataContext>
@@ -78,8 +78,9 @@
                           Margin="0,0,10,0"/>
                 <TextBox Grid.Column="1" 
                         Text="{Binding SearchQuery, Mode=TwoWay}"
-                        Watermark="Search by Page ID, About, or Key..."
-                        VerticalAlignment="Center"/>
+                        Watermark="Search Page ID, About, Key, Original, or Variant..."
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"/>
                 <Button Grid.Column="2" 
                        Content="Clear"
                        Command="{Binding ClearSearchCommand}"
@@ -133,6 +134,7 @@
                                 <Setter Property="Background" Value="Transparent"/>
                                 <Setter Property="BorderThickness" Value="0"/>
                                 <Setter Property="Margin" Value="0,0,0,12"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                             </Style>
                             <Style Selector="ListBoxItem:pointerover">
                                 <Setter Property="Background" Value="Transparent"/>
@@ -147,20 +149,23 @@
                                         BorderBrush="#3C3C3C"
                                         BorderThickness="1"
                                         Background="#262626"
-                                        Classes.selectedLocbook="{Binding IsSelected}">
+                                        Classes.selectedLocbook="{Binding IsSelected}"
+                                        HorizontalAlignment="Stretch">
                                     <Border.Styles>
                                         <Style Selector="Border">
                                             <Setter Property="Padding" Value="4"/>
                                         </Style>
                                         <Style Selector="Border.selectedLocbook">
                                             <Setter Property="BorderBrush" Value="#3A7CA5"/>
-                                            <Setter Property="Background" Value="#2B4B6B"/>
+                                            <Setter Property="BorderThickness" Value="2"/>
+                                            <Setter Property="Background" Value="#204766"/>
                                             <Setter Property="Padding" Value="4"/>
                                         </Style>
                                     </Border.Styles>
                                     <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
                                               Background="Transparent"
-                                              BorderThickness="0">
+                                              BorderThickness="0"
+                                              HorizontalAlignment="Stretch">
                                         <Expander.Header>
                                             <Grid Margin="4">
                                                 <Grid.ColumnDefinitions>
@@ -251,6 +256,7 @@
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <Button Content="{Binding PageId}"
+                                                           IsVisible="{Binding IsSearchMatch}"
                                                            Command="{Binding $parent[Window].DataContext.SelectPageCommand}"
                                                            CommandParameter="{Binding}"
                                                            Margin="0,4"
@@ -340,8 +346,10 @@
                             <TextBox Grid.Row="0"
                                     Grid.Column="1"
                                     Text="{Binding SelectedLocbook.SelectedPage.PageId, Mode=TwoWay}"
+                                    Watermark="Optional"
                                     IsEnabled="{Binding HasSelectedPage}"
-                                    Margin="0"/>
+                                    Margin="0"
+                                    HorizontalAlignment="Stretch"/>
 
                             <TextBlock Grid.Row="1"
                                       Grid.Column="0"
@@ -355,7 +363,8 @@
                                     IsEnabled="{Binding HasSelectedPage}"
                                     AcceptsReturn="True"
                                     TextWrapping="Wrap"
-                                    MinHeight="60"/>
+                                    MinHeight="60"
+                                    HorizontalAlignment="Stretch"/>
                         </Grid>
                     </Border>
 
@@ -415,7 +424,8 @@
                                                  BorderThickness="1"
                                                  Margin="0,0,0,12"
                                                  CornerRadius="6"
-                                                 IsExpanded="True">
+                                                 IsExpanded="True"
+                                                 HorizontalAlignment="Stretch">
                                             <Expander.Header>
                                                 <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -472,7 +482,8 @@
                                                     <TextBox Grid.Row="0" Grid.Column="1" 
                                                             Text="{Binding Key}"
                                                             AcceptsReturn="False"
-                                                            Margin="5,0,0,0"/>
+                                                            Margin="5,0,0,0"
+                                                            HorizontalAlignment="Stretch"/>
 
                                                     <TextBlock Grid.Row="1" Grid.Column="0" 
                                                               Text="Original:" 
@@ -485,7 +496,8 @@
                                                             AcceptsReturn="True"
                                                             TextWrapping="Wrap"
                                                             MinHeight="60"
-                                                            Margin="5,5,0,0"/>
+                                                            Margin="5,5,0,0"
+                                                            HorizontalAlignment="Stretch"/>
                                                 </Grid>
 
                                                 <!-- Variants -->
@@ -498,14 +510,14 @@
                                                         <DataTemplate>
                                                             <Grid Margin="0,5">
                                                                 <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="70" />
+                                                                    <ColumnDefinition Width="Auto" />
                                                                     <ColumnDefinition Width="*" />
                                                                     <ColumnDefinition Width="Auto" />
                                                                 </Grid.ColumnDefinitions>
 
                                                                 <TextBox Grid.Column="0" 
                                                                         Text="{Binding Language}"
-                                                                        Width="60"
+                                                                        MinWidth="80"
                                                                         VerticalAlignment="Top"
                                                                         Margin="0,0,5,0"/>
                                                                 <TextBox Grid.Column="1" 
@@ -513,7 +525,8 @@
                                                                         AcceptsReturn="True"
                                                                         TextWrapping="Wrap"
                                                                         MinHeight="60"
-                                                                        Margin="0,0,5,0">
+                                                                        Margin="0,0,5,0"
+                                                                        HorizontalAlignment="Stretch">
                                                                     <TextBox.ContextMenu>
                                                                         <ContextMenu>
                                                                             <MenuItem Header="Translate This Variant" 

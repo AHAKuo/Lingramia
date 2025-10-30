@@ -19,6 +19,9 @@ public partial class PageViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isSelected = false;
 
+    [ObservableProperty]
+    private bool _isSearchMatch = true;
+
     public Page Model { get; }
 
     public PageViewModel(Page page)
