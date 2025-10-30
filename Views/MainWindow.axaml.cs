@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia.Controls;
 using Lingramia.ViewModels;
+using Avalonia;
 
 namespace Lingramia.Views;
 
@@ -16,6 +17,7 @@ public partial class MainWindow : Window
             if (DataContext is MainWindowViewModel viewModel)
             {
                 viewModel.SetMainWindow(this);
+                viewModel.PropertyChanged += OnViewModelPropertyChanged;
             }
         };
         
@@ -37,6 +39,17 @@ public partial class MainWindow : Window
                 Closing -= OnWindowClosing;
                 Close();
             }
+        }
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel vm) return;
+        if (e.PropertyName == nameof(MainWindowViewModel.FocusSearchCounter))
+        {
+            var search = this.FindControl<TextBox>("SearchTextBox");
+            search?.Focus();
+            search?.SelectAll();
         }
     }
 }

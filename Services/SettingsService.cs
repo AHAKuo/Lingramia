@@ -22,6 +22,8 @@ public static class SettingsService
     public class AppSettings
     {
         public string ApiKey { get; set; } = string.Empty;
+        public string LastExportFolder { get; set; } = string.Empty;
+        public string[] PreferredLanguages { get; set; } = Array.Empty<string>();
     }
 
     /// <summary>

@@ -62,6 +62,19 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<PageViewModel> _filteredPages = new();
     
+    // Filters and quick focus state
+    [ObservableProperty]
+    private bool _showMissingOnly;
+    
+    [ObservableProperty]
+    private string _languageFilter = string.Empty;
+    
+    [ObservableProperty]
+    private int _focusSearchCounter;
+    
+    // Cached user preference
+    private string[] _preferredLanguages = Array.Empty<string>();
+    
     public bool HasSelectedPage => SelectedLocbook?.SelectedPage != null;
 
     private Window? _mainWindow;
@@ -100,18 +113,19 @@ public partial class MainWindowViewModel : ViewModelBase
         OpenLocbooks.Add(defaultVm);
         SelectedLocbook = defaultVm;
         
-        // Load saved API key
-        _ = LoadApiKeyAsync();
+        // Load saved settings
+        _ = LoadSettingsAsync();
         
         UpdateFilteredPages();
     }
     
-    private async Task LoadApiKeyAsync()
+    private async Task LoadSettingsAsync()
     {
         try
         {
             var settings = await SettingsService.LoadSettingsAsync();
             ApiKey = settings.ApiKey;
+            _preferredLanguages = settings.PreferredLanguages ?? Array.Empty<string>();
             if (!string.IsNullOrEmpty(ApiKey))
             {
                 StatusMessage = "API key loaded from settings.";
@@ -393,6 +407,12 @@ public partial class MainWindowViewModel : ViewModelBase
                 if (success)
                 {
                     StatusMessage = $"Exported to: {exportFolder}";
+                    // persist last export folder
+                    var settings = await SettingsService.LoadSettingsAsync();
+                    settings.ApiKey = ApiKey;
+                    settings.LastExportFolder = exportFolder;
+                    settings.PreferredLanguages = _preferredLanguages;
+                    await SettingsService.SaveSettingsAsync(settings);
                 }
                 else
                 {
@@ -423,7 +443,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var newPage = new Page
         {
-            PageId = string.Empty,
+            PageId = "Untitled Page",
             AboutPage = "New Page",
             PageFiles = new()
         };
@@ -433,6 +453,32 @@ public partial class MainWindowViewModel : ViewModelBase
         SelectedLocbook.SelectedPage = pageVm;
         pageVm.IsSelected = true;
         SelectedLocbook.MarkAsModified();
+        UpdateFilteredPages();
+        StatusMessage = "Added new page.";
+    }
+
+    [RelayCommand]
+    private void AddPageToLocbook(LocbookViewModel? locbook)
+    {
+        if (locbook == null) return;
+
+        if (locbook.SelectedPage != null)
+        {
+            locbook.SelectedPage.IsSelected = false;
+        }
+
+        var newPage = new Page
+        {
+            PageId = "Untitled Page",
+            AboutPage = "New Page",
+            PageFiles = new()
+        };
+
+        var pageVm = new PageViewModel(newPage);
+        locbook.Pages.Add(pageVm);
+        locbook.SelectedPage = pageVm;
+        pageVm.IsSelected = true;
+        locbook.MarkAsModified();
         UpdateFilteredPages();
         StatusMessage = "Added new page.";
     }
@@ -460,6 +506,28 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void DeletePageCtx(PageViewModel? page)
+    {
+        if (page == null) return;
+        var locbook = OpenLocbooks.FirstOrDefault(lb => lb.Pages.Contains(page));
+        if (locbook == null) return;
+
+        page.IsSelected = false;
+        locbook.Pages.Remove(page);
+
+        var newSelectedPage = locbook.Pages.FirstOrDefault();
+        locbook.SelectedPage = newSelectedPage;
+        if (newSelectedPage != null)
+        {
+            newSelectedPage.IsSelected = true;
+        }
+
+        locbook.MarkAsModified();
+        UpdateFilteredPages();
+        StatusMessage = "Deleted page.";
+    }
+
+    [RelayCommand]
     private void AddField()
     {
         if (SelectedLocbook?.SelectedPage == null) return;
@@ -470,10 +538,17 @@ public partial class MainWindowViewModel : ViewModelBase
             .Distinct()
             .ToList();
 
-        // If no existing languages, add some defaults
+        // If no existing languages, use preferred languages if available, otherwise add defaults
         if (existingLanguages.Count == 0)
         {
-            existingLanguages = new List<string> { "en", "jp", "ar" };
+            if (_preferredLanguages.Length > 0)
+            {
+                existingLanguages = _preferredLanguages.ToList();
+            }
+            else
+            {
+                existingLanguages = new List<string> { "en", "jp", "ar" };
+            }
         }
 
         var newField = new PageFile
@@ -491,6 +566,101 @@ public partial class MainWindowViewModel : ViewModelBase
         SelectedLocbook.SelectedPage.Fields.Add(fieldVm);
         SelectedLocbook.MarkAsModified();
         StatusMessage = "Added new field.";
+    }
+
+    [RelayCommand]
+    private void DuplicatePage()
+    {
+        if (SelectedLocbook?.SelectedPage == null) return;
+
+        var source = SelectedLocbook.SelectedPage;
+        var clonedPage = new Page
+        {
+            PageId = source.PageId,
+            AboutPage = source.AboutPage,
+            PageFiles = source.Fields.Select(f => new PageFile
+            {
+                Key = f.Key,
+                OriginalValue = f.OriginalValue,
+                Variants = f.Variants.Select(v => new Variant
+                {
+                    Language = v.Language,
+                    Value = v.Value
+                }).ToList()
+            }).ToList()
+        };
+
+        var cloneVm = new PageViewModel(clonedPage);
+        SelectedLocbook.Pages.Add(cloneVm);
+        SelectedLocbook.SelectedPage = cloneVm;
+        cloneVm.IsSelected = true;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "Duplicated page.";
+    }
+
+    [RelayCommand]
+    private void DuplicatePageCtx(PageViewModel? page)
+    {
+        if (page == null) return;
+        var locbook = OpenLocbooks.FirstOrDefault(lb => lb.Pages.Contains(page));
+        if (locbook == null) return;
+
+        var clonedPage = new Page
+        {
+            PageId = page.PageId,
+            AboutPage = page.AboutPage,
+            PageFiles = page.Fields.Select(f => new PageFile
+            {
+                Key = f.Key,
+                OriginalValue = f.OriginalValue,
+                Variants = f.Variants.Select(v => new Variant { Language = v.Language, Value = v.Value }).ToList()
+            }).ToList()
+        };
+
+        var cloneVm = new PageViewModel(clonedPage);
+        locbook.Pages.Add(cloneVm);
+        locbook.SelectedPage = cloneVm;
+        cloneVm.IsSelected = true;
+        locbook.MarkAsModified();
+        StatusMessage = "Duplicated page.";
+    }
+
+    [RelayCommand]
+    private void DuplicateField(FieldViewModel? field)
+    {
+        if (field == null || SelectedLocbook?.SelectedPage == null) return;
+
+        var cloned = new PageFile
+        {
+            Key = field.Key,
+            OriginalValue = field.OriginalValue,
+            Variants = field.Variants.Select(v => new Variant { Language = v.Language, Value = v.Value }).ToList()
+        };
+
+        var vm = new FieldViewModel(cloned);
+        SelectedLocbook.SelectedPage.Fields.Add(vm);
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "Duplicated field.";
+    }
+
+    [RelayCommand]
+    private void NextPage()
+    {
+        if (SelectedLocbook == null || !SelectedLocbook.Pages.Any()) return;
+        var pages = SelectedLocbook.Pages;
+        var idx = pages.IndexOf(SelectedLocbook.SelectedPage ?? pages.First());
+        var next = pages[(idx + 1) % pages.Count];
+        SelectPage(next);
+    }
+
+    [RelayCommand]
+    private void PrevPage()
+    {
+        if (SelectedLocbook == null || !SelectedLocbook.Pages.Any()) return;
+        var pages = SelectedLocbook.Pages;
+        var idx = pages.IndexOf(SelectedLocbook.SelectedPage ?? pages.First());
+        var prev = pages[(idx - 1 + pages.Count) % pages.Count];
+        SelectPage(prev);
     }
 
     [RelayCommand]
@@ -1041,8 +1211,10 @@ public partial class MainWindowViewModel : ViewModelBase
     private void UpdateFilteredPages()
     {
         var query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
+        var lang = LanguageFilter?.Trim().ToLowerInvariant() ?? string.Empty;
 
-        if (string.IsNullOrEmpty(query))
+        // if no text query and no filters, show all
+        if (string.IsNullOrEmpty(query) && !ShowMissingOnly && string.IsNullOrEmpty(lang))
         {
             // No filter: show all pages and keep expansion state
             foreach (var locbook in OpenLocbooks)
@@ -1062,26 +1234,27 @@ public partial class MainWindowViewModel : ViewModelBase
             foreach (var page in locbook.Pages)
             {
                 bool matches = false;
+                bool hasMissingForFilter = false;
 
                 // Check page properties
-                if (!string.IsNullOrEmpty(page.PageId) && page.PageId.ToLowerInvariant().Contains(query))
+                if (!string.IsNullOrEmpty(query) && !string.IsNullOrEmpty(page.PageId) && page.PageId.ToLowerInvariant().Contains(query))
                 {
                     matches = true;
                 }
-                else if (!string.IsNullOrEmpty(page.AboutPage) && page.AboutPage.ToLowerInvariant().Contains(query))
+                else if (!string.IsNullOrEmpty(query) && !string.IsNullOrEmpty(page.AboutPage) && page.AboutPage.ToLowerInvariant().Contains(query))
                 {
                     matches = true;
                 }
-                else
+                
+                // Check fields and variants
+                foreach (var field in page.Fields)
                 {
-                    // Check fields and variants
-                    foreach (var field in page.Fields)
+                    if (!string.IsNullOrEmpty(query))
                     {
                         if ((!string.IsNullOrEmpty(field.Key) && field.Key.ToLowerInvariant().Contains(query)) ||
                             (!string.IsNullOrEmpty(field.OriginalValue) && field.OriginalValue.ToLowerInvariant().Contains(query)))
                         {
                             matches = true;
-                            break;
                         }
 
                         foreach (var variant in field.Variants)
@@ -1089,12 +1262,43 @@ public partial class MainWindowViewModel : ViewModelBase
                             if (!string.IsNullOrEmpty(variant.Value) && variant.Value.ToLowerInvariant().Contains(query))
                             {
                                 matches = true;
-                                break;
                             }
                         }
-
-                        if (matches) break;
                     }
+                    // Compute missing-only flag (considering language filter if provided)
+                    if (ShowMissingOnly)
+                    {
+                        if (string.IsNullOrEmpty(lang))
+                        {
+                            if (field.Variants.Any(v => string.IsNullOrEmpty(v.Value)))
+                            {
+                                hasMissingForFilter = true;
+                            }
+                        }
+                        else
+                        {
+                            if (field.Variants.Any(v => string.Equals(v.Language, lang, StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(v.Value)))
+                            {
+                                hasMissingForFilter = true;
+                            }
+                        }
+                    }
+                }
+
+                // Apply language filter to matches if present (restrict matches to pages that have that language present)
+                if (!string.IsNullOrEmpty(lang))
+                {
+                    bool pageHasLang = page.Fields.Any(f => f.Variants.Any(v => string.Equals(v.Language, lang, StringComparison.OrdinalIgnoreCase)));
+                    if (!pageHasLang)
+                    {
+                        matches = false;
+                    }
+                }
+
+                // If missing-only is enabled, require missing
+                if (ShowMissingOnly && !hasMissingForFilter)
+                {
+                    matches = false;
                 }
 
                 page.IsSearchMatch = matches;
@@ -1104,6 +1308,20 @@ public partial class MainWindowViewModel : ViewModelBase
             // Auto-expand locbooks that have matches
             locbook.IsExpanded = hasMatches;
         }
+    }
+
+    [RelayCommand]
+    private void FocusSearch()
+    {
+        // Increment counter to signal view to focus search box
+        FocusSearchCounter++;
+    }
+
+    [RelayCommand]
+    private void ToggleMissingOnly()
+    {
+        ShowMissingOnly = !ShowMissingOnly;
+        UpdateFilteredPages();
     }
     
     private enum UnsavedChangesDialogResult
