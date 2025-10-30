@@ -21,6 +21,35 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private LocbookViewModel? _selectedLocbook;
 
+    partial void OnSelectedLocbookChanging(LocbookViewModel? value)
+    {
+        if (_selectedLocbook != null)
+        {
+            _selectedLocbook.IsSelected = false;
+
+            if (_selectedLocbook.SelectedPage != null)
+            {
+                _selectedLocbook.SelectedPage.IsSelected = false;
+            }
+        }
+    }
+
+    partial void OnSelectedLocbookChanged(LocbookViewModel? value)
+    {
+        foreach (var locbook in OpenLocbooks)
+        {
+            locbook.IsSelected = locbook == value;
+        }
+
+        if (value?.SelectedPage != null)
+        {
+            value.SelectedPage.IsSelected = true;
+        }
+
+        UpdateFilteredPages();
+        OnPropertyChanged(nameof(HasSelectedPage));
+    }
+
     [ObservableProperty]
     private string _statusMessage = "Ready";
 
