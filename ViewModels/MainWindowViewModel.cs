@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,23 +48,9 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 UpdateFilteredPages();
             }
-            else if (e.PropertyName == nameof(SelectedLocbook))
-            {
-                UpdateFilteredPages();
-                OnPropertyChanged(nameof(HasSelectedPage));
-                if (SelectedLocbook != null)
-                {
-                    SelectedLocbook.Pages.CollectionChanged += (s2, e2) => UpdateFilteredPages();
-                    SelectedLocbook.PropertyChanged += (s3, e3) =>
-                    {
-                        if (e3.PropertyName == nameof(SelectedLocbook.SelectedPage))
-                        {
-                            OnPropertyChanged(nameof(HasSelectedPage));
-                        }
-                    };
-                }
-            }
         };
+
+        OpenLocbooks.CollectionChanged += OnOpenLocbooksCollectionChanged;
         
         // Initialize with a default empty locbook
         var defaultLocbook = FileService.CreateNewLocbook();
@@ -74,6 +62,85 @@ public partial class MainWindowViewModel : ViewModelBase
         // Load saved API key
         _ = LoadApiKeyAsync();
         
+        UpdateFilteredPages();
+    }
+
+    private void OnOpenLocbooksCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+        {
+            foreach (LocbookViewModel locbook in e.NewItems)
+            {
+                locbook.PropertyChanged += OnLocbookPropertyChanged;
+            }
+        }
+
+        if (e.OldItems != null)
+        {
+            foreach (LocbookViewModel locbook in e.OldItems)
+            {
+                locbook.PropertyChanged -= OnLocbookPropertyChanged;
+            }
+        }
+    }
+
+    private void OnLocbookPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not LocbookViewModel locbook)
+        {
+            return;
+        }
+
+        if (e.PropertyName == nameof(LocbookViewModel.SelectedPage))
+        {
+            if (locbook.SelectedPage != null)
+            {
+                if (SelectedLocbook != locbook)
+                {
+                    SelectedLocbook = locbook;
+                }
+
+                OnPropertyChanged(nameof(HasSelectedPage));
+                UpdateFilteredPages();
+            }
+            else if (SelectedLocbook == locbook)
+            {
+                OnPropertyChanged(nameof(HasSelectedPage));
+                UpdateFilteredPages();
+            }
+        }
+    }
+
+    private void OnSelectedLocbookPagesChanged(object? sender, NotifyCollectionChangedEventArgs e) => UpdateFilteredPages();
+
+    partial void OnSelectedLocbookChanging(LocbookViewModel? value)
+    {
+        if (SelectedLocbook != null)
+        {
+            SelectedLocbook.IsSelected = false;
+            SelectedLocbook.Pages.CollectionChanged -= OnSelectedLocbookPagesChanged;
+        }
+    }
+
+    partial void OnSelectedLocbookChanged(LocbookViewModel? value)
+    {
+        foreach (var locbook in OpenLocbooks)
+        {
+            locbook.IsSelected = locbook == value;
+        }
+
+        if (value != null)
+        {
+            value.Pages.CollectionChanged += OnSelectedLocbookPagesChanged;
+            value.IsExpanded = true;
+
+            if (value.SelectedPage != null)
+            {
+                value.SelectedPage.IsSelected = true;
+            }
+        }
+
+        OnPropertyChanged(nameof(HasSelectedPage));
         UpdateFilteredPages();
     }
     

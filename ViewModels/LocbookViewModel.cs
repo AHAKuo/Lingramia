@@ -101,4 +101,20 @@ public partial class LocbookViewModel : ViewModelBase
         HasUnsavedChanges = false;
         OnPropertyChanged(nameof(DisplayName));
     }
+
+    partial void OnSelectedPageChanging(PageViewModel? value)
+    {
+        if (SelectedPage != null)
+        {
+            SelectedPage.IsSelected = false;
+        }
+    }
+
+    partial void OnSelectedPageChanged(PageViewModel? value)
+    {
+        if (value != null)
+        {
+            value.IsSelected = true;
+        }
+    }
 }
