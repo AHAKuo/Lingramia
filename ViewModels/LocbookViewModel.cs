@@ -31,6 +31,22 @@ public partial class LocbookViewModel : ViewModelBase
 
     public Locbook Model { get; }
 
+    partial void OnSelectedPageChanging(PageViewModel? value)
+    {
+        if (_selectedPage != null)
+        {
+            _selectedPage.IsSelected = false;
+        }
+    }
+
+    partial void OnSelectedPageChanged(PageViewModel? value)
+    {
+        if (value != null)
+        {
+            value.IsSelected = true;
+        }
+    }
+
     public LocbookViewModel(Locbook locbook, string filePath = "")
     {
         Model = locbook;

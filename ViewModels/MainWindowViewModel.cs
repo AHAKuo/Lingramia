@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,8 +34,61 @@ public partial class MainWindowViewModel : ViewModelBase
     
     [ObservableProperty]
     private ObservableCollection<PageViewModel> _filteredPages = new();
-    
+
     public bool HasSelectedPage => SelectedLocbook?.SelectedPage != null;
+
+    public bool HasLocbook => SelectedLocbook != null;
+
+    private void AttachSelectedLocbookObservers(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
+        {
+            return;
+        }
+
+        locbook.Pages.CollectionChanged += OnSelectedLocbookPagesChanged;
+        locbook.PropertyChanged += OnSelectedLocbookPropertyChanged;
+    }
+
+    private void DetachSelectedLocbookObservers(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
+        {
+            return;
+        }
+
+        locbook.Pages.CollectionChanged -= OnSelectedLocbookPagesChanged;
+        locbook.PropertyChanged -= OnSelectedLocbookPropertyChanged;
+    }
+
+    partial void OnSelectedLocbookChanging(LocbookViewModel? value)
+    {
+        DetachSelectedLocbookObservers(_selectedLocbook);
+
+        if (_selectedLocbook != null)
+        {
+            _selectedLocbook.IsSelected = false;
+        }
+    }
+
+    partial void OnSelectedLocbookChanged(LocbookViewModel? value)
+    {
+        foreach (var locbook in OpenLocbooks)
+        {
+            locbook.IsSelected = locbook == value;
+        }
+
+        AttachSelectedLocbookObservers(value);
+
+        if (value?.SelectedPage != null)
+        {
+            value.SelectedPage.IsSelected = true;
+        }
+
+        OnPropertyChanged(nameof(HasLocbook));
+        OnPropertyChanged(nameof(HasSelectedPage));
+        UpdateFilteredPages();
+    }
 
     private Window? _mainWindow;
 
@@ -46,28 +101,11 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 UpdateFilteredPages();
             }
-            else if (e.PropertyName == nameof(SelectedLocbook))
-            {
-                UpdateFilteredPages();
-                OnPropertyChanged(nameof(HasSelectedPage));
-                if (SelectedLocbook != null)
-                {
-                    SelectedLocbook.Pages.CollectionChanged += (s2, e2) => UpdateFilteredPages();
-                    SelectedLocbook.PropertyChanged += (s3, e3) =>
-                    {
-                        if (e3.PropertyName == nameof(SelectedLocbook.SelectedPage))
-                        {
-                            OnPropertyChanged(nameof(HasSelectedPage));
-                        }
-                    };
-                }
-            }
         };
         
         // Initialize with a default empty locbook
         var defaultLocbook = FileService.CreateNewLocbook();
         var defaultVm = new LocbookViewModel(defaultLocbook);
-        defaultVm.IsSelected = true;
         OpenLocbooks.Add(defaultVm);
         SelectedLocbook = defaultVm;
         
@@ -107,16 +145,8 @@ public partial class MainWindowViewModel : ViewModelBase
         var newLocbook = FileService.CreateNewLocbook();
         var newVm = new LocbookViewModel(newLocbook);
         
-        // Clear previous selection
-        foreach (var lb in OpenLocbooks)
-        {
-            lb.IsSelected = false;
-        }
-        
-        newVm.IsSelected = true;
         OpenLocbooks.Add(newVm);
         SelectedLocbook = newVm;
-        UpdateFilteredPages();
         StatusMessage = "Created new locbook.";
     }
 
@@ -158,16 +188,8 @@ public partial class MainWindowViewModel : ViewModelBase
                 {
                     var locbookVm = new LocbookViewModel(locbook, filePath);
                     
-                    // Clear previous selection
-                    foreach (var lb in OpenLocbooks)
-                    {
-                        lb.IsSelected = false;
-                    }
-                    
-                    locbookVm.IsSelected = true;
                     OpenLocbooks.Add(locbookVm);
                     SelectedLocbook = locbookVm;
-                    UpdateFilteredPages();
                     StatusMessage = $"Opened: {locbookVm.FileName}";
                 }
                 else
@@ -386,12 +408,6 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (SelectedLocbook == null) return;
 
-        // Clear previous selection
-        if (SelectedLocbook.SelectedPage != null)
-        {
-            SelectedLocbook.SelectedPage.IsSelected = false;
-        }
-
         var newPage = new Page
         {
             PageId = $"page_{DateTime.Now.Ticks}",
@@ -402,9 +418,7 @@ public partial class MainWindowViewModel : ViewModelBase
         var pageVm = new PageViewModel(newPage);
         SelectedLocbook.Pages.Add(pageVm);
         SelectedLocbook.SelectedPage = pageVm;
-        pageVm.IsSelected = true;
         SelectedLocbook.MarkAsModified();
-        UpdateFilteredPages();
         StatusMessage = "Added new page.";
     }
 
@@ -414,19 +428,13 @@ public partial class MainWindowViewModel : ViewModelBase
         if (SelectedLocbook?.SelectedPage == null) return;
 
         var pageToDelete = SelectedLocbook.SelectedPage;
-        pageToDelete.IsSelected = false;
         SelectedLocbook.Pages.Remove(pageToDelete);
-        
+
         // Select the first available page
         var newSelectedPage = SelectedLocbook.Pages.FirstOrDefault();
         SelectedLocbook.SelectedPage = newSelectedPage;
-        if (newSelectedPage != null)
-        {
-            newSelectedPage.IsSelected = true;
-        }
-        
+
         SelectedLocbook.MarkAsModified();
-        UpdateFilteredPages();
         StatusMessage = "Deleted page.";
     }
 
@@ -709,44 +717,21 @@ public partial class MainWindowViewModel : ViewModelBase
 
         // Find which locbook contains this page
         var locbookContainingPage = OpenLocbooks.FirstOrDefault(lb => lb.Pages.Contains(page));
-        
+
         if (locbookContainingPage != null)
         {
-            // Clear previous selection in all locbooks
-            foreach (var locbook in OpenLocbooks)
-            {
-                if (locbook.SelectedPage != null)
-                {
-                    locbook.SelectedPage.IsSelected = false;
-                }
-            }
-            
-            // Set the locbook as selected
             SelectedLocbook = locbookContainingPage;
-            
-            // Set new page selection
+
             locbookContainingPage.SelectedPage = page;
-            page.IsSelected = true;
-            
-            UpdateFilteredPages();
         }
     }
-    
+
     [RelayCommand]
     private void SelectLocbook(LocbookViewModel? locbook)
     {
         if (locbook != null)
         {
-            // Clear previous selection
-            foreach (var lb in OpenLocbooks)
-            {
-                lb.IsSelected = false;
-            }
-            
-            // Set new selection
-            locbook.IsSelected = true;
             SelectedLocbook = locbook;
-            UpdateFilteredPages();
         }
     }
     
@@ -784,8 +769,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             SelectedLocbook = OpenLocbooks.FirstOrDefault();
         }
-        
-        UpdateFilteredPages();
+
         StatusMessage = $"Closed: {locbook.FileName}";
     }
     
@@ -818,7 +802,21 @@ public partial class MainWindowViewModel : ViewModelBase
 
         StatusMessage = $"Saved {savedCount} of {locbooksToSave.Count} locbook(s).";
     }
-    
+
+    private void OnSelectedLocbookPagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        UpdateFilteredPages();
+    }
+
+    private void OnSelectedLocbookPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(LocbookViewModel.SelectedPage))
+        {
+            OnPropertyChanged(nameof(HasSelectedPage));
+            UpdateFilteredPages();
+        }
+    }
+
     [RelayCommand]
     private async Task ClearApiKeyAsync()
     {

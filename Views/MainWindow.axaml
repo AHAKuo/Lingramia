@@ -3,20 +3,23 @@
         xmlns:vm="using:Lingramia.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+        mc:Ignorable="d"
+        d:DesignWidth="1200"
+        d:DesignHeight="700"
         x:Class="Lingramia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="Lingramia - Localization Editor"
-        MinWidth="1000" MinHeight="600">
+        MinWidth="1100"
+        MinHeight="650">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <DockPanel>
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
         <!-- Top Menu Bar -->
-        <Menu DockPanel.Dock="Top">
+        <Menu Grid.Row="0">
             <MenuItem Header="File">
                 <MenuItem Header="New" Command="{Binding NewFileCommand}" />
                 <MenuItem Header="Open" Command="{Binding OpenFileCommand}" />
@@ -39,176 +42,123 @@
             </MenuItem>
         </Menu>
 
-        <!-- Bottom Status Bar -->
-        <Border DockPanel.Dock="Bottom" Background="#2B2B2B" Padding="10,5" BorderBrush="#3C3C3C" BorderThickness="0,1,0,0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" 
-                          Text="{Binding StatusMessage}" 
+        <!-- Search Bar -->
+        <Border Grid.Row="1"
+                Background="#2B2B2B"
+                Padding="16,12"
+                BorderBrush="#3C3C3C"
+                BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                <TextBlock Grid.Column="0"
+                          Text="🔍 Search"
+                          FontSize="15"
+                          FontWeight="SemiBold"
                           Foreground="#E0E0E0"
                           VerticalAlignment="Center"/>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                    <TextBlock Text="{Binding SelectedLocbook.FileName}" 
-                              Foreground="#E0E0E0"
-                              VerticalAlignment="Center"/>
-                    <TextBlock Text="●" 
-                              Foreground="#3A7CA5"
-                              VerticalAlignment="Center"
-                              IsVisible="{Binding SelectedLocbook.HasUnsavedChanges}"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- Search Bar -->
-        <Border DockPanel.Dock="Top" Background="#2B2B2B" Padding="10" BorderBrush="#3C3C3C" BorderThickness="0,0,0,1">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" 
-                          Text="🔍 Search:" 
-                          FontSize="14"
-                          Foreground="#E0E0E0"
-                          VerticalAlignment="Center"
-                          Margin="0,0,10,0"/>
-                <TextBox Grid.Column="1" 
+                <TextBox Grid.Column="1"
                         Text="{Binding SearchQuery, Mode=TwoWay}"
                         Watermark="Search by Page ID, About, or Key..."
-                        VerticalAlignment="Center"/>
-                <Button Grid.Column="2" 
+                        VerticalAlignment="Center"
+                        Margin="0"/>
+                <Button Grid.Column="2"
                        Content="Clear"
                        Command="{Binding ClearSearchCommand}"
-                       Margin="10,0,0,0"
-                       Padding="15,5"/>
+                       Padding="18,6"/>
             </Grid>
         </Border>
 
         <!-- Main Content Area -->
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" MinWidth="180" MaxWidth="300" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
+        <Grid Grid.Row="2" ColumnDefinitions="320,6,*">
             <!-- Left Sidebar - Locbooks and Pages -->
-            <Border Grid.Column="0" Background="#2B2B2B" BorderBrush="#3C3C3C" BorderThickness="0,0,1,0">
-                <DockPanel>
-                    <StackPanel DockPanel.Dock="Top" Margin="10" Spacing="10">
-                        <TextBlock Text="Locbooks" 
-                                  FontSize="16" 
+            <Border Grid.Column="0"
+                    Background="#1F1F1F"
+                    BorderBrush="#3C3C3C"
+                    BorderThickness="0,0,1,0"
+                    Padding="18">
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="18">
+                    <StackPanel Orientation="Vertical" Spacing="12">
+                        <TextBlock Text="Locbooks"
+                                  FontSize="18"
                                   FontWeight="Bold"
-                                  Foreground="#E0E0E0"/>
-                        <!-- Locbook Actions -->
-                        <StackPanel Orientation="Horizontal" Spacing="5">
-                            <Button Content="📂 Open" 
+                                  Foreground="#FFFFFF"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="📂 Open"
                                    Command="{Binding OpenFileCommand}"
-                                   Padding="8,4"
-                                   FontSize="12"
-                                   ToolTip.Tip="Open existing locbook file"/>
-                            <Button Content="➕ New" 
+                                   Padding="14,6"
+                                   ToolTip.Tip="Open an existing locbook"/>
+                            <Button Content="➕ New"
                                    Command="{Binding NewFileCommand}"
-                                   Padding="8,4"
-                                   FontSize="12"
-                                   ToolTip.Tip="Create new locbook"/>
+                                   Padding="14,6"
+                                   ToolTip.Tip="Create a new locbook"/>
                         </StackPanel>
                     </StackPanel>
-                    
-                    <!-- Page Actions -->
-                    <Border DockPanel.Dock="Bottom" 
-                           Background="#2B2B2B" 
-                           BorderBrush="#3C3C3C"
-                           BorderThickness="0,1,0,0"
-                           Padding="10">
-                        <StackPanel Spacing="10">
-                            <TextBlock Text="{Binding SelectedLocbook.DisplayName, StringFormat='Editing: {0}'}" 
-                                      FontSize="11"
-                                      FontWeight="SemiBold"
-                                      Foreground="#3A7CA5"
-                                      HorizontalAlignment="Center"
-                                      TextTrimming="CharacterEllipsis"/>
-                            <StackPanel Orientation="Horizontal" 
-                                       HorizontalAlignment="Center"
-                                       Spacing="10">
-                                <Button Content="➕ Add Page" 
-                                       Command="{Binding AddPageCommand}"
-                                       Padding="10,5"/>
-                                <Button Content="🗑️ Delete" 
-                                       Command="{Binding DeletePageCommand}"
-                                       Padding="10,5"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
 
-                    <!-- Locbooks List -->
-                    <ScrollViewer>
-                        <ItemsControl ItemsSource="{Binding OpenLocbooks}">
-                            <ItemsControl.ItemTemplate>
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ListBox ItemsSource="{Binding OpenLocbooks}"
+                                 SelectedItem="{Binding SelectedLocbook, Mode=TwoWay}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 HorizontalContentAlignment="Stretch">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0,4,0,0"/>
+                                    <Setter Property="BorderBrush" Value="Transparent"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:pointerover">
+                                    <Setter Property="Background" Value="#2D2D2D"/>
+                                </Style>
+                                <Style Selector="ListBoxItem:selected">
+                                    <Setter Property="Background" Value="#2B4B6B"/>
+                                    <Setter Property="BorderBrush" Value="#3A7CA5"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                </Style>
+                            </ListBox.Styles>
+                            <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
-                                             Margin="5"
-                                             CornerRadius="3"
-                                             Classes.selectedLocbook="{Binding IsSelected}">
+                                             Classes.selectedLocbook="{Binding IsSelected}"
+                                             Background="#262626"
+                                             BorderBrush="#3C3C3C"
+                                             BorderThickness="1"
+                                             CornerRadius="4"
+                                             Padding="6"
+                                             HorizontalAlignment="Stretch">
                                         <Expander.Styles>
-                                            <Style Selector="Expander">
-                                                <Setter Property="Background" Value="#2B2B2B"/>
-                                                <Setter Property="BorderBrush" Value="#3C3C3C"/>
-                                                <Setter Property="BorderThickness" Value="1"/>
-                                            </Style>
                                             <Style Selector="Expander.selectedLocbook">
-                                                <Setter Property="Background" Value="#2B4B6B"/>
+                                                <Setter Property="Background" Value="#2F5C80"/>
                                                 <Setter Property="BorderBrush" Value="#3A7CA5"/>
-                                                <Setter Property="BorderThickness" Value="2"/>
                                             </Style>
                                         </Expander.Styles>
                                         <Expander.Header>
-                                            <Grid Margin="5,2">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Column="0"
-                                                          Text="{Binding DisplayName}"
-                                                          FontSize="13"
-                                                          FontWeight="SemiBold"
-                                                          Foreground="#E0E0E0"
-                                                          VerticalAlignment="Center"
-                                                          TextTrimming="CharacterEllipsis"
-                                                          ToolTip.Tip="{Binding DisplayName}">
-                                                    <TextBlock.ContextMenu>
-                                                        <ContextMenu>
-                                                            <MenuItem Header="Save" 
-                                                                     Command="{Binding $parent[Window].DataContext.SaveLocbookCommand}"
-                                                                     CommandParameter="{Binding}" />
-                                                            <MenuItem Header="Save As..." 
-                                                                     Command="{Binding $parent[Window].DataContext.SaveAsLocbookCommand}"
-                                                                     CommandParameter="{Binding}" />
-                                                            <MenuItem Header="Export" 
-                                                                     Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
-                                                                     CommandParameter="{Binding}" />
-                                                            <Separator />
-                                                            <MenuItem Header="Close Locbook" 
-                                                                     Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
-                                                                     CommandParameter="{Binding}" />
-                                                        </ContextMenu>
-                                                    </TextBlock.ContextMenu>
-                                                </TextBlock>
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6" VerticalAlignment="Center">
+                                                <StackPanel Orientation="Vertical" Spacing="2">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                              FontSize="14"
+                                                              FontWeight="SemiBold"
+                                                              Foreground="#F0F0F0"
+                                                              TextTrimming="CharacterEllipsis"
+                                                              ToolTip.Tip="{Binding DisplayName}"/>
+                                                    <TextBlock Text="{Binding FilePath}"
+                                                              FontSize="11"
+                                                              Foreground="#9AA4AF"
+                                                              TextTrimming="CharacterEllipsis"
+                                                              ToolTip.Tip="{Binding FilePath}"/>
+                                                </StackPanel>
                                                 <Button Grid.Column="1"
                                                        Content="⋮"
+                                                       Width="28"
+                                                       Height="28"
                                                        FontSize="16"
                                                        FontWeight="Bold"
-                                                       Padding="8,2"
-                                                       Margin="5,0,0,0"
+                                                       HorizontalAlignment="Right"
                                                        Background="Transparent"
                                                        BorderThickness="0"
-                                                       Foreground="#A0A0A0"
-                                                       ToolTip.Tip="Locbook Actions (click for menu)"
-                                                       Name="LocbookMenuButton">
+                                                       Foreground="#D0D0D0"
+                                                       ToolTip.Tip="Locbook actions">
                                                     <Button.Styles>
                                                         <Style Selector="Button:pointerover">
                                                             <Setter Property="Foreground" Value="#FFFFFF"/>
@@ -216,35 +166,35 @@
                                                         </Style>
                                                     </Button.Styles>
                                                     <Button.ContextMenu>
-                                                        <ContextMenu Name="LocbookContextMenu">
-                                                            <MenuItem Header="Save" 
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Save"
                                                                      Command="{Binding $parent[Window].DataContext.SaveLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
-                                                            <MenuItem Header="Save As..." 
+                                                            <MenuItem Header="Save As..."
                                                                      Command="{Binding $parent[Window].DataContext.SaveAsLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
-                                                            <MenuItem Header="Export" 
+                                                            <MenuItem Header="Export"
                                                                      Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
                                                             <Separator />
-                                                            <MenuItem Header="Close Locbook" 
+                                                            <MenuItem Header="Close Locbook"
                                                                      Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
                                                         </ContextMenu>
                                                     </Button.ContextMenu>
                                                     <Button.Flyout>
                                                         <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                                            <MenuItem Header="Save" 
+                                                            <MenuItem Header="Save"
                                                                      Command="{Binding $parent[Window].DataContext.SaveLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
-                                                            <MenuItem Header="Save As..." 
+                                                            <MenuItem Header="Save As..."
                                                                      Command="{Binding $parent[Window].DataContext.SaveAsLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
-                                                            <MenuItem Header="Export" 
+                                                            <MenuItem Header="Export"
                                                                      Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
                                                             <Separator />
-                                                            <MenuItem Header="Close Locbook" 
+                                                            <MenuItem Header="Close Locbook"
                                                                      Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
                                                         </MenuFlyout>
@@ -252,285 +202,306 @@
                                                 </Button>
                                             </Grid>
                                         </Expander.Header>
-                                        <ItemsControl ItemsSource="{Binding Pages}" Margin="10,0,0,0">
-                                            <ItemsControl.ItemTemplate>
+                                        <ListBox ItemsSource="{Binding Pages}"
+                                                 SelectedItem="{Binding SelectedPage, Mode=TwoWay}"
+                                                 Margin="0,6,0,0"
+                                                 Background="Transparent"
+                                                 BorderThickness="0"
+                                                 HorizontalContentAlignment="Stretch">
+                                            <ListBox.Styles>
+                                                <Style Selector="ListBoxItem">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Setter Property="BorderBrush" Value="Transparent"/>
+                                                    <Setter Property="Padding" Value="6"/>
+                                                    <Setter Property="Margin" Value="0,2,0,0"/>
+                                                </Style>
+                                                <Style Selector="ListBoxItem:pointerover">
+                                                    <Setter Property="Background" Value="#343434"/>
+                                                </Style>
+                                                <Style Selector="ListBoxItem:selected">
+                                                    <Setter Property="Background" Value="#3A7CA5"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </Style>
+                                            </ListBox.Styles>
+                                            <ListBox.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Button Content="{Binding PageId}"
-                                                           Command="{Binding $parent[Window].DataContext.SelectPageCommand}"
-                                                           CommandParameter="{Binding}"
-                                                           Margin="5,2"
-                                                           Padding="8"
-                                                           HorizontalAlignment="Stretch"
-                                                           HorizontalContentAlignment="Left"
-                                                           Classes.selected="{Binding IsSelected}">
-                                                        <Button.Styles>
-                                                            <Style Selector="Button">
-                                                                <Setter Property="Background" Value="Transparent"/>
-                                                            </Style>
-                                                            <Style Selector="Button[IsPressed=True]">
-                                                                <Setter Property="Background" Value="#3C3C3C"/>
-                                                            </Style>
-                                                            <Style Selector="Button:pointerover">
-                                                                <Setter Property="Background" Value="#353535"/>
-                                                            </Style>
-                                                            <Style Selector="Button.selected">
-                                                                <Setter Property="Background" Value="#3A7CA5"/>
-                                                                <Setter Property="Foreground" Value="White"/>
-                                                            </Style>
-                                                            <Style Selector="Button.selected:pointerover">
-                                                                <Setter Property="Background" Value="#4A8CB5"/>
-                                                            </Style>
-                                                        </Button.Styles>
-                                                    </Button>
+                                                    <StackPanel Orientation="Vertical" Spacing="2">
+                                                        <TextBlock Text="{Binding PageId}"
+                                                                  FontWeight="SemiBold"
+                                                                  FontSize="13"
+                                                                  TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Text="{Binding AboutPage}"
+                                                                  FontSize="11"
+                                                                  Foreground="#B0B0B0"
+                                                                  TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
                                                 </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
                                     </Expander>
                                 </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </ScrollViewer>
-                </DockPanel>
+
+                    <Border Grid.Row="2"
+                            Background="#262626"
+                            BorderBrush="#3C3C3C"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="12">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="{Binding SelectedLocbook.DisplayName, StringFormat='Editing: {0}', TargetNullValue='Editing: None'}"
+                                      FontSize="12"
+                                      FontWeight="SemiBold"
+                                      Foreground="#3A9CDA"
+                                      HorizontalAlignment="Center"
+                                      TextTrimming="CharacterEllipsis"/>
+                            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                                <Button Content="➕ Add Page"
+                                       Command="{Binding AddPageCommand}"
+                                       IsEnabled="{Binding HasLocbook}"
+                                       Padding="16,6"
+                                       ToolTip.Tip="Create a new page in the current locbook"/>
+                                <Button Content="🗑️ Delete"
+                                       Command="{Binding DeletePageCommand}"
+                                       IsEnabled="{Binding HasSelectedPage}"
+                                       Padding="16,6"
+                                       ToolTip.Tip="Delete the selected page"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Border>
 
-            <GridSplitter Grid.Column="1" Width="4" Background="#3C3C3C" />
+            <GridSplitter Grid.Column="1"
+                          Margin="0"
+                          Background="#3C3C3C"
+                          ResizeDirection="Columns"
+                          ShowsPreview="True"/>
 
             <!-- Main Panel - Fields -->
-            <Border Grid.Column="2" Background="#1E1E1E">
-                <DockPanel Margin="10">
+            <Border Grid.Column="2"
+                    Background="#101010"
+                    Padding="24">
+                <Grid RowDefinitions="Auto,Auto,*" RowSpacing="18">
                     <!-- Page Info Header -->
-                    <Border DockPanel.Dock="Top" 
-                           Background="#2B2B2B" 
-                           BorderBrush="#3C3C3C"
-                           BorderThickness="1"
-                           Padding="15"
-                           Margin="0,0,0,10"
-                           CornerRadius="5">
-                        <StackPanel Spacing="10">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="80" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-
-                                <TextBlock Grid.Row="0" Grid.Column="0"
-                                          Text="Page ID:"
-                                          FontWeight="Bold"
-                                          Foreground="#E0E0E0"
-                                          VerticalAlignment="Center"/>
-                                <TextBox Grid.Row="0" Grid.Column="1"
-                                        Text="{Binding SelectedLocbook.SelectedPage.PageId, Mode=TwoWay}"
-                                        IsEnabled="{Binding HasSelectedPage}"
-                                        Margin="5,0,0,0"/>
-
-                                <TextBlock Grid.Row="1" Grid.Column="0"
-                                          Text="About:"
-                                          FontWeight="Bold"
-                                          Foreground="#E0E0E0"
-                                          Margin="0,5,0,0"
-                                          VerticalAlignment="Center"/>
-                                <TextBox Grid.Row="1" Grid.Column="1"
-                                        Text="{Binding SelectedLocbook.SelectedPage.AboutPage, Mode=TwoWay}"
-                                        IsEnabled="{Binding HasSelectedPage}"
-                                        Margin="5,5,0,0"/>
-                            </Grid>
-                        </StackPanel>
+                    <Border Background="#1E1E1E"
+                            BorderBrush="#3C3C3C"
+                            BorderThickness="1"
+                            Padding="18"
+                            CornerRadius="6">
+                        <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto" RowSpacing="10" ColumnSpacing="12">
+                            <TextBlock Grid.Column="0"
+                                      Grid.Row="0"
+                                      Text="Page ID"
+                                      FontWeight="Bold"
+                                      Foreground="#E0E0E0"
+                                      VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="1"
+                                    Grid.Row="0"
+                                    Text="{Binding SelectedLocbook.SelectedPage.PageId, Mode=TwoWay}"
+                                    IsEnabled="{Binding HasSelectedPage}"
+                                    HorizontalAlignment="Stretch"/>
+                            <TextBlock Grid.Column="0"
+                                      Grid.Row="1"
+                                      Text="About"
+                                      FontWeight="Bold"
+                                      Foreground="#E0E0E0"
+                                      VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="1"
+                                    Grid.Row="1"
+                                    Text="{Binding SelectedLocbook.SelectedPage.AboutPage, Mode=TwoWay}"
+                                    IsEnabled="{Binding HasSelectedPage}"
+                                    HorizontalAlignment="Stretch"/>
+                        </Grid>
                     </Border>
 
                     <!-- Field Actions -->
-                    <StackPanel DockPanel.Dock="Top" 
-                               Orientation="Horizontal" 
-                               Margin="0,0,0,10"
-                               Spacing="10">
-                        <Button Content="➕ Add Field" 
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button Content="➕ Add Field"
                                Command="{Binding AddFieldCommand}"
                                IsEnabled="{Binding HasSelectedPage}"
-                               Padding="10,5"/>
-                        <Button Content="🌐 Translate Page" 
+                               Padding="18,6"/>
+                        <Button Content="🌐 Translate Page"
                                Command="{Binding TranslatePageCommand}"
                                IsEnabled="{Binding HasSelectedPage}"
-                               Padding="10,5"/>
+                               Padding="18,6"/>
                     </StackPanel>
 
                     <!-- Fields List -->
-                    <ScrollViewer>
+                    <ScrollViewer Grid.Row="2"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
                         <Grid>
-                            <!-- Empty State Message -->
                             <Border IsVisible="{Binding !HasSelectedPage}"
-                                   Background="#2B2B2B"
+                                   Background="#1E1E1E"
                                    BorderBrush="#3C3C3C"
                                    BorderThickness="1"
-                                   CornerRadius="5"
-                                   Padding="40"
-                                   Margin="20">
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
-                                    <TextBlock Text="📄" 
+                                   CornerRadius="6"
+                                   Padding="48"
+                                   Margin="40">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                                    <TextBlock Text="📄"
                                               FontSize="48"
                                               HorizontalAlignment="Center"/>
-                                    <TextBlock Text="No Page Selected" 
-                                              FontSize="18"
+                                    <TextBlock Text="No Page Selected"
+                                              FontSize="20"
                                               FontWeight="Bold"
                                               Foreground="#E0E0E0"
                                               HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Create a new page or select one from the sidebar to begin working" 
+                                    <TextBlock Text="Create a new page or choose one from the locbook list to begin editing."
                                               FontSize="13"
                                               Foreground="#A0A0A0"
                                               HorizontalAlignment="Center"
                                               TextWrapping="Wrap"
                                               TextAlignment="Center"
-                                              MaxWidth="300"/>
+                                              MaxWidth="360"/>
                                 </StackPanel>
                             </Border>
-                            
+
                             <ItemsControl ItemsSource="{Binding SelectedLocbook.SelectedPage.Fields}"
                                          IsVisible="{Binding HasSelectedPage}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Expander Background="#2B2B2B" 
-                                             BorderBrush="#3C3C3C" 
-                                             BorderThickness="1"
-                                             Margin="0,0,0,10"
-                                             CornerRadius="5"
-                                             IsExpanded="True">
-                                        <Expander.Header>
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
-                                                    <TextBlock Text="🔑" FontSize="14"/>
-                                                    <TextBlock Text="{Binding Key}" 
-                                                              FontWeight="Bold"
-                                                              FontSize="14"
-                                                              Foreground="#E0E0E0"/>
-                                                    <TextBlock Text="-" 
-                                                              Foreground="#808080"
-                                                              FontSize="14"/>
-                                                    <TextBlock Text="{Binding OriginalValue}" 
-                                                              FontSize="14"
-                                                              Foreground="#A0A0A0"
-                                                              TextTrimming="CharacterEllipsis"/>
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
-                                                    <Button Content="🌐" 
-                                                           Padding="5"
-                                                           Command="{Binding $parent[Window].DataContext.TranslateFieldCommand}"
-                                                           CommandParameter="{Binding}"
-                                                           ToolTip.Tip="Translate Field"/>
-                                                    <Button Content="🗑️" 
-                                                           Padding="5"
-                                                           Command="{Binding $parent[Window].DataContext.DeleteFieldCommand}"
-                                                           CommandParameter="{Binding}"
-                                                           ToolTip.Tip="Delete Field"/>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Expander.Header>
-                                        <Border Padding="15" Background="#1E1E1E">
-                                            <StackPanel Spacing="10">
-                                                <!-- Field Key and Original Value -->
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="100" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto" />
-                                                        <RowDefinition Height="Auto" />
-                                                    </Grid.RowDefinitions>
-
-                                                    <TextBlock Grid.Row="0" Grid.Column="0" 
-                                                              Text="Key:" 
-                                                              FontWeight="Bold"
-                                                              Foreground="#E0E0E0"
-                                                              VerticalAlignment="Top"
-                                                              Margin="0,8,0,0"/>
-                                                    <TextBox Grid.Row="0" Grid.Column="1" 
-                                                            Text="{Binding Key}"
-                                                            AcceptsReturn="False"
-                                                            Margin="5,0,0,0"/>
-
-                                                    <TextBlock Grid.Row="1" Grid.Column="0" 
-                                                              Text="Original:" 
-                                                              FontWeight="Bold"
-                                                              Foreground="#E0E0E0"
-                                                              Margin="0,8,0,0"
-                                                              VerticalAlignment="Top"/>
-                                                    <TextBox Grid.Row="1" Grid.Column="1" 
-                                                            Text="{Binding OriginalValue}"
-                                                            AcceptsReturn="True"
-                                                            TextWrapping="Wrap"
-                                                            MinHeight="60"
-                                                            Margin="5,5,0,0"/>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Expander Background="#1E1E1E"
+                                                 BorderBrush="#3C3C3C"
+                                                 BorderThickness="1"
+                                                 Margin="0,0,0,16"
+                                                 CornerRadius="6"
+                                                 IsExpanded="True">
+                                            <Expander.Header>
+                                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                        <TextBlock Text="🔑" FontSize="14"/>
+                                                        <TextBlock Text="{Binding Key}"
+                                                                  FontWeight="Bold"
+                                                                  FontSize="14"
+                                                                  Foreground="#E0E0E0"/>
+                                                        <TextBlock Text="-"
+                                                                  Foreground="#808080"
+                                                                  FontSize="14"/>
+                                                        <TextBlock Text="{Binding OriginalValue}"
+                                                                  FontSize="14"
+                                                                  Foreground="#A0A0A0"
+                                                                  TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                                        <Button Content="🌐"
+                                                               Padding="8"
+                                                               Command="{Binding $parent[Window].DataContext.TranslateFieldCommand}"
+                                                               CommandParameter="{Binding}"
+                                                               ToolTip.Tip="Translate Field"/>
+                                                        <Button Content="🗑️"
+                                                               Padding="8"
+                                                               Command="{Binding $parent[Window].DataContext.DeleteFieldCommand}"
+                                                               CommandParameter="{Binding}"
+                                                               ToolTip.Tip="Delete Field"/>
+                                                    </StackPanel>
                                                 </Grid>
+                                            </Expander.Header>
+                                            <Border Padding="18" Background="#121212">
+                                                <StackPanel Spacing="14">
+                                                    <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto" RowSpacing="12" ColumnSpacing="12">
+                                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                                  Text="Key"
+                                                                  FontWeight="Bold"
+                                                                  Foreground="#E0E0E0"
+                                                                  VerticalAlignment="Top"/>
+                                                        <TextBox Grid.Row="0" Grid.Column="1"
+                                                                Text="{Binding Key}"
+                                                                AcceptsReturn="False"/>
 
-                                                <!-- Variants -->
-                                                <TextBlock Text="Translations:" 
-                                                          FontWeight="Bold"
-                                                          Foreground="#E0E0E0"
-                                                          Margin="0,10,0,0"/>
-                                                <ItemsControl ItemsSource="{Binding Variants}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Grid Margin="0,5">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="70" />
-                                                                    <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="Auto" />
-                                                                </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                                  Text="Original"
+                                                                  FontWeight="Bold"
+                                                                  Foreground="#E0E0E0"
+                                                                  VerticalAlignment="Top"/>
+                                                        <TextBox Grid.Row="1" Grid.Column="1"
+                                                                Text="{Binding OriginalValue}"
+                                                                AcceptsReturn="True"
+                                                                TextWrapping="Wrap"
+                                                                MinHeight="60"/>
+                                                    </Grid>
 
-                                                                <TextBox Grid.Column="0" 
-                                                                        Text="{Binding Language}"
-                                                                        Width="60"
-                                                                        VerticalAlignment="Top"
-                                                                        Margin="0,0,5,0"/>
-                                                                <TextBox Grid.Column="1" 
-                                                                        Text="{Binding Value}"
-                                                                        AcceptsReturn="True"
-                                                                        TextWrapping="Wrap"
-                                                                        MinHeight="60"
-                                                                        Margin="0,0,5,0">
-                                                                    <TextBox.ContextMenu>
-                                                                        <ContextMenu>
-                                                                            <MenuItem Header="Translate This Variant" 
-                                                                                     Command="{Binding $parent[Window].DataContext.TranslateVariantCommand}"
-                                                                                     CommandParameter="{Binding}" />
-                                                                        </ContextMenu>
-                                                                    </TextBox.ContextMenu>
-                                                                </TextBox>
-                                                                <Button Grid.Column="2" 
-                                                                       Content="🗑️"
-                                                                       Padding="5"
-                                                                       VerticalAlignment="Top"
-                                                                       Command="{Binding $parent[Window].DataContext.DeleteVariantCommand}"
-                                                                       CommandParameter="{Binding}"
-                                                                       ToolTip.Tip="Delete Variant"/>
-                                                            </Grid>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
+                                                    <TextBlock Text="Translations"
+                                                              FontWeight="Bold"
+                                                              Foreground="#E0E0E0"
+                                                              Margin="0,6,0,0"/>
+                                                    <ItemsControl ItemsSource="{Binding Variants}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid ColumnDefinitions="80,*,Auto" ColumnSpacing="10" Margin="0,6">
+                                                                    <TextBox Grid.Column="0"
+                                                                            Text="{Binding Language}"
+                                                                            Width="70"
+                                                                            VerticalAlignment="Top"/>
+                                                                    <TextBox Grid.Column="1"
+                                                                            Text="{Binding Value}"
+                                                                            AcceptsReturn="True"
+                                                                            TextWrapping="Wrap"
+                                                                            MinHeight="60">
+                                                                        <TextBox.ContextMenu>
+                                                                            <ContextMenu>
+                                                                                <MenuItem Header="Translate This Variant"
+                                                                                         Command="{Binding $parent[Window].DataContext.TranslateVariantCommand}"
+                                                                                         CommandParameter="{Binding}" />
+                                                                            </ContextMenu>
+                                                                        </TextBox.ContextMenu>
+                                                                    </TextBox>
+                                                                    <Button Grid.Column="2"
+                                                                           Content="🗑️"
+                                                                           Padding="6"
+                                                                           VerticalAlignment="Top"
+                                                                           Command="{Binding $parent[Window].DataContext.DeleteVariantCommand}"
+                                                                           CommandParameter="{Binding}"
+                                                                           ToolTip.Tip="Delete Variant"/>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
 
-                                                <!-- Field Actions -->
-                                                <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,10,0,0">
-                                                    <Button Content="➕ Add Variant" 
-                                                           Padding="8,4"
-                                                           Command="{Binding $parent[Window].DataContext.AddVariantCommand}"
-                                                           CommandParameter="{Binding}" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <Button Content="➕ Add Variant"
+                                                               Padding="14,6"
+                                                               Command="{Binding $parent[Window].DataContext.AddVariantCommand}"
+                                                               CommandParameter="{Binding}" />
+                                                    </StackPanel>
                                                 </StackPanel>
-                                            </StackPanel>
-                                        </Border>
-                                    </Expander>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
+                                            </Border>
+                                        </Expander>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </Grid>
                     </ScrollViewer>
-                </DockPanel>
+                </Grid>
             </Border>
         </Grid>
-    </DockPanel>
+
+        <!-- Bottom Status Bar -->
+        <Border Grid.Row="3"
+                Background="#1F1F1F"
+                Padding="12,8"
+                BorderBrush="#3C3C3C"
+                BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock Grid.Column="0"
+                          Text="{Binding StatusMessage}"
+                          Foreground="#E0E0E0"
+                          VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="{Binding SelectedLocbook.FileName, TargetNullValue='No file selected'}"
+                              Foreground="#E0E0E0"
+                              VerticalAlignment="Center"
+                              TextTrimming="CharacterEllipsis"
+                              Width="200"/>
+                    <TextBlock Text="●"
+                              Foreground="#3A7CA5"
+                              VerticalAlignment="Center"
+                              IsVisible="{Binding SelectedLocbook.HasUnsavedChanges, FallbackValue=False}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>
