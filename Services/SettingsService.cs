@@ -9,6 +9,7 @@ public static class SettingsService
 {
     private static readonly string SettingsDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "AHAKuo",
         "Lingramia"
     );
     
