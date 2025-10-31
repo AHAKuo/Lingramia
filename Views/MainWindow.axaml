@@ -28,8 +28,9 @@
     </Design.DataContext>
 
     <DockPanel>
-        <!-- Top Menu Bar -->
-        <Menu DockPanel.Dock="Top">
+        <!-- Top Menu Bar with Accent Strip -->
+        <StackPanel DockPanel.Dock="Top">
+            <Menu Background="{StaticResource BrushTopBarBackground}">
             <MenuItem Header="File">
                 <MenuItem Header="New" Command="{Binding NewFileCommand}" />
                 <MenuItem Header="Open" Command="{Binding OpenFileCommand}" />
@@ -50,10 +51,24 @@
                 <MenuItem Header="Usage Guide" Command="{Binding ShowUsageGuideCommand}" />
                 <MenuItem Header="Translation Help" Command="{Binding ShowTranslationHelpCommand}" />
             </MenuItem>
-        </Menu>
+            </Menu>
+            <!-- Accent Strip -->
+            <Border Height="2" Margin="0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Offset="0" Color="{StaticResource ColorAccentPrimary}"/>
+                        <GradientStop Offset="1" Color="{StaticResource ColorAccentSecondary}"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+        </StackPanel>
 
         <!-- Bottom Status Bar -->
-        <Border DockPanel.Dock="Bottom" Background="#2B2B2B" Padding="10,5" BorderBrush="#3C3C3C" BorderThickness="0,1,0,0">
+        <Border DockPanel.Dock="Bottom" 
+                Background="{StaticResource BrushSecondaryBackground}" 
+                Padding="10,5" 
+                BorderBrush="{StaticResource BrushBorderDivider}" 
+                BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -61,14 +76,14 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" 
                           Text="{Binding StatusMessage}" 
-                          Foreground="#E0E0E0"
+                          Foreground="{StaticResource BrushTextPrimary}"
                           VerticalAlignment="Center"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
                     <TextBlock Text="{Binding SelectedLocbook.FileName}" 
-                              Foreground="#E0E0E0"
+                              Foreground="{StaticResource BrushTextPrimary}"
                               VerticalAlignment="Center"/>
                     <TextBlock Text="●" 
-                              Foreground="#3A7CA5"
+                              Foreground="{StaticResource BrushAccentSecondary}"
                               VerticalAlignment="Center"
                               IsVisible="{Binding SelectedLocbook.HasUnsavedChanges}"/>
                 </StackPanel>
@@ -76,7 +91,11 @@
         </Border>
 
         <!-- Search Bar + Filters -->
-        <Border DockPanel.Dock="Top" Background="#2B2B2B" Padding="10" BorderBrush="#3C3C3C" BorderThickness="0,0,0,1">
+        <Border DockPanel.Dock="Top" 
+                Background="{StaticResource BrushTopBarBackground}" 
+                Padding="10" 
+                BorderBrush="{StaticResource BrushBorderDivider}" 
+                BorderThickness="0,0,0,1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -88,7 +107,7 @@
                 <TextBlock Grid.Column="0" 
                           Text="🔍 Search:" 
                           FontSize="14"
-                          Foreground="#E0E0E0"
+                          Foreground="{StaticResource BrushTextPrimary}"
                           VerticalAlignment="Center"
                           Margin="0,0,10,0"/>
                 <TextBox Grid.Column="1" 
@@ -101,7 +120,7 @@
                     <CheckBox Content="Missing only" IsChecked="{Binding ShowMissingOnly, Mode=TwoWay}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="10,0,0,0">
-                    <TextBlock Text="Lang:" Foreground="#E0E0E0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Lang:" Foreground="{StaticResource BrushTextPrimary}" VerticalAlignment="Center"/>
                     <TextBox Width="80" Text="{Binding LanguageFilter, Mode=TwoWay}" Watermark="All"/>
                 </StackPanel>
                 <Button Grid.Column="4" 
@@ -121,14 +140,17 @@
             </Grid.ColumnDefinitions>
 
             <!-- Left Sidebar - Locbooks and Pages -->
-            <Border Grid.Column="0" Background="#2B2B2B" BorderBrush="#3C3C3C" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0" 
+                    Background="{StaticResource BrushSecondaryBackground}" 
+                    BorderBrush="{StaticResource BrushBorderDivider}" 
+                    BorderThickness="0,0,1,0">
                 <Grid RowDefinitions="Auto,*,Auto">
                     <!-- Header and Locbook Actions -->
                     <StackPanel Grid.Row="0" Margin="16,16,16,12" Spacing="12">
                         <TextBlock Text="Locbooks"
                                    FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="#E0E0E0"/>
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource BrushTextPrimary}"/>
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button Content="📂 Open"
                                    Command="{Binding OpenFileCommand}"
@@ -169,9 +191,9 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Border CornerRadius="6"
-                                        BorderBrush="#3C3C3C"
+                                        BorderBrush="{StaticResource BrushBorderDivider}"
                                         BorderThickness="1"
-                                        Background="#262626"
+                                        Background="{StaticResource BrushSecondaryBackground}"
                                         Classes.selectedLocbook="{Binding IsSelected}"
                                         HorizontalAlignment="Stretch">
                                     <Border.Styles>
@@ -179,10 +201,13 @@
                                             <Setter Property="Padding" Value="4"/>
                                         </Style>
                                         <Style Selector="Border.selectedLocbook">
-                                            <Setter Property="BorderBrush" Value="#3A7CA5"/>
-                                            <Setter Property="BorderThickness" Value="2"/>
-                                            <Setter Property="Background" Value="#204766"/>
+                                            <Setter Property="BorderBrush" Value="{StaticResource BrushAccentPrimary}"/>
+                                            <Setter Property="BorderThickness" Value="2,0,0,0"/>
+                                            <Setter Property="Background" Value="{StaticResource BrushActiveLocbook}"/>
                                             <Setter Property="Padding" Value="4"/>
+                                        </Style>
+                                        <Style Selector="Border:pointerover">
+                                            <Setter Property="Background" Value="{StaticResource BrushHoverState}"/>
                                         </Style>
                                     </Border.Styles>
                                     <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
@@ -199,10 +224,18 @@
                                                           Text="{Binding DisplayName}"
                                                           FontSize="14"
                                                           FontWeight="SemiBold"
-                                                          Foreground="#E0E0E0"
+                                                          Foreground="{StaticResource BrushTextPrimary}"
                                                           VerticalAlignment="Center"
                                                           TextTrimming="CharacterEllipsis"
                                                           ToolTip.Tip="{Binding DisplayName}">
+                                                    <TextBlock.Styles>
+                                                        <Style Selector="TextBlock">
+                                                            <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}"/>
+                                                        </Style>
+                                                        <Style Selector="Border.selectedLocbook TextBlock">
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                        </Style>
+                                                    </TextBlock.Styles>
                                                     <TextBlock.ContextMenu>
                                                         <ContextMenu>
                                                             <MenuItem Header="Save"
@@ -231,8 +264,8 @@
                                                             CommandParameter="{Binding}">
                                                         <Button.Styles>
                                                             <Style Selector="Button:pointerover">
-                                                                <Setter Property="Foreground" Value="#FFFFFF"/>
-                                                                <Setter Property="Background" Value="#3C3C3C"/>
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                                <Setter Property="Background" Value="{StaticResource BrushSurfaceHover}"/>
                                                             </Style>
                                                         </Button.Styles>
                                                     </Button>
@@ -242,13 +275,13 @@
                                                             Padding="8,2"
                                                             Background="Transparent"
                                                             BorderThickness="0"
-                                                            Foreground="#A0A0A0"
+                                                            Foreground="{StaticResource BrushTextSecondary}"
                                                             ToolTip.Tip="Locbook Actions (click for menu)"
                                                             Name="LocbookMenuButton">
                                                         <Button.Styles>
                                                             <Style Selector="Button:pointerover">
-                                                                <Setter Property="Foreground" Value="#FFFFFF"/>
-                                                                <Setter Property="Background" Value="#3C3C3C"/>
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                                <Setter Property="Background" Value="{StaticResource BrushSurfaceHover}"/>
                                                             </Style>
                                                         </Button.Styles>
                                                         <Button.ContextMenu>
@@ -304,20 +337,23 @@
                                                         <Button.Styles>
                                                             <Style Selector="Button">
                                                                 <Setter Property="Background" Value="Transparent"/>
-                                                                <Setter Property="BorderBrush" Value="#3C3C3C"/>
+                                                                <Setter Property="BorderBrush" Value="{StaticResource BrushBorderDivider}"/>
                                                                 <Setter Property="BorderThickness" Value="1"/>
                                                                 <Setter Property="CornerRadius" Value="4"/>
+                                                                <Setter Property="Foreground" Value="{StaticResource BrushTextSecondary}"/>
                                                             </Style>
                                                             <Style Selector="Button:pointerover">
-                                                                <Setter Property="Background" Value="#353535"/>
+                                                                <Setter Property="Background" Value="{StaticResource BrushHoverState}"/>
+                                                                <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}"/>
                                                             </Style>
                                                             <Style Selector="Button:selected">
-                                                                <Setter Property="Background" Value="#3A7CA5"/>
+                                                                <Setter Property="Background" Value="{StaticResource BrushSelectedPage}"/>
                                                                 <Setter Property="Foreground" Value="White"/>
-                                                                <Setter Property="BorderBrush" Value="#3A7CA5"/>
+                                                                <Setter Property="BorderBrush" Value="{StaticResource BrushAccentPrimary}"/>
                                                             </Style>
                                                             <Style Selector="Button.selected:pointerover">
-                                                                <Setter Property="Background" Value="#4A8CB5"/>
+                                                                <Setter Property="Background" Value="{StaticResource BrushAccentPrimary}"/>
+                                                                <Setter Property="Foreground" Value="White"/>
                                                             </Style>
                                                         </Button.Styles>
                                                         <Button.ContextMenu>
@@ -349,16 +385,16 @@
 
             <GridSplitter Grid.Column="1"
                           Width="6"
-                          Background="#3C3C3C"
+                          Background="{StaticResource BrushBorderDivider}"
                           HorizontalAlignment="Center"/>
 
             <!-- Main Panel - Fields -->
-            <Border Grid.Column="2" Background="#1E1E1E" Padding="24,16,24,24">
+            <Border Grid.Column="2" Background="{StaticResource BrushPrimaryBackground}" Padding="24,16,24,24">
                 <Grid RowDefinitions="Auto,Auto,*" RowSpacing="16">
                     <!-- Page Info Header -->
                     <Border Grid.Row="0"
-                            Background="#2B2B2B"
-                            BorderBrush="#3C3C3C"
+                            Background="{StaticResource BrushSecondaryBackground}"
+                            BorderBrush="{StaticResource BrushBorderDivider}"
                             BorderThickness="1"
                             Padding="18"
                             CornerRadius="6">
@@ -367,7 +403,7 @@
                                       Grid.Column="0"
                                       Text="Page Name:"
                                       FontWeight="Bold"
-                                      Foreground="#E0E0E0"
+                                      Foreground="{StaticResource BrushTextPrimary}"
                                       VerticalAlignment="Center"/>
                             <TextBox Grid.Row="0"
                                     Grid.Column="1"
@@ -381,7 +417,7 @@
                                       Grid.Column="0"
                                       Text="About:"
                                       FontWeight="Bold"
-                                      Foreground="#E0E0E0"
+                                      Foreground="{StaticResource BrushTextPrimary}"
                                       VerticalAlignment="Center"/>
                             <TextBox Grid.Row="1"
                                     Grid.Column="1"
@@ -415,8 +451,8 @@
                         <Grid>
                             <!-- Empty State Message -->
                             <Border IsVisible="{Binding !HasSelectedPage}"
-                                   Background="#2B2B2B"
-                                   BorderBrush="#3C3C3C"
+                                   Background="{StaticResource BrushSecondaryBackground}"
+                                   BorderBrush="{StaticResource BrushBorderDivider}"
                                    BorderThickness="1"
                                    CornerRadius="6"
                                    Padding="40"
@@ -424,15 +460,16 @@
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="18">
                                     <TextBlock Text="📄"
                                               FontSize="48"
+                                              Foreground="{StaticResource BrushDisabledText}"
                                               HorizontalAlignment="Center"/>
                                     <TextBlock Text="No Page Selected"
                                               FontSize="18"
                                               FontWeight="Bold"
-                                              Foreground="#E0E0E0"
+                                              Foreground="{StaticResource BrushTextPrimary}"
                                               HorizontalAlignment="Center"/>
                                     <TextBlock Text="Create a new page or select one from the sidebar to begin working"
                                               FontSize="13"
-                                              Foreground="#A0A0A0"
+                                              Foreground="{StaticResource BrushPlaceholder}"
                                               HorizontalAlignment="Center"
                                               TextWrapping="Wrap"
                                               TextAlignment="Center"
@@ -445,8 +482,8 @@
                                          IsVisible="{Binding HasSelectedPage}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Expander Background="#2B2B2B"
-                                                 BorderBrush="#3C3C3C"
+                                        <Expander Background="{StaticResource BrushSecondaryBackground}"
+                                                 BorderBrush="{StaticResource BrushBorderDivider}"
                                                  BorderThickness="1"
                                                  Margin="0,0,0,12"
                                                  CornerRadius="6"
@@ -463,13 +500,13 @@
                                                     <TextBlock Text="{Binding Key}" 
                                                               FontWeight="Bold"
                                                               FontSize="14"
-                                                              Foreground="#E0E0E0"/>
+                                                              Foreground="{StaticResource BrushTextPrimary}"/>
                                                     <TextBlock Text="-" 
-                                                              Foreground="#808080"
+                                                              Foreground="{StaticResource BrushTextSecondary}"
                                                               FontSize="14"/>
                                                     <TextBlock Text="{Binding OriginalValue}" 
                                                               FontSize="14"
-                                                              Foreground="#A0A0A0"
+                                                              Foreground="{StaticResource BrushTextSecondary}"
                                                               TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
@@ -491,7 +528,7 @@
                                                 </StackPanel>
                                             </Grid>
                                         </Expander.Header>
-                                        <Border Padding="15" Background="#1E1E1E">
+                                        <Border Padding="15" Background="{StaticResource BrushPrimaryBackground}">
                                             <StackPanel Spacing="10">
                                                 <!-- Field Key and Original Value -->
                                                 <Grid>
@@ -507,7 +544,7 @@
                                                     <TextBlock Grid.Row="0" Grid.Column="0" 
                                                               Text="Key:" 
                                                               FontWeight="Bold"
-                                                              Foreground="#E0E0E0"
+                                                              Foreground="{StaticResource BrushTextPrimary}"
                                                               VerticalAlignment="Top"
                                                               Margin="0,8,0,0"/>
                                                     <TextBox Grid.Row="0" Grid.Column="1" 
@@ -519,7 +556,7 @@
                                                     <TextBlock Grid.Row="1" Grid.Column="0" 
                                                               Text="Original:" 
                                                               FontWeight="Bold"
-                                                              Foreground="#E0E0E0"
+                                                              Foreground="{StaticResource BrushTextPrimary}"
                                                               Margin="0,8,0,0"
                                                               VerticalAlignment="Top"/>
                                                     <TextBox Grid.Row="1" Grid.Column="1" 
@@ -534,7 +571,7 @@
                                                 <!-- Variants -->
                                                 <TextBlock Text="Translations:" 
                                                           FontWeight="Bold"
-                                                          Foreground="#E0E0E0"
+                                                          Foreground="{StaticResource BrushTextPrimary}"
                                                           Margin="0,10,0,0"/>
                                                 <ItemsControl ItemsSource="{Binding Variants}">
                                                     <ItemsControl.ItemTemplate>
