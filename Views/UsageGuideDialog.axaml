@@ -1,0 +1,84 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Lingramia.Views.UsageGuideDialog"
+        Title="Usage Guide"
+        Width="700"
+        Height="550"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        MinWidth="600"
+        MinHeight="400"
+        SizeToContent="Manual">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <ScrollViewer Grid.Row="0"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="15"
+                       Margin="30">
+                <TextBlock Text="Lingramia Usage Guide"
+                          FontSize="22"
+                          FontWeight="Bold"
+                          HorizontalAlignment="Center"
+                          Margin="0,0,0,10"/>
+                
+                <TextBlock Text="📝 Creating Localization Files"
+                          FontSize="16"
+                          FontWeight="Bold"
+                          Margin="0,10,0,5"/>
+                
+                <TextBlock Text="1. Create pages to organize your content&#x0a;2. Add fields with keys and original values&#x0a;3. Add language variants for each field&#x0a;4. Use AI translation or manually enter translations&#x0a;5. Save your work as a .locbook file"
+                          FontSize="13"
+                          TextWrapping="Wrap"
+                          Margin="0,0,0,5"/>
+                
+                <TextBlock Text="🎮 Exporting for Game Engines"
+                          FontSize="16"
+                          FontWeight="Bold"
+                          Margin="0,10,0,5"/>
+                
+                <TextBlock Text="Use File → Export (Per-Language JSON) to generate separate JSON files for each language. These files contain key-value pairs ready for your game engine."
+                          FontSize="13"
+                          TextWrapping="Wrap"
+                          Margin="0,0,0,5"/>
+                
+                <TextBlock Text="🔧 Unity Integration (Recommended)"
+                          FontSize="16"
+                          FontWeight="Bold"
+                          Margin="0,10,0,5"/>
+                
+                <TextBlock Text="For Unity users, we recommend using Signalia - a powerful localization framework that seamlessly integrates with .locbook files. Signalia provides automatic loading, language switching, and real-time updates."
+                          FontSize="13"
+                          TextWrapping="Wrap"
+                          Margin="0,0,0,5"/>
+                
+                <TextBlock Text="⚙️ Other Game Engines"
+                          FontSize="16"
+                          FontWeight="Bold"
+                          Margin="0,10,0,5"/>
+                
+                <TextBlock Text="For other engines, you have two options:&#x0a;&#x0a;1. Use the exported per-language JSON files directly&#x0a;2. Build a custom reader framework that parses .locbook files&#x0a;&#x0a;The .locbook format is JSON-based with the following structure:&#x0a;- pages[] - array of content pages&#x0a;- pageFiles[] - array of fields per page&#x0a;- variants[] - array of language translations per field&#x0a;&#x0a;Implementation is flexible - design it to fit your game's architecture."
+                          FontSize="13"
+                          TextWrapping="Wrap"
+                          Margin="0,0,0,10"/>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <Border Grid.Row="1"
+                BorderBrush="LightGray"
+                BorderThickness="0,1,0,0"
+                Padding="20"
+                Background="{StaticResource BrushSecondaryBackground}">
+            <Button Content="Got it!"
+                   Width="120"
+                   Padding="15,8"
+                   HorizontalAlignment="Center"
+                   Click="OnGotItButtonClick"/>
+        </Border>
+    </Grid>
+</Window>
