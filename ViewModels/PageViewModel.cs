@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Lingramia.Models;
+using Lingramia.Services;
 
 namespace Lingramia.ViewModels;
 
@@ -23,6 +24,25 @@ public partial class PageViewModel : ViewModelBase
     private bool _isSearchMatch = true;
 
     public Page Model { get; }
+
+    /// <summary>
+    /// Determines if the AboutPage should use RTL text direction (based on content detection).
+    /// </summary>
+    public bool IsAboutRtl => RtlService.ContainsRtlCharacters(AboutPage);
+
+    /// <summary>
+    /// Gets the FlowDirection for the AboutPage TextBox.
+    /// </summary>
+    public Avalonia.Media.FlowDirection AboutFlowDirection => IsAboutRtl 
+        ? Avalonia.Media.FlowDirection.RightToLeft 
+        : Avalonia.Media.FlowDirection.LeftToRight;
+
+    /// <summary>
+    /// Gets the TextAlignment for the AboutPage TextBox.
+    /// </summary>
+    public Avalonia.Media.TextAlignment AboutTextAlignment => IsAboutRtl 
+        ? Avalonia.Media.TextAlignment.Right 
+        : Avalonia.Media.TextAlignment.Left;
 
     public PageViewModel(Page page)
     {
@@ -53,6 +73,14 @@ public partial class PageViewModel : ViewModelBase
         }
         // Notify that fields have changed
         OnPropertyChanged(nameof(Fields));
+    }
+
+    partial void OnAboutPageChanged(string value)
+    {
+        // Notify that RTL properties may have changed
+        OnPropertyChanged(nameof(IsAboutRtl));
+        OnPropertyChanged(nameof(AboutFlowDirection));
+        OnPropertyChanged(nameof(AboutTextAlignment));
     }
 
     /// <summary>

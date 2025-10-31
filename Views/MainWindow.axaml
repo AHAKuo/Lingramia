@@ -426,7 +426,9 @@
                                     AcceptsReturn="True"
                                     TextWrapping="Wrap"
                                     MinHeight="60"
-                                    HorizontalAlignment="Stretch"/>
+                                    HorizontalAlignment="Stretch"
+                                    FlowDirection="{Binding SelectedLocbook.SelectedPage.AboutFlowDirection}"
+                                    TextAlignment="{Binding SelectedLocbook.SelectedPage.AboutTextAlignment}"/>
                         </Grid>
                     </Border>
 
@@ -565,7 +567,9 @@
                                                             TextWrapping="Wrap"
                                                             MinHeight="60"
                                                             Margin="5,5,0,0"
-                                                            HorizontalAlignment="Stretch"/>
+                                                            HorizontalAlignment="Stretch"
+                                                            FlowDirection="{Binding OriginalFlowDirection}"
+                                                            TextAlignment="{Binding OriginalTextAlignment}"/>
                                                 </Grid>
 
                                                 <!-- Variants -->
@@ -594,7 +598,9 @@
                                                                         TextWrapping="Wrap"
                                                                         MinHeight="60"
                                                                         Margin="0,0,5,0"
-                                                                        HorizontalAlignment="Stretch">
+                                                                        HorizontalAlignment="Stretch"
+                                                                        FlowDirection="{Binding FlowDirection}"
+                                                                        TextAlignment="{Binding TextAlignment}">
                                                                     <TextBox.ContextMenu>
                                                                         <ContextMenu>
                                                                             <MenuItem Header="Translate This Variant" 

@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Lingramia.Models;
+using Lingramia.Services;
 
 namespace Lingramia.ViewModels;
 
@@ -18,6 +19,25 @@ public partial class FieldViewModel : ViewModelBase
     private ObservableCollection<VariantViewModel> _variants = new();
 
     public PageFile Model { get; }
+
+    /// <summary>
+    /// Determines if the original value should use RTL text direction (based on content detection).
+    /// </summary>
+    public bool IsOriginalRtl => RtlService.ContainsRtlCharacters(OriginalValue);
+
+    /// <summary>
+    /// Gets the FlowDirection for the original value TextBox.
+    /// </summary>
+    public Avalonia.Media.FlowDirection OriginalFlowDirection => IsOriginalRtl 
+        ? Avalonia.Media.FlowDirection.RightToLeft 
+        : Avalonia.Media.FlowDirection.LeftToRight;
+
+    /// <summary>
+    /// Gets the TextAlignment for the original value TextBox.
+    /// </summary>
+    public Avalonia.Media.TextAlignment OriginalTextAlignment => IsOriginalRtl 
+        ? Avalonia.Media.TextAlignment.Right 
+        : Avalonia.Media.TextAlignment.Left;
 
     public FieldViewModel(PageFile pageFile)
     {
@@ -35,6 +55,14 @@ public partial class FieldViewModel : ViewModelBase
 
         // Monitor collection changes
         Variants.CollectionChanged += OnVariantsCollectionChanged;
+    }
+
+    partial void OnOriginalValueChanged(string value)
+    {
+        // Notify that RTL properties may have changed
+        OnPropertyChanged(nameof(IsOriginalRtl));
+        OnPropertyChanged(nameof(OriginalFlowDirection));
+        OnPropertyChanged(nameof(OriginalTextAlignment));
     }
 
     private void OnVariantsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -77,11 +105,46 @@ public partial class VariantViewModel : ViewModelBase
 
     public Variant Model { get; }
 
+    /// <summary>
+    /// Determines if this variant should use RTL text direction.
+    /// </summary>
+    public bool IsRtl => RtlService.ShouldUseRtl(Language, Value);
+
+    /// <summary>
+    /// Gets the FlowDirection for this variant (RightToLeft or LeftToRight).
+    /// </summary>
+    public Avalonia.Media.FlowDirection FlowDirection => IsRtl 
+        ? Avalonia.Media.FlowDirection.RightToLeft 
+        : Avalonia.Media.FlowDirection.LeftToRight;
+
+    /// <summary>
+    /// Gets the TextAlignment for this variant (Right or Left).
+    /// </summary>
+    public Avalonia.Media.TextAlignment TextAlignment => IsRtl 
+        ? Avalonia.Media.TextAlignment.Right 
+        : Avalonia.Media.TextAlignment.Left;
+
     public VariantViewModel(Variant variant)
     {
         Model = variant;
         Language = variant.Language;
         Value = variant.Value;
+    }
+
+    partial void OnLanguageChanged(string value)
+    {
+        // Notify that RTL properties may have changed
+        OnPropertyChanged(nameof(IsRtl));
+        OnPropertyChanged(nameof(FlowDirection));
+        OnPropertyChanged(nameof(TextAlignment));
+    }
+
+    partial void OnValueChanged(string value)
+    {
+        // Notify that RTL properties may have changed
+        OnPropertyChanged(nameof(IsRtl));
+        OnPropertyChanged(nameof(FlowDirection));
+        OnPropertyChanged(nameof(TextAlignment));
     }
 
     /// <summary>
