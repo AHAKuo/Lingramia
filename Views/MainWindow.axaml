@@ -21,6 +21,7 @@
         <KeyBinding Gesture="Alt+Down" Command="{Binding NextPageCommand}"/>
         <KeyBinding Gesture="Alt+Up" Command="{Binding PrevPageCommand}"/>
         <KeyBinding Gesture="Escape" Command="{Binding ClearSearchCommand}"/>
+        <!-- Undo/Redo shortcuts - handled in code-behind with TextBox focus detection -->
     </Window.KeyBindings>
 
     <Design.DataContext>
@@ -40,6 +41,10 @@
                 <MenuItem Header="Save As" Command="{Binding SaveAsFileCommand}" />
                 <Separator />
                 <MenuItem Header="Export (Per-Language JSON)" Command="{Binding ExportFileCommand}" />
+            </MenuItem>
+            <MenuItem Header="Edit">
+                <MenuItem Header="Undo" Command="{Binding UndoCommand}" InputGesture="Ctrl+Z" />
+                <MenuItem Header="Redo" Command="{Binding RedoCommand}" InputGesture="Ctrl+Y" />
             </MenuItem>
             <MenuItem Header="Translation">
                 <MenuItem Header="Configure API Key" Command="{Binding ConfigureApiKeyCommand}" />

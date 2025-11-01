@@ -22,6 +22,9 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private LocbookViewModel? _selectedLocbook;
 
+    // Undo/Redo service
+    private readonly UndoRedoService _undoRedoService = new();
+
     partial void OnSelectedLocbookChanging(LocbookViewModel? value)
     {
         if (_selectedLocbook != null)
@@ -46,6 +49,9 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             value.SelectedPage.IsSelected = true;
         }
+
+        // Clear undo/redo history when switching locbooks
+        _undoRedoService.Clear();
 
         UpdateFilteredPages();
         OnPropertyChanged(nameof(HasSelectedPage));
@@ -432,6 +438,26 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void Undo()
+    {
+        if (_undoRedoService.CanUndo)
+        {
+            _undoRedoService.Undo();
+            StatusMessage = "Undo completed.";
+        }
+    }
+
+    [RelayCommand]
+    private void Redo()
+    {
+        if (_undoRedoService.CanRedo)
+        {
+            _undoRedoService.Redo();
+            StatusMessage = "Redo completed.";
+        }
+    }
+
+    [RelayCommand]
     private void AddPage()
     {
         if (SelectedLocbook == null) return;
@@ -450,12 +476,15 @@ public partial class MainWindowViewModel : ViewModelBase
         };
 
         var pageVm = new PageViewModel(newPage);
-        SelectedLocbook.Pages.Add(pageVm);
-        SelectedLocbook.SelectedPage = pageVm;
-        pageVm.IsSelected = true;
-        SelectedLocbook.MarkAsModified();
-        UpdateFilteredPages();
-        StatusMessage = "Added new page.";
+        
+        var command = new AddPageCommand(
+            SelectedLocbook, 
+            pageVm, 
+            () => { UpdateFilteredPages(); StatusMessage = "Added new page."; },
+            () => { UpdateFilteredPages(); StatusMessage = "Undid add page."; }
+        );
+        
+        _undoRedoService.ExecuteCommand(command);
     }
 
     [RelayCommand]
@@ -476,12 +505,15 @@ public partial class MainWindowViewModel : ViewModelBase
         };
 
         var pageVm = new PageViewModel(newPage);
-        locbook.Pages.Add(pageVm);
-        locbook.SelectedPage = pageVm;
-        pageVm.IsSelected = true;
-        locbook.MarkAsModified();
-        UpdateFilteredPages();
-        StatusMessage = "Added new page.";
+        
+        var command = new AddPageCommand(
+            locbook, 
+            pageVm, 
+            () => { UpdateFilteredPages(); StatusMessage = "Added new page."; },
+            () => { UpdateFilteredPages(); StatusMessage = "Undid add page."; }
+        );
+        
+        _undoRedoService.ExecuteCommand(command);
     }
 
     [RelayCommand]
@@ -490,20 +522,15 @@ public partial class MainWindowViewModel : ViewModelBase
         if (SelectedLocbook?.SelectedPage == null) return;
 
         var pageToDelete = SelectedLocbook.SelectedPage;
-        pageToDelete.IsSelected = false;
-        SelectedLocbook.Pages.Remove(pageToDelete);
         
-        // Select the first available page
-        var newSelectedPage = SelectedLocbook.Pages.FirstOrDefault();
-        SelectedLocbook.SelectedPage = newSelectedPage;
-        if (newSelectedPage != null)
-        {
-            newSelectedPage.IsSelected = true;
-        }
+        var command = new DeletePageCommand(
+            SelectedLocbook, 
+            pageToDelete,
+            () => { UpdateFilteredPages(); StatusMessage = "Deleted page."; },
+            () => { UpdateFilteredPages(); StatusMessage = "Restored page."; }
+        );
         
-        SelectedLocbook.MarkAsModified();
-        UpdateFilteredPages();
-        StatusMessage = "Deleted page.";
+        _undoRedoService.ExecuteCommand(command);
     }
 
     [RelayCommand]
@@ -513,19 +540,14 @@ public partial class MainWindowViewModel : ViewModelBase
         var locbook = OpenLocbooks.FirstOrDefault(lb => lb.Pages.Contains(page));
         if (locbook == null) return;
 
-        page.IsSelected = false;
-        locbook.Pages.Remove(page);
-
-        var newSelectedPage = locbook.Pages.FirstOrDefault();
-        locbook.SelectedPage = newSelectedPage;
-        if (newSelectedPage != null)
-        {
-            newSelectedPage.IsSelected = true;
-        }
-
-        locbook.MarkAsModified();
-        UpdateFilteredPages();
-        StatusMessage = "Deleted page.";
+        var command = new DeletePageCommand(
+            locbook, 
+            page,
+            () => { UpdateFilteredPages(); StatusMessage = "Deleted page."; },
+            () => { UpdateFilteredPages(); StatusMessage = "Restored page."; }
+        );
+        
+        _undoRedoService.ExecuteCommand(command);
     }
 
     [RelayCommand]
@@ -564,9 +586,16 @@ public partial class MainWindowViewModel : ViewModelBase
         };
 
         var fieldVm = new FieldViewModel(newField);
-        SelectedLocbook.SelectedPage.Fields.Add(fieldVm);
-        SelectedLocbook.MarkAsModified();
-        StatusMessage = "Added new field.";
+        
+        var command = new AddFieldCommand(
+            SelectedLocbook.SelectedPage, 
+            fieldVm, 
+            SelectedLocbook,
+            () => StatusMessage = "Added new field.",
+            () => StatusMessage = "Undid add field."
+        );
+        
+        _undoRedoService.ExecuteCommand(command);
     }
 
     [RelayCommand]
@@ -575,28 +604,15 @@ public partial class MainWindowViewModel : ViewModelBase
         if (SelectedLocbook?.SelectedPage == null) return;
 
         var source = SelectedLocbook.SelectedPage;
-        var clonedPage = new Page
-        {
-            PageId = source.PageId,
-            AboutPage = source.AboutPage,
-            PageFiles = source.Fields.Select(f => new PageFile
-            {
-                Key = f.Key,
-                OriginalValue = f.OriginalValue,
-                Variants = f.Variants.Select(v => new Variant
-                {
-                    Language = v.Language,
-                    Value = v.Value
-                }).ToList()
-            }).ToList()
-        };
-
-        var cloneVm = new PageViewModel(clonedPage);
-        SelectedLocbook.Pages.Add(cloneVm);
-        SelectedLocbook.SelectedPage = cloneVm;
-        cloneVm.IsSelected = true;
-        SelectedLocbook.MarkAsModified();
-        StatusMessage = "Duplicated page.";
+        
+        var command = new DuplicatePageCommand(
+            SelectedLocbook, 
+            source,
+            () => StatusMessage = "Duplicated page.",
+            () => StatusMessage = "Undid duplicate page."
+        );
+        
+        _undoRedoService.ExecuteCommand(command);
     }
 
     [RelayCommand]
@@ -606,24 +622,14 @@ public partial class MainWindowViewModel : ViewModelBase
         var locbook = OpenLocbooks.FirstOrDefault(lb => lb.Pages.Contains(page));
         if (locbook == null) return;
 
-        var clonedPage = new Page
-        {
-            PageId = page.PageId,
-            AboutPage = page.AboutPage,
-            PageFiles = page.Fields.Select(f => new PageFile
-            {
-                Key = f.Key,
-                OriginalValue = f.OriginalValue,
-                Variants = f.Variants.Select(v => new Variant { Language = v.Language, Value = v.Value }).ToList()
-            }).ToList()
-        };
-
-        var cloneVm = new PageViewModel(clonedPage);
-        locbook.Pages.Add(cloneVm);
-        locbook.SelectedPage = cloneVm;
-        cloneVm.IsSelected = true;
-        locbook.MarkAsModified();
-        StatusMessage = "Duplicated page.";
+        var command = new DuplicatePageCommand(
+            locbook, 
+            page,
+            () => StatusMessage = "Duplicated page.",
+            () => StatusMessage = "Undid duplicate page."
+        );
+        
+        _undoRedoService.ExecuteCommand(command);
     }
 
     [RelayCommand]
@@ -631,17 +637,15 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (field == null || SelectedLocbook?.SelectedPage == null) return;
 
-        var cloned = new PageFile
-        {
-            Key = field.Key,
-            OriginalValue = field.OriginalValue,
-            Variants = field.Variants.Select(v => new Variant { Language = v.Language, Value = v.Value }).ToList()
-        };
-
-        var vm = new FieldViewModel(cloned);
-        SelectedLocbook.SelectedPage.Fields.Add(vm);
-        SelectedLocbook.MarkAsModified();
-        StatusMessage = "Duplicated field.";
+        var command = new DuplicateFieldCommand(
+            SelectedLocbook.SelectedPage, 
+            field, 
+            SelectedLocbook,
+            () => StatusMessage = "Duplicated field.",
+            () => StatusMessage = "Undid duplicate field."
+        );
+        
+        _undoRedoService.ExecuteCommand(command);
     }
 
     [RelayCommand]
@@ -792,7 +796,7 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 Text = ApiKey,
                 Watermark = "sk-...",
-                PasswordChar = '•'
+                PasswordChar = '?'
             };
 
             var buttonPanel = new StackPanel
@@ -861,7 +865,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void AddVariant(FieldViewModel? field)
     {
-        if (field == null) return;
+        if (field == null || SelectedLocbook == null) return;
 
         var newVariant = new Variant
         {
@@ -869,9 +873,17 @@ public partial class MainWindowViewModel : ViewModelBase
             Value = string.Empty
         };
 
-        field.Variants.Add(new VariantViewModel(newVariant));
-        SelectedLocbook?.MarkAsModified();
-        StatusMessage = "Added new variant.";
+        var variantVm = new VariantViewModel(newVariant);
+        
+        var command = new AddVariantCommand(
+            field, 
+            variantVm, 
+            SelectedLocbook,
+            () => StatusMessage = "Added new variant.",
+            () => StatusMessage = "Undid add variant."
+        );
+        
+        _undoRedoService.ExecuteCommand(command);
     }
 
     [RelayCommand]
@@ -879,9 +891,15 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (field == null || SelectedLocbook?.SelectedPage == null) return;
 
-        SelectedLocbook.SelectedPage.Fields.Remove(field);
-        SelectedLocbook.MarkAsModified();
-        StatusMessage = "Deleted field.";
+        var command = new DeleteFieldCommand(
+            SelectedLocbook.SelectedPage, 
+            field, 
+            SelectedLocbook,
+            () => StatusMessage = "Deleted field.",
+            () => StatusMessage = "Restored field."
+        );
+        
+        _undoRedoService.ExecuteCommand(command);
     }
 
     [RelayCommand]
@@ -894,9 +912,15 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             if (field.Variants.Contains(variant))
             {
-                field.Variants.Remove(variant);
-                SelectedLocbook.MarkAsModified();
-                StatusMessage = "Deleted variant.";
+                var command = new DeleteVariantCommand(
+                    field, 
+                    variant, 
+                    SelectedLocbook,
+                    () => StatusMessage = "Deleted variant.",
+                    () => StatusMessage = "Restored variant."
+                );
+                
+                _undoRedoService.ExecuteCommand(command);
                 break;
             }
         }
@@ -1502,7 +1526,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
             var listBox = new TextBlock
             {
-                Text = string.Join("\n", unsavedLocbooks.Select(l => $"• {l.FileName}")),
+                Text = string.Join("\n", unsavedLocbooks.Select(l => $"? {l.FileName}")),
                 FontSize = 13,
                 Margin = new Avalonia.Thickness(10, 0, 0, 0),
                 TextWrapping = Avalonia.Media.TextWrapping.Wrap
