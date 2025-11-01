@@ -24,6 +24,15 @@ public partial class MainWindowViewModel : ViewModelBase
 
     // Undo/Redo service
     private readonly UndoRedoService _undoRedoService = new();
+    
+    public bool CanUndo => _undoRedoService.CanUndo;
+    public bool CanRedo => _undoRedoService.CanRedo;
+    
+    private void NotifyUndoRedoChanged()
+    {
+        OnPropertyChanged(nameof(CanUndo));
+        OnPropertyChanged(nameof(CanRedo));
+    }
 
     partial void OnSelectedLocbookChanging(LocbookViewModel? value)
     {
@@ -52,6 +61,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         // Clear undo/redo history when switching locbooks
         _undoRedoService.Clear();
+        NotifyUndoRedoChanged();
 
         UpdateFilteredPages();
         OnPropertyChanged(nameof(HasSelectedPage));
@@ -444,6 +454,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             _undoRedoService.Undo();
             StatusMessage = "Undo completed.";
+            NotifyUndoRedoChanged();
         }
     }
 
@@ -454,6 +465,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             _undoRedoService.Redo();
             StatusMessage = "Redo completed.";
+            NotifyUndoRedoChanged();
         }
     }
 
@@ -485,6 +497,7 @@ public partial class MainWindowViewModel : ViewModelBase
         );
         
         _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
     }
 
     [RelayCommand]
@@ -514,6 +527,7 @@ public partial class MainWindowViewModel : ViewModelBase
         );
         
         _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
     }
 
     [RelayCommand]
@@ -531,6 +545,7 @@ public partial class MainWindowViewModel : ViewModelBase
         );
         
         _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
     }
 
     [RelayCommand]
@@ -548,6 +563,7 @@ public partial class MainWindowViewModel : ViewModelBase
         );
         
         _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
     }
 
     [RelayCommand]
@@ -596,6 +612,7 @@ public partial class MainWindowViewModel : ViewModelBase
         );
         
         _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
     }
 
     [RelayCommand]
@@ -613,6 +630,7 @@ public partial class MainWindowViewModel : ViewModelBase
         );
         
         _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
     }
 
     [RelayCommand]
@@ -630,6 +648,7 @@ public partial class MainWindowViewModel : ViewModelBase
         );
         
         _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
     }
 
     [RelayCommand]
@@ -646,6 +665,7 @@ public partial class MainWindowViewModel : ViewModelBase
         );
         
         _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
     }
 
     [RelayCommand]
@@ -884,6 +904,7 @@ public partial class MainWindowViewModel : ViewModelBase
         );
         
         _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
     }
 
     [RelayCommand]
@@ -900,6 +921,7 @@ public partial class MainWindowViewModel : ViewModelBase
         );
         
         _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
     }
 
     [RelayCommand]
@@ -921,6 +943,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 );
                 
                 _undoRedoService.ExecuteCommand(command);
+                NotifyUndoRedoChanged();
                 break;
             }
         }

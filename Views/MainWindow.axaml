@@ -43,8 +43,8 @@
                 <MenuItem Header="Export (Per-Language JSON)" Command="{Binding ExportFileCommand}" />
             </MenuItem>
             <MenuItem Header="Edit">
-                <MenuItem Header="Undo" Command="{Binding UndoCommand}" InputGesture="Ctrl+Z" />
-                <MenuItem Header="Redo" Command="{Binding RedoCommand}" InputGesture="Ctrl+Y" />
+                <MenuItem Header="Undo" Command="{Binding UndoCommand}" InputGesture="Ctrl+Z" IsEnabled="{Binding CanUndo}" />
+                <MenuItem Header="Redo" Command="{Binding RedoCommand}" InputGesture="Ctrl+Y" IsEnabled="{Binding CanRedo}" />
             </MenuItem>
             <MenuItem Header="Translation">
                 <MenuItem Header="Configure API Key" Command="{Binding ConfigureApiKeyCommand}" />
@@ -403,75 +403,61 @@
                             BorderThickness="1"
                             Padding="18"
                             CornerRadius="6">
-                        <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="10">
-                            <StackPanel Grid.Row="0"
-                                       Grid.Column="0"
-                                       Orientation="Horizontal"
-                                       VerticalAlignment="Center">
-                                <TextBlock Text="Page Name:"
+                        <Expander IsExpanded="False"
+                                  HorizontalAlignment="Stretch">
+                            <Expander.Header>
+                                <TextBlock Text="Page Info"
                                           FontWeight="Bold"
-                                          Foreground="{StaticResource BrushTextPrimary}"/>
-                                <TextBlock Text=" *"
-                                          FontWeight="Bold"
-                                          Foreground="#E74C3C"
-                                          ToolTip.Tip="Mandatory field"/>
-                            </StackPanel>
-                            <TextBox Grid.Row="0"
-                                    Grid.Column="1"
-                                    Text="{Binding SelectedLocbook.SelectedPage.PageId, Mode=TwoWay}"
-                                    Watermark="Required"
-                                    IsEnabled="{Binding HasSelectedPage}"
-                                    Margin="0"
-                                    HorizontalAlignment="Stretch"/>
-                    <Expander Grid.Row="0"
-                              Background="{StaticResource BrushSecondaryBackground}"
-                              BorderBrush="{StaticResource BrushBorderDivider}"
-                              BorderThickness="1"
-                              CornerRadius="6"
-                              IsExpanded="False"
-                              HorizontalAlignment="Stretch">
-                        <Expander.Header>
-                            <TextBlock Text="Page Info"
-                                      FontWeight="Bold"
-                                      FontSize="14"
-                                      Foreground="{StaticResource BrushTextPrimary}"
-                                      Margin="4"/>
-                        </Expander.Header>
-                        <Border Padding="18" Background="{StaticResource BrushPrimaryBackground}">
-                            <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="10">
-                                <TextBlock Grid.Row="0"
-                                          Grid.Column="0"
-                                          Text="Page Name:"
-                                          FontWeight="Bold"
+                                          FontSize="14"
                                           Foreground="{StaticResource BrushTextPrimary}"
-                                          VerticalAlignment="Center"/>
-                                <TextBox Grid.Row="0"
-                                        Grid.Column="1"
-                                        Text="{Binding SelectedLocbook.SelectedPage.PageId, Mode=TwoWay}"
-                                        Watermark="Optional"
-                                        IsEnabled="{Binding HasSelectedPage}"
-                                        Margin="0"
-                                        HorizontalAlignment="Stretch"/>
-
-                                <TextBlock Grid.Row="1"
-                                          Grid.Column="0"
-                                          Text="About:"
-                                          FontWeight="Bold"
-                                          Foreground="{StaticResource BrushTextPrimary}"
-                                          VerticalAlignment="Center"/>
-                                <TextBox Grid.Row="1"
-                                        Grid.Column="1"
-                                        Text="{Binding SelectedLocbook.SelectedPage.AboutPage, Mode=TwoWay}"
-                                        IsEnabled="{Binding HasSelectedPage}"
-                                        AcceptsReturn="True"
-                                        TextWrapping="Wrap"
-                                        MinHeight="60"
-                                        HorizontalAlignment="Stretch"
-                                        FlowDirection="{Binding SelectedLocbook.SelectedPage.AboutFlowDirection}"
-                                        TextAlignment="{Binding SelectedLocbook.SelectedPage.AboutTextAlignment}"/>
-                            </Grid>
-                        </Border>
-                    </Expander>
+                                          Margin="4"/>
+                            </Expander.Header>
+                            <Border Padding="12,8" Background="{StaticResource BrushPrimaryBackground}">
+                                <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="10">
+                                    <!-- Page Name (Mandatory) -->
+                                    <StackPanel Grid.Row="0"
+                                               Grid.Column="0"
+                                               Orientation="Horizontal"
+                                               VerticalAlignment="Center">
+                                        <TextBlock Text="Page Name:"
+                                                  FontWeight="Bold"
+                                                  Foreground="{StaticResource BrushTextPrimary}"/>
+                                        <TextBlock Text=" *"
+                                                  FontWeight="Bold"
+                                                  Foreground="#E74C3C"
+                                                  ToolTip.Tip="Mandatory field"/>
+                                    </StackPanel>
+                                    <TextBox Grid.Row="0"
+                                            Grid.Column="1"
+                                            Text="{Binding SelectedLocbook.SelectedPage.PageId, Mode=TwoWay}"
+                                            Watermark="Required"
+                                            IsEnabled="{Binding HasSelectedPage}"
+                                            Margin="0"
+                                            HorizontalAlignment="Stretch"/>
+                                    
+                                    <!-- About Field -->
+                                    <TextBlock Grid.Row="1"
+                                              Grid.Column="0"
+                                              Text="About:"
+                                              FontWeight="Bold"
+                                              Foreground="{StaticResource BrushTextPrimary}"
+                                              VerticalAlignment="Top"
+                                              Margin="0,8,0,0"/>
+                                    <TextBox Grid.Row="1"
+                                            Grid.Column="1"
+                                            Text="{Binding SelectedLocbook.SelectedPage.AboutPage, Mode=TwoWay}"
+                                            IsEnabled="{Binding HasSelectedPage}"
+                                            AcceptsReturn="True"
+                                            TextWrapping="Wrap"
+                                            MinHeight="60"
+                                            Margin="0,8,0,0"
+                                            HorizontalAlignment="Stretch"
+                                            FlowDirection="{Binding SelectedLocbook.SelectedPage.AboutFlowDirection}"
+                                            TextAlignment="{Binding SelectedLocbook.SelectedPage.AboutTextAlignment}"/>
+                                </Grid>
+                            </Border>
+                        </Expander>
+                    </Border>
 
                     <!-- Field Actions -->
                     <StackPanel Grid.Row="1"
