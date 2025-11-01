@@ -32,18 +32,22 @@ public partial class MainWindow : Window
     
     private void OnPreviewKeyDown(object? sender, KeyEventArgs e)
     {
-        // The issue: Menu control activates on any Alt press (Windows convention)
-        // When Shift+Alt is pressed, Menu still activates because it only checks for Alt
-        // Solution: Prevent Menu from seeing Alt when Shift is held
-        // This prevents accidental menu activation when user presses Shift then Alt
-        if ((e.Key == Key.LeftAlt || e.Key == Key.RightAlt) && 
-            e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-        {
-            // Mark as handled to prevent Menu from activating
-            // Alt+Down/Alt+Up KeyBindings will still work because they're processed
-            // at the Window level before Menu sees the Alt key
-            e.Handled = true;
-        }
+		// Swallow Alt key presses so the menu bar doesn't activate when Alt is pressed
+		// (including the sequence Alt then Shift which is common for language switching).
+		// This does not affect Alt+<key> shortcuts like Alt+Up/Alt+Down since those
+		// are recognized on the second key's KeyDown with the Alt modifier state.
+		if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
+		{
+			e.Handled = true;
+			return;
+		}
+
+		// Also prevent F10 (without modifiers) from activating the menu bar on Windows
+		if (e.Key == Key.F10 && e.KeyModifiers == KeyModifiers.None)
+		{
+			e.Handled = true;
+			return;
+		}
     }
     
     private async void OnWindowClosing(object? sender, CancelEventArgs e)
