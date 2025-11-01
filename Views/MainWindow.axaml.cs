@@ -48,6 +48,30 @@ public partial class MainWindow : Window
 			e.Handled = true;
 			return;
 		}
+
+		// Handle Undo/Redo shortcuts (Ctrl+Z, Ctrl+Y) only when TextBox is not focused
+		if (DataContext is MainWindowViewModel viewModel)
+		{
+			var focusedElement = FocusManager?.GetFocusedElement();
+			bool isTextBoxFocused = focusedElement is TextBox;
+
+			// Only handle undo/redo if a TextBox is NOT focused
+			if (!isTextBoxFocused)
+			{
+				if (e.Key == Key.Z && e.KeyModifiers == KeyModifiers.Control)
+				{
+					viewModel.UndoCommand.Execute(null);
+					e.Handled = true;
+					return;
+				}
+				else if (e.Key == Key.Y && e.KeyModifiers == KeyModifiers.Control)
+				{
+					viewModel.RedoCommand.Execute(null);
+					e.Handled = true;
+					return;
+				}
+			}
+		}
     }
     
     private async void OnWindowClosing(object? sender, CancelEventArgs e)
