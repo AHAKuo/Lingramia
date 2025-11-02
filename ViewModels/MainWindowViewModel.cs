@@ -212,28 +212,69 @@ public partial class MainWindowViewModel : ViewModelBase
             if (files.Count > 0)
             {
                 var filePath = files[0].Path.LocalPath;
-                var locbook = await FileService.OpenLocbookAsync(filePath);
+                await OpenFileFromPathAsync(filePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error opening file: {ex.Message}";
+        }
+    }
 
-                if (locbook != null)
+    /// <summary>
+    /// Opens a .locbook file from the specified file path.
+    /// </summary>
+    public async Task OpenFileFromPathAsync(string filePath)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                StatusMessage = "No file path provided.";
+                return;
+            }
+
+            if (!File.Exists(filePath))
+            {
+                StatusMessage = $"File not found: {filePath}";
+                return;
+            }
+
+            var locbook = await FileService.OpenLocbookAsync(filePath);
+
+            if (locbook != null)
+            {
+                // Check if this file is already open
+                var existingLocbook = OpenLocbooks.FirstOrDefault(lb => 
+                    !string.IsNullOrEmpty(lb.FilePath) && 
+                    Path.GetFullPath(lb.FilePath).Equals(Path.GetFullPath(filePath), StringComparison.OrdinalIgnoreCase));
+                
+                if (existingLocbook != null)
                 {
-                    var locbookVm = new LocbookViewModel(locbook, filePath);
-                    
-                    // Clear previous selection
-                    foreach (var lb in OpenLocbooks)
-                    {
-                        lb.IsSelected = false;
-                    }
-                    
-                    locbookVm.IsSelected = true;
-                    OpenLocbooks.Add(locbookVm);
-                    SelectedLocbook = locbookVm;
+                    // File is already open, just select it
+                    SelectedLocbook = existingLocbook;
                     UpdateFilteredPages();
-                    StatusMessage = $"Opened: {locbookVm.FileName}";
+                    StatusMessage = $"File already open: {existingLocbook.FileName}";
+                    return;
                 }
-                else
+
+                var locbookVm = new LocbookViewModel(locbook, filePath);
+                
+                // Clear previous selection
+                foreach (var lb in OpenLocbooks)
                 {
-                    StatusMessage = "Failed to open file. Invalid format?";
+                    lb.IsSelected = false;
                 }
+                
+                locbookVm.IsSelected = true;
+                OpenLocbooks.Add(locbookVm);
+                SelectedLocbook = locbookVm;
+                UpdateFilteredPages();
+                StatusMessage = $"Opened: {locbookVm.FileName}";
+            }
+            else
+            {
+                StatusMessage = "Failed to open file. Invalid format?";
             }
         }
         catch (Exception ex)
