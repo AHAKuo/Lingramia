@@ -66,4 +66,4 @@ While the format is valid JSON, the `.locbook` extension is used to clearly dist
 ### Compatibility
 The app is mainly designed for the Signalia framework in unity, as that is the only framework at the moment that supports opening and using that file format, deserializing and serializing it.
 
-Ownership of AHAKuo Creations, or AHAKuo.
+“Use it for anything, just don’t sell my tool as your own.”
