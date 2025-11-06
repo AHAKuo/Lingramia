@@ -189,29 +189,29 @@ jobs:
           </plist>
           EOF
 
-      - name: Prepare macOS x64 artifact
+      - name: Package macOS x64 artifact
         run: |
-          mkdir -p artifacts/macos-x64
-          cp -R bin/Release/net8.0/osx-x64/publish/Lingramia.app artifacts/macos-x64/
+          mkdir -p artifacts
+          cd bin/Release/net8.0/osx-x64/publish
+          zip -r ../../../../../artifacts/Lingramia-macOS-x64.zip Lingramia.app
 
-      - name: Prepare macOS ARM64 artifact
+      - name: Package macOS ARM64 artifact
         run: |
-          mkdir -p artifacts/macos-arm64
-          cp -R bin/Release/net8.0/osx-arm64/publish/Lingramia.app artifacts/macos-arm64/
+          mkdir -p artifacts
+          cd bin/Release/net8.0/osx-arm64/publish
+          zip -r ../../../../../artifacts/Lingramia-macOS-ARM64.zip Lingramia.app
 
       - name: Upload macOS x64 artifacts
-        working-directory: artifacts/macos-x64
         uses: actions/upload-artifact@v4
         with:
           name: Lingramia-macOS-x64
-          path: Lingramia.app
+          path: artifacts/Lingramia-macOS-x64.zip
           if-no-files-found: error
 
       - name: Upload macOS ARM64 artifacts
-        working-directory: artifacts/macos-arm64
         uses: actions/upload-artifact@v4
         with:
           name: Lingramia-macOS-ARM64
-          path: Lingramia.app
+          path: artifacts/Lingramia-macOS-ARM64.zip
           if-no-files-found: error
 
