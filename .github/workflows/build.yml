@@ -75,15 +75,129 @@ jobs:
       - name: Build macOS ARM64
         run: dotnet publish -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 
+      - name: Create macOS app icon
+        run: |
+          # Convert ICO to PNG first (sips can work with ICO but iconutil needs PNG)
+          # Create a temporary iconset directory
+          mkdir -p icon.iconset
+          # Extract/convert ICO to PNG at 1024x1024 (macOS will scale down)
+          sips -s format png Assets/lingramia-logo.ico --out icon.iconset/icon_512x512@2x.png --resampleHeightWidthMax 1024
+          # Create all required icon sizes
+          sips -z 16 16 icon.iconset/icon_512x512@2x.png --out icon.iconset/icon_16x16.png
+          sips -z 32 32 icon.iconset/icon_512x512@2x.png --out icon.iconset/icon_16x16@2x.png
+          sips -z 32 32 icon.iconset/icon_512x512@2x.png --out icon.iconset/icon_32x32.png
+          sips -z 64 64 icon.iconset/icon_512x512@2x.png --out icon.iconset/icon_32x32@2x.png
+          sips -z 128 128 icon.iconset/icon_512x512@2x.png --out icon.iconset/icon_128x128.png
+          sips -z 256 256 icon.iconset/icon_512x512@2x.png --out icon.iconset/icon_128x128@2x.png
+          sips -z 256 256 icon.iconset/icon_512x512@2x.png --out icon.iconset/icon_256x256.png
+          sips -z 512 512 icon.iconset/icon_512x512@2x.png --out icon.iconset/icon_256x256@2x.png
+          sips -z 512 512 icon.iconset/icon_512x512@2x.png --out icon.iconset/icon_512x512.png
+          # Create the .icns file
+          iconutil -c icns icon.iconset -o Assets/lingramia-logo.icns
+          # Clean up
+          rm -rf icon.iconset
+
+      - name: Create macOS x64 app bundle
+        run: |
+          cd bin/Release/net8.0/osx-x64/publish
+          EXECUTABLE=$(ls -1 | grep -v '\.app$' | grep -v '\.dylib$' | grep -v '\.json$' | grep -v '\.pdb$' | head -1)
+          if [ -z "$EXECUTABLE" ]; then
+            echo "Error: Could not find executable file"
+            ls -la
+            exit 1
+          fi
+          mkdir -p Lingramia.app/Contents/MacOS
+          mkdir -p Lingramia.app/Contents/Resources
+          mv "$EXECUTABLE" Lingramia.app/Contents/MacOS/Lingramia
+          chmod +x Lingramia.app/Contents/MacOS/Lingramia
+          # Move any .dylib files to the MacOS directory if they exist
+          if ls *.dylib 1> /dev/null 2>&1; then
+            mv *.dylib Lingramia.app/Contents/MacOS/
+          fi
+          # Copy icon to Resources
+          cp ../../../../../Assets/lingramia-logo.icns Lingramia.app/Contents/Resources/
+          cat > Lingramia.app/Contents/Info.plist <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key>
+            <string>Lingramia</string>
+            <key>CFBundleIconFile</key>
+            <string>lingramia-logo</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.lingramia.app</string>
+            <key>CFBundleName</key>
+            <string>Lingramia</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleVersion</key>
+            <string>1.0</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>10.15</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Create macOS ARM64 app bundle
+        run: |
+          cd bin/Release/net8.0/osx-arm64/publish
+          EXECUTABLE=$(ls -1 | grep -v '\.app$' | grep -v '\.dylib$' | grep -v '\.json$' | grep -v '\.pdb$' | head -1)
+          if [ -z "$EXECUTABLE" ]; then
+            echo "Error: Could not find executable file"
+            ls -la
+            exit 1
+          fi
+          mkdir -p Lingramia.app/Contents/MacOS
+          mkdir -p Lingramia.app/Contents/Resources
+          mv "$EXECUTABLE" Lingramia.app/Contents/MacOS/Lingramia
+          chmod +x Lingramia.app/Contents/MacOS/Lingramia
+          # Move any .dylib files to the MacOS directory if they exist
+          if ls *.dylib 1> /dev/null 2>&1; then
+            mv *.dylib Lingramia.app/Contents/MacOS/
+          fi
+          # Copy icon to Resources
+          cp ../../../../../Assets/lingramia-logo.icns Lingramia.app/Contents/Resources/
+          cat > Lingramia.app/Contents/Info.plist <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key>
+            <string>Lingramia</string>
+            <key>CFBundleIconFile</key>
+            <string>lingramia-logo</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.lingramia.app</string>
+            <key>CFBundleName</key>
+            <string>Lingramia</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleVersion</key>
+            <string>1.0</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>10.15</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
       - name: Upload macOS x64 artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Lingramia-macOS-x64
-          path: bin/Release/net8.0/osx-x64/publish/
+          path: bin/Release/net8.0/osx-x64/publish/Lingramia.app
 
       - name: Upload macOS ARM64 artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Lingramia-macOS-ARM64
-          path: bin/Release/net8.0/osx-arm64/publish/
+          path: bin/Release/net8.0/osx-arm64/publish/Lingramia.app
 
