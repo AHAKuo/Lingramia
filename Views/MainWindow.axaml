@@ -253,6 +253,13 @@
                                                                      Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
                                                             <Separator />
+                                                            <MenuItem Header="Add Language Codes..."
+                                                                     Command="{Binding $parent[Window].DataContext.BulkAddLanguageCodesToLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <MenuItem Header="Translate Locbook"
+                                                                     Command="{Binding $parent[Window].DataContext.TranslateLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <Separator />
                                                             <MenuItem Header="Close Locbook"
                                                                      Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
@@ -301,6 +308,13 @@
                                                                          Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
                                                                 <Separator />
+                                                                <MenuItem Header="Add Language Codes..."
+                                                                         Command="{Binding $parent[Window].DataContext.BulkAddLanguageCodesToLocbookCommand}"
+                                                                         CommandParameter="{Binding}" />
+                                                                <MenuItem Header="Translate Locbook"
+                                                                         Command="{Binding $parent[Window].DataContext.TranslateLocbookCommand}"
+                                                                         CommandParameter="{Binding}" />
+                                                                <Separator />
                                                                 <MenuItem Header="Close Locbook"
                                                                          Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
@@ -316,6 +330,13 @@
                                                                          CommandParameter="{Binding}" />
                                                                 <MenuItem Header="Export"
                                                                          Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
+                                                                         CommandParameter="{Binding}" />
+                                                                <Separator />
+                                                                <MenuItem Header="Add Language Codes..."
+                                                                         Command="{Binding $parent[Window].DataContext.BulkAddLanguageCodesToLocbookCommand}"
+                                                                         CommandParameter="{Binding}" />
+                                                                <MenuItem Header="Translate Locbook"
+                                                                         Command="{Binding $parent[Window].DataContext.TranslateLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
                                                                 <Separator />
                                                                 <MenuItem Header="Close Locbook"

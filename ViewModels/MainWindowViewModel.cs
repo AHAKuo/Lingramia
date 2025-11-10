@@ -821,6 +821,235 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task TranslateLocbookAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
+        {
+            StatusMessage = "No locbook selected.";
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(ApiKey))
+        {
+            StatusMessage = "Please configure API key first.";
+            return;
+        }
+
+        Window? loadingDialog = null;
+        try
+        {
+            loadingDialog = ShowLoadingDialog("Translating locbook...", "Translating all empty variants in all pages of this locbook using AI. This may take several minutes...");
+            TranslationService.LoadConfig(ApiKey);
+            
+            int totalFieldCount = 0;
+            int pageCount = 0;
+            
+            foreach (var page in locbook.Pages)
+            {
+                foreach (var field in page.Fields)
+                {
+                    foreach (var variant in field.Variants)
+                    {
+                        if (string.IsNullOrEmpty(variant.Value))
+                        {
+                            var translated = await TranslationService.TranslateAsync(field.OriginalValue, variant.Language);
+                            variant.Value = translated;
+                            totalFieldCount++;
+                        }
+                    }
+                }
+                pageCount++;
+            }
+
+            locbook.MarkAsModified();
+            StatusMessage = $"Locbook translation completed. Translated {totalFieldCount} field(s) across {pageCount} page(s).";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Translation error: {ex.Message}";
+        }
+        finally
+        {
+            loadingDialog?.Close();
+        }
+    }
+
+    [RelayCommand]
+    private async Task BulkAddLanguageCodesToLocbookAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
+        {
+            StatusMessage = "No locbook selected.";
+            return;
+        }
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        try
+        {
+            // Create input dialog for language codes
+            var dialog = new Window
+            {
+                Title = "Add Language Codes to All Fields",
+                Width = 550,
+                Height = 280,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                CanResize = false
+            };
+
+            var stackPanel = new StackPanel
+            {
+                Margin = new Avalonia.Thickness(20),
+                Spacing = 15
+            };
+
+            var titleLabel = new TextBlock
+            {
+                Text = "Enter language codes to add to all fields in this locbook:",
+                FontSize = 14,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var instructionLabel = new TextBlock
+            {
+                Text = "Separate codes with commas (e.g., en, es, fr, de, ja)",
+                FontSize = 12,
+                Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#888888")),
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var textBox = new TextBox
+            {
+                Watermark = "en, es, fr, de, ja, ar, zh...",
+                MinHeight = 60,
+                AcceptsReturn = false,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var noteLabel = new TextBlock
+            {
+                Text = "Note: Existing language codes in each field will not be duplicated.",
+                FontSize = 11,
+                FontStyle = Avalonia.Media.FontStyle.Italic,
+                Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#666666")),
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                Spacing = 10
+            };
+
+            var addButton = new Button
+            {
+                Content = "Add",
+                Width = 80,
+                Padding = new Avalonia.Thickness(10, 5)
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Width = 80,
+                Padding = new Avalonia.Thickness(10, 5)
+            };
+
+            addButton.Click += (s, e) =>
+            {
+                var input = textBox.Text ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    dialog.Close();
+                    return;
+                }
+
+                // Parse language codes
+                var languageCodes = input
+                    .Split(new[] { ',', ';', ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(code => code.Trim().ToLowerInvariant())
+                    .Where(code => !string.IsNullOrEmpty(code))
+                    .Distinct()
+                    .ToList();
+
+                if (languageCodes.Count == 0)
+                {
+                    dialog.Close();
+                    return;
+                }
+
+                // Add language codes to all fields
+                int fieldsModified = 0;
+                int variantsAdded = 0;
+
+                foreach (var page in locbook.Pages)
+                {
+                    foreach (var field in page.Fields)
+                    {
+                        var existingLanguages = field.Variants
+                            .Select(v => v.Language.ToLowerInvariant())
+                            .ToHashSet();
+
+                        bool fieldModified = false;
+                        foreach (var languageCode in languageCodes)
+                        {
+                            if (!existingLanguages.Contains(languageCode))
+                            {
+                                var newVariant = new Variant
+                                {
+                                    Language = languageCode,
+                                    Value = string.Empty
+                                };
+                                var variantVm = new VariantViewModel(newVariant);
+                                field.Variants.Add(variantVm);
+                                variantsAdded++;
+                                fieldModified = true;
+                            }
+                        }
+
+                        if (fieldModified)
+                        {
+                            fieldsModified++;
+                        }
+                    }
+                }
+
+                locbook.MarkAsModified();
+                StatusMessage = $"Added {variantsAdded} variant(s) to {fieldsModified} field(s) across {locbook.Pages.Count} page(s).";
+                dialog.Close();
+            };
+
+            cancelButton.Click += (s, e) =>
+            {
+                dialog.Close();
+            };
+
+            buttonPanel.Children.Add(addButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            stackPanel.Children.Add(titleLabel);
+            stackPanel.Children.Add(instructionLabel);
+            stackPanel.Children.Add(textBox);
+            stackPanel.Children.Add(noteLabel);
+            stackPanel.Children.Add(buttonPanel);
+
+            dialog.Content = stackPanel;
+
+            await dialog.ShowDialog(_mainWindow);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error adding language codes: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private async Task ConfigureApiKeyAsync()
     {
         if (_mainWindow == null)
