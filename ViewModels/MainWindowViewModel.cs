@@ -821,6 +821,60 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task TranslateLocbookAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
+        {
+            StatusMessage = "No locbook selected.";
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(ApiKey))
+        {
+            StatusMessage = "Please configure API key first.";
+            return;
+        }
+
+        Window? loadingDialog = null;
+        try
+        {
+            loadingDialog = ShowLoadingDialog("Translating locbook...", "Translating all empty variants in all pages of this locbook using AI. This may take several minutes...");
+            TranslationService.LoadConfig(ApiKey);
+            
+            int totalFieldCount = 0;
+            int pageCount = 0;
+            
+            foreach (var page in locbook.Pages)
+            {
+                foreach (var field in page.Fields)
+                {
+                    foreach (var variant in field.Variants)
+                    {
+                        if (string.IsNullOrEmpty(variant.Value))
+                        {
+                            var translated = await TranslationService.TranslateAsync(field.OriginalValue, variant.Language);
+                            variant.Value = translated;
+                            totalFieldCount++;
+                        }
+                    }
+                }
+                pageCount++;
+            }
+
+            locbook.MarkAsModified();
+            StatusMessage = $"Locbook translation completed. Translated {totalFieldCount} field(s) across {pageCount} page(s).";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Translation error: {ex.Message}";
+        }
+        finally
+        {
+            loadingDialog?.Close();
+        }
+    }
+
+    [RelayCommand]
     private async Task ConfigureApiKeyAsync()
     {
         if (_mainWindow == null)
