@@ -199,11 +199,47 @@ public class SingleInstanceService : IDisposable
 
     public void Dispose()
     {
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
+        // Cancel the token source, handling potential race conditions
+        if (_cancellationTokenSource != null)
+        {
+            try
+            {
+                _cancellationTokenSource.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already disposed, ignore
+            }
+            
+            try
+            {
+                _cancellationTokenSource.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already disposed, ignore
+            }
+            
+            _cancellationTokenSource = null;
+        }
+        
         _pipeServer?.Dispose();
-        _mutex?.ReleaseMutex();
-        _mutex?.Dispose();
+        _pipeServer = null;
+        
+        if (_mutex != null)
+        {
+            try
+            {
+                _mutex.ReleaseMutex();
+            }
+            catch (Exception)
+            {
+                // Ignore errors when releasing mutex
+            }
+            
+            _mutex.Dispose();
+            _mutex = null;
+        }
     }
 }
 
