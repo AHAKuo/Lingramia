@@ -360,3 +360,136 @@ public class DeleteVariantCommand : IUndoableCommand
         _onUndo?.Invoke();
     }
 }
+
+/// <summary>
+/// Command for matching similar fields across all locbooks.
+/// Finds all fields with the same OriginalValue and copies Key and Variants from the source field.
+/// </summary>
+public class MatchSimilarFieldsCommand : IUndoableCommand
+{
+    private readonly FieldViewModel _sourceField;
+    private readonly List<LocbookViewModel> _allLocbooks;
+    private readonly Dictionary<FieldViewModel, FieldState> _originalStates = new();
+    private readonly Action _onExecute;
+    private readonly Action _onUndo;
+
+    private class FieldState
+    {
+        public string Key { get; set; } = string.Empty;
+        public List<VariantState> Variants { get; set; } = new();
+    }
+
+    private class VariantState
+    {
+        public string Language { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+    }
+
+    public MatchSimilarFieldsCommand(
+        FieldViewModel sourceField, 
+        List<LocbookViewModel> allLocbooks,
+        Action onExecute, 
+        Action onUndo)
+    {
+        _sourceField = sourceField;
+        _allLocbooks = allLocbooks;
+        _onExecute = onExecute;
+        _onUndo = onUndo;
+    }
+
+    public void Execute()
+    {
+        // Find all fields with the same OriginalValue across all locbooks
+        var matchingFields = new List<(FieldViewModel field, LocbookViewModel locbook)>();
+        
+        foreach (var locbook in _allLocbooks)
+        {
+            foreach (var page in locbook.Pages)
+            {
+                foreach (var field in page.Fields)
+                {
+                    // Match fields with same OriginalValue, but not the source field itself
+                    if (field != _sourceField && field.OriginalValue == _sourceField.OriginalValue)
+                    {
+                        matchingFields.Add((field, locbook));
+                    }
+                }
+            }
+        }
+
+        // Store original states and apply changes
+        foreach (var (field, locbook) in matchingFields)
+        {
+            // Store original state
+            _originalStates[field] = new FieldState
+            {
+                Key = field.Key,
+                Variants = field.Variants.Select(v => new VariantState
+                {
+                    Language = v.Language,
+                    Value = v.Value
+                }).ToList()
+            };
+
+            // Apply new values from source field
+            field.Key = _sourceField.Key;
+            
+            // Clear existing variants
+            field.Variants.Clear();
+            
+            // Copy variants from source field
+            foreach (var sourceVariant in _sourceField.Variants)
+            {
+                var newVariant = new Variant
+                {
+                    Language = sourceVariant.Language,
+                    Value = sourceVariant.Value
+                };
+                var variantVm = new VariantViewModel(newVariant);
+                field.Variants.Add(variantVm);
+            }
+
+            // Mark locbook as modified
+            locbook.MarkAsModified();
+        }
+
+        _onExecute?.Invoke();
+    }
+
+    public void Undo()
+    {
+        // Restore original states
+        foreach (var locbook in _allLocbooks)
+        {
+            foreach (var page in locbook.Pages)
+            {
+                foreach (var field in page.Fields)
+                {
+                    if (_originalStates.TryGetValue(field, out var originalState))
+                    {
+                        // Restore original key
+                        field.Key = originalState.Key;
+                        
+                        // Restore original variants
+                        field.Variants.Clear();
+                        foreach (var variantState in originalState.Variants)
+                        {
+                            var variant = new Variant
+                            {
+                                Language = variantState.Language,
+                                Value = variantState.Value
+                            };
+                            var variantVm = new VariantViewModel(variant);
+                            field.Variants.Add(variantVm);
+                        }
+
+                        // Mark locbook as modified
+                        locbook.MarkAsModified();
+                    }
+                }
+            }
+        }
+
+        _onUndo?.Invoke();
+    }
+}

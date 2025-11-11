@@ -1195,6 +1195,44 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void MatchSimilarFields(FieldViewModel? field)
+    {
+        if (field == null) return;
+
+        // Count how many fields will be matched
+        int matchCount = 0;
+        foreach (var locbook in OpenLocbooks)
+        {
+            foreach (var page in locbook.Pages)
+            {
+                foreach (var f in page.Fields)
+                {
+                    if (f != field && f.OriginalValue == field.OriginalValue)
+                    {
+                        matchCount++;
+                    }
+                }
+            }
+        }
+
+        if (matchCount == 0)
+        {
+            StatusMessage = "No similar fields found.";
+            return;
+        }
+
+        var command = new MatchSimilarFieldsCommand(
+            field,
+            OpenLocbooks.ToList(),
+            () => StatusMessage = $"Matched {matchCount} similar field(s) with same Original Value.",
+            () => StatusMessage = "Undid match similar fields."
+        );
+
+        _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
+    }
+
+    [RelayCommand]
     private void DeleteVariant(VariantViewModel? variant)
     {
         if (variant == null || SelectedLocbook?.SelectedPage == null) return;
