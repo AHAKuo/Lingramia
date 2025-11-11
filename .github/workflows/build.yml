@@ -189,6 +189,24 @@ jobs:
           </plist>
           EOF
 
+      - name: Code sign macOS x64 app bundle
+        run: |
+          cd bin/Release/net8.0/osx-x64/publish
+          # Sign the app bundle with ad-hoc signing
+          # This allows the app to run on macOS without the "damaged" error
+          codesign --force --deep --sign - Lingramia.app
+          # Verify the signing
+          codesign --verify --verbose Lingramia.app
+
+      - name: Code sign macOS ARM64 app bundle
+        run: |
+          cd bin/Release/net8.0/osx-arm64/publish
+          # Sign the app bundle with ad-hoc signing
+          # This allows the app to run on macOS without the "damaged" error
+          codesign --force --deep --sign - Lingramia.app
+          # Verify the signing
+          codesign --verify --verbose Lingramia.app
+
       - name: Package macOS x64 artifact
         run: |
           mkdir -p artifacts
