@@ -1,0 +1,129 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Lingramia.ViewModels"
+        x:Class="Lingramia.Views.MergeDialog"
+        Title="Merge Locbook"
+        Width="600"
+        Height="500"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        MinWidth="550"
+        MinHeight="450">
+    
+    <Window.DataContext>
+        <vm:MergeDialogViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="20" x:DataType="vm:MergeDialogViewModel">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Merge Locbook"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Margin="0,0,0,15"/>
+
+        <!-- Description -->
+        <TextBlock Grid.Row="1"
+                   Text="Merge a source locbook into the current locbook. This will add new information to the target book. Locked items will be skipped."
+                   FontSize="12"
+                   TextWrapping="Wrap"
+                   Foreground="Gray"
+                   Margin="0,0,0,15"/>
+
+        <!-- File Selection -->
+        <Border Grid.Row="2"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"
+                           Text="Source Locbook File:"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,8"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding SourceFilePath, Mode=TwoWay}"
+                             Watermark="Select a .locbook file to merge from..."
+                             IsReadOnly="True"
+                             Margin="0,0,8,0"/>
+                    <Button Grid.Column="1"
+                            Content="Browse..."
+                            Command="{Binding BrowseFileCommand}"
+                            Padding="12,6"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Merge Mode Options -->
+        <Border Grid.Row="3"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,15">
+            <StackPanel Spacing="10">
+                <TextBlock Text="Merge Mode:"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,5"/>
+                <RadioButton x:Name="AdditiveRadioButton"
+                             Content="Additive Mode - Only add new values and fill in missing information"
+                             IsChecked="{Binding AdditiveMode, Mode=TwoWay}"
+                             GroupName="MergeMode"/>
+                <RadioButton Content="Overwrite Mode - Replace existing values with values from source"
+                             IsChecked="{Binding OverwriteMode, Mode=TwoWay}"
+                             GroupName="MergeMode"
+                             Margin="0,5,0,0"/>
+                <TextBlock Text="Note: Locked items (keys, original values, languages, page IDs, about pages) will always be skipped."
+                           FontSize="11"
+                           FontStyle="Italic"
+                           Foreground="Gray"
+                           Margin="0,10,0,0"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+		<!-- Buttons -->
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,0,0,10">
+            <Button Content="Merge"
+                    Command="{Binding MergeCommand}"
+                    Width="100"
+                    Padding="15,8"
+                    IsEnabled="{Binding CanMerge}"/>
+            <Button Content="Cancel"
+                    Click="OnCancelButtonClick"
+                    Width="100"
+                    Padding="15,8"/>
+        </StackPanel>
+
+        <!-- Status/Error Message -->
+        <TextBlock Grid.Row="5"
+                   Text="{Binding StatusMessage}"
+                   Foreground="{Binding StatusColor}"
+                   TextWrapping="Wrap"
+                   IsVisible="{Binding HasStatusMessage}"/>
+    </Grid>
+</Window>
+

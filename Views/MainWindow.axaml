@@ -258,6 +258,9 @@
                                                             <MenuItem Header="Import..."
                                                                      Command="{Binding $parent[Window].DataContext.ImportLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
+                                                            <MenuItem Header="Merge..."
+                                                                     Command="{Binding $parent[Window].DataContext.MergeLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
                                                             <MenuItem Header="Export Locbook..."
                                                                      Command="{Binding $parent[Window].DataContext.ExportLocbookDialogCommand}"
                                                                      CommandParameter="{Binding}" />
@@ -328,6 +331,9 @@
                                                                 <MenuItem Header="Import..."
                                                                          Command="{Binding $parent[Window].DataContext.ImportLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
+                                                                <MenuItem Header="Merge..."
+                                                                         Command="{Binding $parent[Window].DataContext.MergeLocbookCommand}"
+                                                                         CommandParameter="{Binding}" />
                                                                 <MenuItem Header="Export Locbook..."
                                                                          Command="{Binding $parent[Window].DataContext.ExportLocbookDialogCommand}"
                                                                          CommandParameter="{Binding}" />
@@ -366,6 +372,9 @@
                                                                          CommandParameter="{Binding}" />
                                                                 <MenuItem Header="Import..."
                                                                          Command="{Binding $parent[Window].DataContext.ImportLocbookCommand}"
+                                                                         CommandParameter="{Binding}" />
+                                                                <MenuItem Header="Merge..."
+                                                                         Command="{Binding $parent[Window].DataContext.MergeLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
                                                                 <MenuItem Header="Export Locbook..."
                                                                          Command="{Binding $parent[Window].DataContext.ExportLocbookDialogCommand}"

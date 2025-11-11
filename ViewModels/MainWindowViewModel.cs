@@ -617,6 +617,83 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task MergeLocbookAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
+        {
+            StatusMessage = "No locbook selected.";
+            return;
+        }
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new MergeDialog
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            var viewModel = dialog.ViewModel;
+            viewModel.SetParentWindow(_mainWindow);
+            viewModel.TargetLocbook = locbook.Model;
+
+            await dialog.ShowDialog(_mainWindow);
+
+            if (viewModel.MergeSuccessful && viewModel.MergeResult != null)
+            {
+                // The merge has already modified locbook.Model directly (via TargetLocbook reference)
+                // So we rebuild the view model from the updated model WITHOUT calling UpdateModel()
+                // (which would overwrite the merged changes)
+                var updatedLocbook = new LocbookViewModel(locbook.Model, locbook.FilePath);
+                
+                // Preserve selection state
+                if (locbook.SelectedPage != null)
+                {
+                    var selectedPageId = locbook.SelectedPage.PageId;
+                    var newSelectedPage = updatedLocbook.Pages.FirstOrDefault(p => p.PageId == selectedPageId);
+                    if (newSelectedPage != null)
+                    {
+                        updatedLocbook.SelectedPage = newSelectedPage;
+                    }
+                }
+
+                // Replace the locbook in the collection
+                var index = OpenLocbooks.IndexOf(locbook);
+                if (index >= 0)
+                {
+                    OpenLocbooks[index] = updatedLocbook;
+                    if (SelectedLocbook == locbook)
+                    {
+                        SelectedLocbook = updatedLocbook;
+                    }
+                }
+
+                var result = viewModel.MergeResult;
+                StatusMessage = $"Merge completed: {result.PagesAdded} page(s) added, {result.PagesUpdated} updated, " +
+                               $"{result.FieldsAdded} field(s) added, {result.FieldsUpdated} updated, " +
+                               $"{result.VariantsAdded} variant(s) added, {result.VariantsUpdated} updated, " +
+                               $"{result.LanguageCodesAdded} language code(s) added.";
+                
+                updatedLocbook.MarkAsModified();
+                UpdateFilteredPages();
+            }
+            else
+            {
+                StatusMessage = "Merge cancelled.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error merging: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private async Task ExportLocbookDialogAsync(LocbookViewModel? locbook)
     {
         if (locbook == null)
