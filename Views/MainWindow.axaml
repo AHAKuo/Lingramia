@@ -252,6 +252,9 @@
                                                             <MenuItem Header="Export"
                                                                      Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
+                                                            <MenuItem Header="Import..."
+                                                                     Command="{Binding $parent[Window].DataContext.ImportLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
                                                             <Separator />
                                                             <MenuItem Header="Add Language Codes..."
                                                                      Command="{Binding $parent[Window].DataContext.BulkAddLanguageCodesToLocbookCommand}"
@@ -307,6 +310,9 @@
                                                                 <MenuItem Header="Export"
                                                                          Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
+                                                                <MenuItem Header="Import..."
+                                                                         Command="{Binding $parent[Window].DataContext.ImportLocbookCommand}"
+                                                                         CommandParameter="{Binding}" />
                                                                 <Separator />
                                                                 <MenuItem Header="Add Language Codes..."
                                                                          Command="{Binding $parent[Window].DataContext.BulkAddLanguageCodesToLocbookCommand}"
@@ -330,6 +336,9 @@
                                                                          CommandParameter="{Binding}" />
                                                                 <MenuItem Header="Export"
                                                                          Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
+                                                                         CommandParameter="{Binding}" />
+                                                                <MenuItem Header="Import..."
+                                                                         Command="{Binding $parent[Window].DataContext.ImportLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
                                                                 <Separator />
                                                                 <MenuItem Header="Add Language Codes..."

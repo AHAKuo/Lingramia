@@ -1,0 +1,153 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Lingramia.ViewModels"
+        x:Class="Lingramia.Views.ImportDialog"
+        Title="Import Locbook"
+        Width="600"
+        Height="650"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        MinWidth="550"
+        MinHeight="700">
+    
+    <Window.DataContext>
+        <vm:ImportDialogViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="20" x:DataType="vm:ImportDialogViewModel">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Import Options"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Margin="0,0,0,15"/>
+
+        <!-- File Selection -->
+        <Border Grid.Row="1"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"
+                           Text="Source Locbook File:"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,8"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding SourceFilePath, Mode=TwoWay}"
+                             Watermark="Select a .locbook file to import from..."
+                             IsReadOnly="True"
+                             Margin="0,0,8,0"/>
+                    <Button Grid.Column="1"
+                            Content="Browse..."
+                            Command="{Binding BrowseFileCommand}"
+                            Padding="12,6"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Import Options -->
+        <Border Grid.Row="2"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,15">
+            <StackPanel Spacing="10">
+                <TextBlock Text="What to Import:"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,5"/>
+                <CheckBox Content="Import Pages (add new pages if they don't exist)"
+                          IsChecked="{Binding ImportPages, Mode=TwoWay}"/>
+                <CheckBox Content="Import About Page content"
+                          IsChecked="{Binding ImportAbout, Mode=TwoWay}"/>
+                <CheckBox Content="Import Keys"
+                          IsChecked="{Binding ImportKeys, Mode=TwoWay}"/>
+                <CheckBox Content="Import Original Values"
+                          IsChecked="{Binding ImportOriginalValues, Mode=TwoWay}"/>
+                <CheckBox Content="Import Variants (Translations)"
+                          IsChecked="{Binding ImportVariants, Mode=TwoWay}"/>
+                <CheckBox Content="Overwrite existing non-empty values"
+                          IsChecked="{Binding OverwriteExisting, Mode=TwoWay}"
+                          Margin="20,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Language Codes Selection -->
+        <Border Grid.Row="3"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,15"
+                IsVisible="{Binding ImportVariants}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"
+                           Text="Language Codes to Import:"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,8"/>
+                <TextBlock Grid.Row="1"
+                           Text="Enter language codes separated by commas (e.g., en, es, fr, de, ja)"
+                           FontSize="11"
+                           Foreground="Gray"
+                           Margin="0,0,0,8"
+                           TextWrapping="Wrap"/>
+                <TextBox Grid.Row="2"
+                         Text="{Binding LanguageCodesText, Mode=TwoWay}"
+                         Watermark="en, es, fr, de, ja, ar..."
+                         AcceptsReturn="False"
+                         MinHeight="40"
+                         HorizontalAlignment="Stretch"/>
+            </Grid>
+        </Border>
+
+		<!-- Buttons -->
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,0,0,10">
+            <Button Content="Import"
+                    Command="{Binding ImportCommand}"
+                    Width="100"
+                    Padding="15,8"
+                    IsEnabled="{Binding CanImport}"/>
+            <Button Content="Cancel"
+                    Click="OnCancelButtonClick"
+                    Width="100"
+                    Padding="15,8"/>
+        </StackPanel>
+
+        <!-- Status/Error Message -->
+        <TextBlock Grid.Row="5"
+                   Text="{Binding StatusMessage}"
+                   Foreground="{Binding StatusColor}"
+                   TextWrapping="Wrap"
+                   IsVisible="{Binding HasStatusMessage}"/>
+    </Grid>
+</Window>
+
