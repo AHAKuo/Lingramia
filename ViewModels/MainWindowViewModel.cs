@@ -565,6 +565,52 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task ExportLocbookDialogAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
+        {
+            StatusMessage = "No locbook selected.";
+            return;
+        }
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new ExportDialog
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            var viewModel = dialog.ViewModel;
+            viewModel.SetParentWindow(_mainWindow);
+            
+            // Update the model to ensure we have the latest data
+            locbook.UpdateModel();
+            viewModel.SetSourceLocbook(locbook.Model);
+
+            await dialog.ShowDialog(_mainWindow);
+
+            if (viewModel.ExportSuccessful)
+            {
+                StatusMessage = $"Export completed: {Path.GetFileName(viewModel.OutputFilePath)}";
+            }
+            else
+            {
+                StatusMessage = "Export cancelled.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error exporting: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private void Undo()
     {
         if (_undoRedoService.CanUndo)

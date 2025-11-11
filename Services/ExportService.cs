@@ -116,4 +116,77 @@ public static class ExportService
             return false;
         }
     }
+
+    /// <summary>
+    /// Creates a filtered locbook containing only the specified language code.
+    /// </summary>
+    public static Locbook? CreateFilteredLocbook(
+        Locbook sourceLocbook,
+        string languageCode,
+        bool includeKeys,
+        bool includeOriginalValues,
+        bool includeVariants)
+    {
+        try
+        {
+            var filteredLocbook = new Locbook
+            {
+                Pages = new()
+            };
+
+            foreach (var sourcePage in sourceLocbook.Pages)
+            {
+                var filteredPage = new Page
+                {
+                    PageId = sourcePage.PageId,
+                    AboutPage = sourcePage.AboutPage,
+                    PageFiles = new()
+                };
+
+                foreach (var sourceField in sourcePage.PageFiles)
+                {
+                    var filteredField = new PageFile
+                    {
+                        Key = includeKeys ? sourceField.Key : string.Empty,
+                        OriginalValue = includeOriginalValues ? sourceField.OriginalValue : string.Empty,
+                        Variants = new()
+                    };
+
+                    if (includeVariants)
+                    {
+                        // Always create a variant for the specified language code
+                        // If it exists, use its value; if not, create an empty one
+                        var variant = sourceField.Variants.FirstOrDefault(v => 
+                            v.Language.Equals(languageCode, StringComparison.OrdinalIgnoreCase));
+                        
+                        filteredField.Variants.Add(new Variant
+                        {
+                            Language = languageCode, // Use the user-specified language code exactly as entered
+                            Value = variant != null ? variant.Value : string.Empty
+                        });
+                    }
+
+                    // Only add the field if variants are included (which will always have at least one)
+                    // or if keys/original values are included
+                    if (includeVariants || (includeKeys || includeOriginalValues))
+                    {
+                        filteredPage.PageFiles.Add(filteredField);
+                    }
+                }
+
+                // Only add the page if it has fields
+                if (filteredPage.PageFiles.Count > 0)
+                {
+                    filteredLocbook.Pages.Add(filteredPage);
+                }
+            }
+
+            return filteredLocbook;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating filtered locbook: {ex.Message}");
+            return null;
+        }
+    }
 }

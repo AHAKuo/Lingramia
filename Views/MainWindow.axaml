@@ -249,11 +249,14 @@
                                                             <MenuItem Header="Save As..."
                                                                      Command="{Binding $parent[Window].DataContext.SaveAsLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
-                                                            <MenuItem Header="Export"
+                                                            <MenuItem Header="Export (JSON)"
                                                                      Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
                                                             <MenuItem Header="Import..."
                                                                      Command="{Binding $parent[Window].DataContext.ImportLocbookCommand}"
+                                                                     CommandParameter="{Binding}" />
+                                                            <MenuItem Header="Export Locbook..."
+                                                                     Command="{Binding $parent[Window].DataContext.ExportLocbookDialogCommand}"
                                                                      CommandParameter="{Binding}" />
                                                             <Separator />
                                                             <MenuItem Header="Add Language Codes..."
@@ -307,11 +310,14 @@
                                                                 <MenuItem Header="Save As..."
                                                                          Command="{Binding $parent[Window].DataContext.SaveAsLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
-                                                                <MenuItem Header="Export"
+                                                                <MenuItem Header="Export (JSON)"
                                                                          Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
                                                                 <MenuItem Header="Import..."
                                                                          Command="{Binding $parent[Window].DataContext.ImportLocbookCommand}"
+                                                                         CommandParameter="{Binding}" />
+                                                                <MenuItem Header="Export Locbook..."
+                                                                         Command="{Binding $parent[Window].DataContext.ExportLocbookDialogCommand}"
                                                                          CommandParameter="{Binding}" />
                                                                 <Separator />
                                                                 <MenuItem Header="Add Language Codes..."
@@ -334,11 +340,14 @@
                                                                 <MenuItem Header="Save As..."
                                                                          Command="{Binding $parent[Window].DataContext.SaveAsLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
-                                                                <MenuItem Header="Export"
+                                                                <MenuItem Header="Export (JSON)"
                                                                          Command="{Binding $parent[Window].DataContext.ExportLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
                                                                 <MenuItem Header="Import..."
                                                                          Command="{Binding $parent[Window].DataContext.ImportLocbookCommand}"
+                                                                         CommandParameter="{Binding}" />
+                                                                <MenuItem Header="Export Locbook..."
+                                                                         Command="{Binding $parent[Window].DataContext.ExportLocbookDialogCommand}"
                                                                          CommandParameter="{Binding}" />
                                                                 <Separator />
                                                                 <MenuItem Header="Add Language Codes..."

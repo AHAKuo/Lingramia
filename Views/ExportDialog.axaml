@@ -1,0 +1,145 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Lingramia.ViewModels"
+        x:Class="Lingramia.Views.ExportDialog"
+        Title="Export Locbook"
+        Width="600"
+        Height="550"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        MinWidth="550"
+        MinHeight="500">
+    
+    <Window.DataContext>
+        <vm:ExportDialogViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="20" x:DataType="vm:ExportDialogViewModel">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Export Options"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Margin="0,0,0,15"/>
+
+        <!-- File Selection -->
+        <Border Grid.Row="1"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"
+                           Text="Export Location:"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,8"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding OutputFilePath, Mode=TwoWay}"
+                             Watermark="Select where to save the exported .locbook file..."
+                             IsReadOnly="True"
+                             Margin="0,0,8,0"/>
+                    <Button Grid.Column="1"
+                            Content="Browse..."
+                            Command="{Binding BrowseFileCommand}"
+                            Padding="12,6"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Language Code Selection -->
+        <Border Grid.Row="2"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"
+                           Text="Language Code to Export:"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,8"/>
+                <TextBlock Grid.Row="1"
+                           Text="Enter a single language code (e.g., en, es, fr, de, ja). The exported locbook will include this language code for all fields. If a field doesn't have this language code yet, an empty variant will be created for it."
+                           FontSize="11"
+                           Foreground="Gray"
+                           Margin="0,0,0,8"
+                           TextWrapping="Wrap"/>
+                <TextBox Grid.Row="2"
+                         Text="{Binding LanguageCode, Mode=TwoWay}"
+                         Watermark="en"
+                         AcceptsReturn="False"
+                         MinHeight="40"
+                         HorizontalAlignment="Stretch"/>
+            </Grid>
+        </Border>
+
+        <!-- Export Options -->
+        <Border Grid.Row="3"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,15">
+            <StackPanel Spacing="10">
+                <TextBlock Text="What to Include:"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,5"/>
+                <CheckBox Content="Include Keys"
+                          IsChecked="{Binding IncludeKeys, Mode=TwoWay}"/>
+                <CheckBox Content="Include Original Values"
+                          IsChecked="{Binding IncludeOriginalValues, Mode=TwoWay}"/>
+                <CheckBox Content="Include Variants (Translations)"
+                          IsChecked="{Binding IncludeVariants, Mode=TwoWay}"/>
+            </StackPanel>
+        </Border>
+
+		<!-- Buttons -->
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,0,0,10">
+            <Button Content="Export"
+                    Command="{Binding ExportCommand}"
+                    Width="100"
+                    Padding="15,8"
+                    IsEnabled="{Binding CanExport}"/>
+            <Button Content="Cancel"
+                    Click="OnCancelButtonClick"
+                    Width="100"
+                    Padding="15,8"/>
+        </StackPanel>
+
+        <!-- Status/Error Message -->
+        <TextBlock Grid.Row="5"
+                   Text="{Binding StatusMessage}"
+                   Foreground="{Binding StatusColor}"
+                   TextWrapping="Wrap"
+                   IsVisible="{Binding HasStatusMessage}"/>
+    </Grid>
+</Window>
+
