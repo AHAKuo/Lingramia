@@ -129,14 +129,6 @@
             <Setter Property="FontFamily" Value=".AppleSystemUIFont"/>
         </Style>
         
-        <Style Selector="MenuItem:selected /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource BrushSurfaceHover}"/>
-        </Style>
-        
-        <Style Selector="MenuItem:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource BrushSurfaceHover}"/>
-        </Style>
-        
         <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
             <Setter Property="Background" Value="{StaticResource BrushAccentPrimary}"/>
         </Style>
