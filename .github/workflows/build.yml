@@ -26,6 +26,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit hash
+        id: commit
+        shell: pwsh
+        run: |
+          $hash = "${{ github.sha }}".Substring(0, 7)
+          echo "hash=$hash" >> $env:GITHUB_OUTPUT
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -36,10 +45,16 @@ jobs:
         run: dotnet restore
 
       - name: Build Windows x64
-        run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+        shell: pwsh
+        run: |
+          $hash = "${{ github.sha }}".Substring(0, 7)
+          dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version="1.0.0-$hash"
 
       - name: Build Windows ARM64
-        run: dotnet publish -c Release -r win-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+        shell: pwsh
+        run: |
+          $hash = "${{ github.sha }}".Substring(0, 7)
+          dotnet publish -c Release -r win-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version="1.0.0-$hash"
 
       - name: Upload Windows x64 artifacts
         uses: actions/upload-artifact@v4
@@ -60,6 +75,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit hash
+        id: commit
+        run: echo "hash=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -70,10 +91,10 @@ jobs:
         run: dotnet restore
 
       - name: Build macOS x64
-        run: dotnet publish -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+        run: dotnet publish -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version=1.0.0-${GITHUB_SHA:0:7}
 
       - name: Build macOS ARM64
-        run: dotnet publish -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+        run: dotnet publish -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version=1.0.0-${GITHUB_SHA:0:7}
 
       - name: Create macOS app icon
         run: |
@@ -116,7 +137,9 @@ jobs:
           fi
           # Copy icon to Resources
           cp ../../../../../Assets/lingramia-logo.icns Lingramia.app/Contents/Resources/
-          cat > Lingramia.app/Contents/Info.plist <<'EOF'
+          VERSION_SHORT="${GITHUB_SHA:0:7}"
+          VERSION_FULL="1.0.0-${VERSION_SHORT}"
+          cat > Lingramia.app/Contents/Info.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -132,9 +155,9 @@ jobs:
             <key>CFBundlePackageType</key>
             <string>APPL</string>
             <key>CFBundleVersion</key>
-            <string>1.0</string>
+            <string>${VERSION_FULL}</string>
             <key>CFBundleShortVersionString</key>
-            <string>1.0</string>
+            <string>${VERSION_FULL}</string>
             <key>LSMinimumSystemVersion</key>
             <string>10.15</string>
             <key>NSHighResolutionCapable</key>
@@ -162,7 +185,9 @@ jobs:
           fi
           # Copy icon to Resources
           cp ../../../../../Assets/lingramia-logo.icns Lingramia.app/Contents/Resources/
-          cat > Lingramia.app/Contents/Info.plist <<'EOF'
+          VERSION_SHORT="${GITHUB_SHA:0:7}"
+          VERSION_FULL="1.0.0-${VERSION_SHORT}"
+          cat > Lingramia.app/Contents/Info.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -178,9 +203,9 @@ jobs:
             <key>CFBundlePackageType</key>
             <string>APPL</string>
             <key>CFBundleVersion</key>
-            <string>1.0</string>
+            <string>${VERSION_FULL}</string>
             <key>CFBundleShortVersionString</key>
-            <string>1.0</string>
+            <string>${VERSION_FULL}</string>
             <key>LSMinimumSystemVersion</key>
             <string>10.15</string>
             <key>NSHighResolutionCapable</key>

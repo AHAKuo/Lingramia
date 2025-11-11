@@ -3,7 +3,7 @@
         x:Class="Lingramia.Views.AboutDialog"
         Title="About Lingramia"
         Width="500"
-        Height="380"
+        Height="420"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
         SizeToContent="Manual">
@@ -17,17 +17,18 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
-        <TextBlock Grid.Row="0"
-                   Text="Lingramia"
+        <TextBlock x:Name="AppNameTextBlock"
+                   Grid.Row="0"
                    FontSize="24"
                    FontWeight="Bold"
                    HorizontalAlignment="Center"
                    Margin="0,0,0,5"/>
         
-        <TextBlock Grid.Row="1"
-                   Text="Version 1.0.0 Beta"
+        <TextBlock x:Name="VersionTextBlock"
+                   Grid.Row="1"
                    FontSize="14"
                    HorizontalAlignment="Center"
                    Foreground="Gray"
@@ -35,26 +36,34 @@
         
         <Separator Grid.Row="2" Margin="0,0,0,15"/>
         
-        <TextBlock Grid.Row="3"
-                   Text="Lingramia is a modern localization editor designed to simplify the management of translations for multi-language applications. Create, edit, and organize your localization files with ease."
+        <TextBlock x:Name="DescriptionTextBlock"
+                   Grid.Row="3"
                    FontSize="13"
                    TextWrapping="Wrap"
                    Margin="0,0,0,15"/>
         
-        <TextBlock Grid.Row="4"
-                   Text="Features:&#x0a;• AI-powered translations with OpenAI&#x0a;• Multi-language variant management&#x0a;• Export to per-language JSON files&#x0a;• Easy-to-use interface"
+        <TextBlock x:Name="FeaturesTextBlock"
+                   Grid.Row="4"
                    FontSize="12"
                    TextWrapping="Wrap"
-                   Margin="0,0,0,20"/>
+                   Margin="0,0,0,15"/>
         
-        <TextBlock Grid.Row="5"
-                   Text="© 2024 AHAKuo Creations"
+        <TextBlock x:Name="CopyrightTextBlock"
+                   Grid.Row="5"
                    FontSize="11"
                    HorizontalAlignment="Center"
                    Foreground="Gray"
-                   Margin="0,0,0,20"/>
+                   Margin="0,0,0,10"/>
         
         <Button Grid.Row="6"
+                Content="View on GitHub"
+                Width="150"
+                Padding="15,8"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,15"
+                Click="OnGitHubLinkClick"/>
+        
+        <Button Grid.Row="7"
                 Content="OK"
                 Width="100"
                 Padding="15,8"
