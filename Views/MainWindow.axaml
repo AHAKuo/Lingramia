@@ -613,7 +613,8 @@
                                                  Margin="0,0,0,12"
                                                  CornerRadius="6"
                                                  IsExpanded="False"
-                                                 HorizontalAlignment="Stretch">
+                                                 HorizontalAlignment="Stretch"
+                                                 IsVisible="{Binding IsSearchMatch}">
                                             <Expander.Header>
                                                 <Grid>
                                                 <Grid.ColumnDefinitions>

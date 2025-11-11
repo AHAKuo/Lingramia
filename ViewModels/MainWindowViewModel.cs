@@ -1669,12 +1669,16 @@ public partial class MainWindowViewModel : ViewModelBase
         // if no text query and no filters, show all
         if (string.IsNullOrEmpty(query) && !ShowMissingOnly && string.IsNullOrEmpty(lang))
         {
-            // No filter: show all pages and keep expansion state
+            // No filter: show all pages and fields
             foreach (var locbook in OpenLocbooks)
             {
                 foreach (var page in locbook.Pages)
                 {
                     page.IsSearchMatch = true;
+                    foreach (var field in page.Fields)
+                    {
+                        field.IsSearchMatch = true;
+                    }
                 }
             }
             return;
@@ -1686,76 +1690,116 @@ public partial class MainWindowViewModel : ViewModelBase
 
             foreach (var page in locbook.Pages)
             {
-                bool matches = false;
-                bool hasMissingForFilter = false;
+                bool pageMatches = false;
+                bool pageHasMissingForFilter = false;
+                bool pageHasLang = true; // Default to true, will be set if lang filter is active
 
                 // Check page properties
-                if (!string.IsNullOrEmpty(query) && !string.IsNullOrEmpty(page.PageId) && page.PageId.ToLowerInvariant().Contains(query))
+                if (!string.IsNullOrEmpty(query))
                 {
-                    matches = true;
+                    if (!string.IsNullOrEmpty(page.PageId) && page.PageId.ToLowerInvariant().Contains(query))
+                    {
+                        pageMatches = true;
+                    }
+                    else if (!string.IsNullOrEmpty(page.AboutPage) && page.AboutPage.ToLowerInvariant().Contains(query))
+                    {
+                        pageMatches = true;
+                    }
                 }
-                else if (!string.IsNullOrEmpty(query) && !string.IsNullOrEmpty(page.AboutPage) && page.AboutPage.ToLowerInvariant().Contains(query))
+
+                // Check if page has the required language (if language filter is active)
+                if (!string.IsNullOrEmpty(lang))
                 {
-                    matches = true;
+                    pageHasLang = page.Fields.Any(f => f.Variants.Any(v => string.Equals(v.Language, lang, StringComparison.OrdinalIgnoreCase)));
                 }
-                
-                // Check fields and variants
+
+                // Check fields and variants individually
                 foreach (var field in page.Fields)
                 {
+                    bool fieldMatches = false;
+                    bool fieldHasMissingForFilter = false;
+
+                    // Check if field matches search query
                     if (!string.IsNullOrEmpty(query))
                     {
                         if ((!string.IsNullOrEmpty(field.Key) && field.Key.ToLowerInvariant().Contains(query)) ||
                             (!string.IsNullOrEmpty(field.OriginalValue) && field.OriginalValue.ToLowerInvariant().Contains(query)))
                         {
-                            matches = true;
+                            fieldMatches = true;
                         }
 
                         foreach (var variant in field.Variants)
                         {
                             if (!string.IsNullOrEmpty(variant.Value) && variant.Value.ToLowerInvariant().Contains(query))
                             {
-                                matches = true;
+                                fieldMatches = true;
                             }
                         }
                     }
-                    // Compute missing-only flag (considering language filter if provided)
+                    else
+                    {
+                        // If no query, field matches by default (will be filtered by other criteria)
+                        fieldMatches = true;
+                    }
+
+                    // Check missing-only filter for this field
                     if (ShowMissingOnly)
                     {
                         if (string.IsNullOrEmpty(lang))
                         {
                             if (field.Variants.Any(v => string.IsNullOrEmpty(v.Value)))
                             {
-                                hasMissingForFilter = true;
+                                fieldHasMissingForFilter = true;
+                                pageHasMissingForFilter = true;
                             }
                         }
                         else
                         {
                             if (field.Variants.Any(v => string.Equals(v.Language, lang, StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(v.Value)))
                             {
-                                hasMissingForFilter = true;
+                                fieldHasMissingForFilter = true;
+                                pageHasMissingForFilter = true;
                             }
                         }
                     }
-                }
-
-                // Apply language filter to matches if present (restrict matches to pages that have that language present)
-                if (!string.IsNullOrEmpty(lang))
-                {
-                    bool pageHasLang = page.Fields.Any(f => f.Variants.Any(v => string.Equals(v.Language, lang, StringComparison.OrdinalIgnoreCase)));
-                    if (!pageHasLang)
+                    else
                     {
-                        matches = false;
+                        // If missing-only is not enabled, consider field as having missing (so it passes the filter)
+                        fieldHasMissingForFilter = true;
+                    }
+
+                    // Apply language filter to field
+                    bool fieldHasLang = true;
+                    if (!string.IsNullOrEmpty(lang))
+                    {
+                        fieldHasLang = field.Variants.Any(v => string.Equals(v.Language, lang, StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    // Determine if field should be visible
+                    bool fieldShouldShow = fieldMatches && fieldHasLang && fieldHasMissingForFilter;
+                    field.IsSearchMatch = fieldShouldShow;
+
+                    // If field matches, page also matches
+                    if (fieldShouldShow)
+                    {
+                        pageMatches = true;
                     }
                 }
 
-                // If missing-only is enabled, require missing
-                if (ShowMissingOnly && !hasMissingForFilter)
+                // Apply language filter to page matches
+                if (!string.IsNullOrEmpty(lang) && !pageHasLang)
                 {
-                    matches = false;
+                    pageMatches = false;
                 }
 
-                page.IsSearchMatch = matches;
-                if (matches) hasMatches = true;
+                // Apply missing-only filter to page
+                if (ShowMissingOnly && !pageHasMissingForFilter)
+                {
+                    pageMatches = false;
+                }
+
+                page.IsSearchMatch = pageMatches;
+                if (pageMatches) hasMatches = true;
             }
 
             // Auto-expand locbooks that have matches
@@ -2593,3 +2637,4 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 }
+

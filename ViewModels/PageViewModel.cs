@@ -66,7 +66,14 @@ public partial class PageViewModel : ViewModelBase
         foreach (var pageFile in page.PageFiles)
         {
             var fieldVm = new FieldViewModel(pageFile, parentLocbook);
-            fieldVm.PropertyChanged += (s, e) => OnPropertyChanged(nameof(Fields));
+            fieldVm.PropertyChanged += (s, e) =>
+            {
+                // Don't notify Fields change for UI-only properties like IsSearchMatch
+                if (e.PropertyName != nameof(FieldViewModel.IsSearchMatch))
+                {
+                    OnPropertyChanged(nameof(Fields));
+                }
+            };
             Fields.Add(fieldVm);
         }
 
@@ -89,7 +96,14 @@ public partial class PageViewModel : ViewModelBase
         {
             foreach (FieldViewModel fieldVm in e.NewItems)
             {
-                fieldVm.PropertyChanged += (s2, e2) => OnPropertyChanged(nameof(Fields));
+                fieldVm.PropertyChanged += (s2, e2) =>
+                {
+                    // Don't notify Fields change for UI-only properties like IsSearchMatch
+                    if (e2.PropertyName != nameof(FieldViewModel.IsSearchMatch))
+                    {
+                        OnPropertyChanged(nameof(Fields));
+                    }
+                };
             }
         }
         // Notify that fields have changed

@@ -19,6 +19,9 @@ public partial class FieldViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<VariantViewModel> _variants = new();
 
+    [ObservableProperty]
+    private bool _isSearchMatch = true;
+
     public PageFile Model { get; }
     public LocbookViewModel? ParentLocbook { get; }
 
