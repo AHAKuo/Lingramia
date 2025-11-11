@@ -24,7 +24,7 @@ public partial class AboutDialog : Window
         }
         DescriptionTextBlock.Text = AppMetadata.Description;
         FeaturesTextBlock.Text = AppMetadata.Features;
-        CopyrightTextBlock.Text = $"{AppMetadata.Copyright} - {AppMetadata.License}";
+        CopyrightTextBlock.Text = "Created by A. H. Alwagdani (アハさん)";
     }
     
     private void OnOkButtonClick(object? sender, RoutedEventArgs e)
