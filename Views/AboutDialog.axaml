@@ -32,7 +32,10 @@
                    FontSize="14"
                    HorizontalAlignment="Center"
                    Foreground="Gray"
-                   Margin="0,0,0,15"/>
+                   Margin="0,0,0,15"
+                   Cursor="Hand"
+                   PointerPressed="OnVersionClick"
+                   TextDecorations="Underline"/>
         
         <Separator Grid.Row="2" Margin="0,0,0,15"/>
         

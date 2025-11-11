@@ -45,5 +45,45 @@ public static class AppMetadata
     public static string Creator => "AHAKuo Creations";
     
     public static string GitHubUrl => "https://github.com/ahakuo/lingramia";
+    
+    /// <summary>
+    /// Gets the full commit hash (before truncation) for building commit URLs.
+    /// </summary>
+    public static string FullCommitHash
+    {
+        get
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            
+            var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            if (informationalVersion != null && !string.IsNullOrEmpty(informationalVersion.InformationalVersion))
+            {
+                var hash = informationalVersion.InformationalVersion;
+                
+                // Remove any build metadata after '+' (e.g., "90ba122+metadata" -> "90ba122")
+                var plusIndex = hash.IndexOf('+');
+                if (plusIndex >= 0)
+                {
+                    hash = hash.Substring(0, plusIndex);
+                }
+                
+                return hash;
+            }
+            
+            return string.Empty;
+        }
+    }
+    
+    /// <summary>
+    /// Gets the GitHub commit URL for the current build's commit hash.
+    /// </summary>
+    public static string CommitUrl
+    {
+        get
+        {
+            var hash = FullCommitHash;
+            return string.IsNullOrEmpty(hash) ? GitHubUrl : $"{GitHubUrl}/commit/{hash}";
+        }
+    }
 }
 
