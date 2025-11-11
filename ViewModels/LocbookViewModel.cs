@@ -20,7 +20,7 @@ public partial class LocbookViewModel : ViewModelBase
     private bool _hasUnsavedChanges = false;
     
     [ObservableProperty]
-    private bool _isExpanded = true;
+    private bool _isExpanded = false;
     
     [ObservableProperty]
     private bool _isSelected = false;

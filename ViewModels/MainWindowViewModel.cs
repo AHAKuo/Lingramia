@@ -247,6 +247,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 int openedCount = 0;
                 int skippedCount = 0;
                 int initialLocbookCount = OpenLocbooks.Count;
+                LocbookViewModel? lastOpenedLocbook = null;
                 
                 foreach (var file in files)
                 {
@@ -261,19 +262,47 @@ public partial class MainWindowViewModel : ViewModelBase
                     if (existingLocbook != null)
                     {
                         skippedCount++;
-                        // Select the already-open file
-                        SelectedLocbook = existingLocbook;
-                        UpdateFilteredPages();
+                        // Only select the already-open file if this is the only file being processed
+                        if (files.Count == 1)
+                        {
+                            SelectedLocbook = existingLocbook;
+                            UpdateFilteredPages();
+                        }
                     }
                     else
                     {
-                        await OpenFileFromPathAsync(filePath);
+                        // Don't select when opening multiple files - we'll handle selection after the loop
+                        var openedLocbook = await OpenFileFromPathAsync(filePath, selectLocbook: false);
                         // Check if file was successfully opened by checking if count increased
-                        if (OpenLocbooks.Count > initialLocbookCount + openedCount)
+                        if (openedLocbook != null && OpenLocbooks.Count > initialLocbookCount + openedCount)
                         {
                             openedCount++;
+                            lastOpenedLocbook = openedLocbook;
                         }
                     }
+                }
+                
+                // Only select if exactly 1 file was opened (and no files were skipped)
+                if (openedCount == 1 && skippedCount == 0 && lastOpenedLocbook != null)
+                {
+                    // Clear previous selection
+                    foreach (var lb in OpenLocbooks)
+                    {
+                        lb.IsSelected = false;
+                    }
+                    
+                    lastOpenedLocbook.IsSelected = true;
+                    SelectedLocbook = lastOpenedLocbook;
+                    UpdateFilteredPages();
+                }
+                else if (openedCount > 1)
+                {
+                    // Multiple files opened - clear selection so they stay collapsed
+                    foreach (var lb in OpenLocbooks)
+                    {
+                        lb.IsSelected = false;
+                    }
+                    SelectedLocbook = null;
                 }
                 
                 // Update status message based on results
@@ -304,20 +333,23 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Opens a .locbook file from the specified file path.
     /// </summary>
-    public async Task OpenFileFromPathAsync(string filePath)
+    /// <param name="filePath">The path to the file to open.</param>
+    /// <param name="selectLocbook">Whether to select the opened locbook. Default is true.</param>
+    /// <returns>The opened LocbookViewModel, or null if opening failed.</returns>
+    public async Task<LocbookViewModel?> OpenFileFromPathAsync(string filePath, bool selectLocbook = true)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
                 StatusMessage = "No file path provided.";
-                return;
+                return null;
             }
 
             if (!File.Exists(filePath))
             {
                 StatusMessage = $"File not found: {filePath}";
-                return;
+                return null;
             }
 
             var locbook = await FileService.OpenLocbookAsync(filePath);
@@ -331,39 +363,51 @@ public partial class MainWindowViewModel : ViewModelBase
                 
                 if (existingLocbook != null)
                 {
-                    // File is already open, just select it
-                    SelectedLocbook = existingLocbook;
-                    UpdateFilteredPages();
+                    // File is already open, just select it if requested
+                    if (selectLocbook)
+                    {
+                        SelectedLocbook = existingLocbook;
+                        UpdateFilteredPages();
+                    }
                     StatusMessage = $"File already open: {existingLocbook.FileName}";
-                    return;
+                    return existingLocbook;
                 }
 
                 var locbookVm = new LocbookViewModel(locbook, filePath);
                 
-                // Clear previous selection
-                foreach (var lb in OpenLocbooks)
-                {
-                    lb.IsSelected = false;
-                }
-                
-                locbookVm.IsSelected = true;
                 OpenLocbooks.Add(locbookVm);
-                SelectedLocbook = locbookVm;
+                
+                // Only select if requested
+                if (selectLocbook)
+                {
+                    // Clear previous selection
+                    foreach (var lb in OpenLocbooks)
+                    {
+                        lb.IsSelected = false;
+                    }
+                    
+                    locbookVm.IsSelected = true;
+                    SelectedLocbook = locbookVm;
+                    UpdateFilteredPages();
+                }
                 
                 // Start watching the file for external changes
                 _fileWatcherService.WatchFile(filePath);
                 
-                UpdateFilteredPages();
                 StatusMessage = $"Opened: {locbookVm.FileName}";
+                
+                return locbookVm;
             }
             else
             {
                 StatusMessage = "Failed to open file. Invalid format?";
+                return null;
             }
         }
         catch (Exception ex)
         {
             StatusMessage = $"Error opening file: {ex.Message}";
+            return null;
         }
     }
 
@@ -1786,7 +1830,7 @@ public partial class MainWindowViewModel : ViewModelBase
         SearchQuery = string.Empty;
     }
     
-    private void UpdateFilteredPages()
+    internal void UpdateFilteredPages()
     {
         var query = SearchQuery?.Trim().ToLowerInvariant() ?? string.Empty;
         var lang = LanguageFilter?.Trim().ToLowerInvariant() ?? string.Empty;

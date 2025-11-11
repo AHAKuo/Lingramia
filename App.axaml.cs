@@ -66,41 +66,68 @@ public partial class App : Application
                         
                         // Handle file paths received from another instance
                         // The callback is already invoked on the UI thread by SingleInstanceService
-                        bool isFirstFile = true;
-                        foreach (var filePath in filePaths)
+                        
+                        // Collect valid file paths first
+                        var validFilePaths = filePaths
+                            .Where(filePath => !string.IsNullOrWhiteSpace(filePath) &&
+                                             System.IO.File.Exists(filePath) &&
+                                             filePath.EndsWith(".locbook", StringComparison.OrdinalIgnoreCase))
+                            .ToList();
+                        
+                        if (validFilePaths.Count == 0)
                         {
-                            // Validate file path
-                            if (string.IsNullOrWhiteSpace(filePath))
+                            return;
+                        }
+                        
+                        // If this is the first file and we have the default empty locbook, remove it
+                        if (viewModel.OpenLocbooks.Count == 1)
+                        {
+                            var defaultLocbook = viewModel.OpenLocbooks.FirstOrDefault();
+                            if (defaultLocbook != null && 
+                                string.IsNullOrEmpty(defaultLocbook.FilePath) && 
+                                !defaultLocbook.HasUnsavedChanges &&
+                                defaultLocbook.Pages.Count == 0)
                             {
-                                continue;
+                                viewModel.OpenLocbooks.Remove(defaultLocbook);
                             }
-
-                            if (!System.IO.File.Exists(filePath))
+                        }
+                        
+                        // Open all files without selection first
+                        int initialLocbookCount = viewModel.OpenLocbooks.Count;
+                        Lingramia.ViewModels.LocbookViewModel? lastOpenedLocbook = null;
+                        int openedCount = 0;
+                        
+                        foreach (var filePath in validFilePaths)
+                        {
+                            var openedLocbook = await viewModel.OpenFileFromPathAsync(filePath, selectLocbook: false);
+                            if (openedLocbook != null && viewModel.OpenLocbooks.Count > initialLocbookCount + openedCount)
                             {
-                                viewModel.StatusMessage = $"File not found: {System.IO.Path.GetFileName(filePath)}";
-                                continue;
+                                openedCount++;
+                                lastOpenedLocbook = openedLocbook;
                             }
-
-                            if (!filePath.EndsWith(".locbook", StringComparison.OrdinalIgnoreCase))
+                        }
+                        
+                        // Only select if exactly 1 file was opened
+                        if (openedCount == 1 && lastOpenedLocbook != null)
+                        {
+                            // Clear previous selection
+                            foreach (var lb in viewModel.OpenLocbooks)
                             {
-                                continue;
-                            }
-
-                            // If this is the first file and we have the default empty locbook, remove it
-                            if (isFirstFile && viewModel.OpenLocbooks.Count == 1)
-                            {
-                                var defaultLocbook = viewModel.OpenLocbooks.FirstOrDefault();
-                                if (defaultLocbook != null && 
-                                    string.IsNullOrEmpty(defaultLocbook.FilePath) && 
-                                    !defaultLocbook.HasUnsavedChanges &&
-                                    defaultLocbook.Pages.Count == 0)
-                                {
-                                    viewModel.OpenLocbooks.Remove(defaultLocbook);
-                                }
+                                lb.IsSelected = false;
                             }
                             
-                            await viewModel.OpenFileFromPathAsync(filePath);
-                            isFirstFile = false;
+                            lastOpenedLocbook.IsSelected = true;
+                            viewModel.SelectedLocbook = lastOpenedLocbook;
+                            viewModel.UpdateFilteredPages();
+                        }
+                        else if (openedCount > 1)
+                        {
+                            // Multiple files opened - clear selection so they stay collapsed
+                            foreach (var lb in viewModel.OpenLocbooks)
+                            {
+                                lb.IsSelected = false;
+                            }
+                            viewModel.SelectedLocbook = null;
                         }
                     }
                     catch (Exception ex)
@@ -122,30 +149,67 @@ public partial class App : Application
                 // Wait for the window to be fully initialized before opening files
                 desktop.MainWindow.Opened += async (s, e) =>
                 {
-                    bool isFirstFile = true;
-                    foreach (var arg in desktop.Args)
+                    // Collect valid file paths first
+                    var validFilePaths = desktop.Args
+                        .Where(arg => !string.IsNullOrWhiteSpace(arg) &&
+                                     System.IO.File.Exists(arg) &&
+                                     arg.EndsWith(".locbook", StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                    
+                    if (validFilePaths.Count == 0)
                     {
-                        // Check if the argument is a .locbook file path
-                        if (!string.IsNullOrWhiteSpace(arg) && 
-                            System.IO.File.Exists(arg) && 
-                            arg.EndsWith(".locbook", StringComparison.OrdinalIgnoreCase))
+                        return;
+                    }
+                    
+                    // If we have files to open and we have the default empty locbook, remove it
+                    if (viewModel.OpenLocbooks.Count == 1)
+                    {
+                        var defaultLocbook = viewModel.OpenLocbooks.FirstOrDefault();
+                        if (defaultLocbook != null && 
+                            string.IsNullOrEmpty(defaultLocbook.FilePath) && 
+                            !defaultLocbook.HasUnsavedChanges &&
+                            defaultLocbook.Pages.Count == 0)
                         {
-                            // If this is the first file and we have the default empty locbook, remove it
-                            if (isFirstFile && viewModel.OpenLocbooks.Count == 1)
-                            {
-                                var defaultLocbook = viewModel.OpenLocbooks.FirstOrDefault();
-                                if (defaultLocbook != null && 
-                                    string.IsNullOrEmpty(defaultLocbook.FilePath) && 
-                                    !defaultLocbook.HasUnsavedChanges &&
-                                    defaultLocbook.Pages.Count == 0)
-                                {
-                                    viewModel.OpenLocbooks.Remove(defaultLocbook);
-                                }
-                            }
-                            
-                            await viewModel.OpenFileFromPathAsync(arg);
-                            isFirstFile = false;
+                            viewModel.OpenLocbooks.Remove(defaultLocbook);
                         }
+                    }
+                    
+                    // Open all files without selection first
+                    int initialLocbookCount = viewModel.OpenLocbooks.Count;
+                    Lingramia.ViewModels.LocbookViewModel? lastOpenedLocbook = null;
+                    int openedCount = 0;
+                    
+                    foreach (var filePath in validFilePaths)
+                    {
+                        var openedLocbook = await viewModel.OpenFileFromPathAsync(filePath, selectLocbook: false);
+                        if (openedLocbook != null && viewModel.OpenLocbooks.Count > initialLocbookCount + openedCount)
+                        {
+                            openedCount++;
+                            lastOpenedLocbook = openedLocbook;
+                        }
+                    }
+                    
+                    // Only select if exactly 1 file was opened
+                    if (openedCount == 1 && lastOpenedLocbook != null)
+                    {
+                        // Clear previous selection
+                        foreach (var lb in viewModel.OpenLocbooks)
+                        {
+                            lb.IsSelected = false;
+                        }
+                        
+                        lastOpenedLocbook.IsSelected = true;
+                        viewModel.SelectedLocbook = lastOpenedLocbook;
+                        viewModel.UpdateFilteredPages();
+                    }
+                    else if (openedCount > 1)
+                    {
+                        // Multiple files opened - clear selection so they stay collapsed
+                        foreach (var lb in viewModel.OpenLocbooks)
+                        {
+                            lb.IsSelected = false;
+                        }
+                        viewModel.SelectedLocbook = null;
                     }
                 };
             }
