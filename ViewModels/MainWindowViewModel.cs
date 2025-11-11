@@ -226,8 +226,8 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             var files = await _mainWindow.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = "Open Locbook File",
-                AllowMultiple = false,
+                Title = "Open Locbook File(s)",
+                AllowMultiple = true,
                 FileTypeFilter = new[]
                 {
                     new FilePickerFileType("Locbook Files")
@@ -244,8 +244,55 @@ public partial class MainWindowViewModel : ViewModelBase
 
             if (files.Count > 0)
             {
-                var filePath = files[0].Path.LocalPath;
-                await OpenFileFromPathAsync(filePath);
+                int openedCount = 0;
+                int skippedCount = 0;
+                int initialLocbookCount = OpenLocbooks.Count;
+                
+                foreach (var file in files)
+                {
+                    var filePath = file.Path.LocalPath;
+                    var fullPath = Path.GetFullPath(filePath);
+                    
+                    // Check if file is already open
+                    var existingLocbook = OpenLocbooks.FirstOrDefault(lb => 
+                        !string.IsNullOrEmpty(lb.FilePath) && 
+                        Path.GetFullPath(lb.FilePath).Equals(fullPath, StringComparison.OrdinalIgnoreCase));
+                    
+                    if (existingLocbook != null)
+                    {
+                        skippedCount++;
+                        // Select the already-open file
+                        SelectedLocbook = existingLocbook;
+                        UpdateFilteredPages();
+                    }
+                    else
+                    {
+                        await OpenFileFromPathAsync(filePath);
+                        // Check if file was successfully opened by checking if count increased
+                        if (OpenLocbooks.Count > initialLocbookCount + openedCount)
+                        {
+                            openedCount++;
+                        }
+                    }
+                }
+                
+                // Update status message based on results
+                if (openedCount > 0 && skippedCount > 0)
+                {
+                    StatusMessage = $"Opened {openedCount} file(s), {skippedCount} already open.";
+                }
+                else if (openedCount > 1)
+                {
+                    StatusMessage = $"Opened {openedCount} file(s).";
+                }
+                else if (openedCount == 1 && skippedCount == 0)
+                {
+                    // Status message already set by OpenFileFromPathAsync
+                }
+                else if (skippedCount > 0)
+                {
+                    StatusMessage = $"{skippedCount} file(s) already open.";
+                }
             }
         }
         catch (Exception ex)
