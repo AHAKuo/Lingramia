@@ -17,7 +17,17 @@ public static class AppMetadata
             var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
             if (informationalVersion != null && !string.IsNullOrEmpty(informationalVersion.InformationalVersion))
             {
-                return informationalVersion.InformationalVersion;
+                var hash = informationalVersion.InformationalVersion;
+                
+                // Remove any build metadata after '+' (e.g., "90ba122+metadata" -> "90ba122")
+                var plusIndex = hash.IndexOf('+');
+                if (plusIndex >= 0)
+                {
+                    hash = hash.Substring(0, plusIndex);
+                }
+                
+                // Ensure we only return the first 7 characters (truncated commit hash)
+                return hash.Length > 7 ? hash.Substring(0, 7) : hash;
             }
             
             return string.Empty;
