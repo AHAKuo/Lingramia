@@ -557,16 +557,7 @@
                                                     <TextBlock Text="{Binding OriginalValue}" 
                                                               FontSize="14"
                                                               Foreground="{StaticResource BrushTextSecondary}"
-                                                              TextTrimming="CharacterEllipsis">
-                                                        <TextBlock.ContextMenu>
-                                                            <ContextMenu>
-                                                                <MenuItem Header="Match Similar Fields" 
-                                                                         Command="{Binding $parent[Window].DataContext.MatchSimilarFieldsCommand}"
-                                                                         CommandParameter="{Binding}"
-                                                                         ToolTip.Tip="Copy Key and Variants to all fields with same Original Value" />
-                                                            </ContextMenu>
-                                                        </TextBlock.ContextMenu>
-                                                    </TextBlock>
+                                                              TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
                                                     <Button Content="🌐" 
@@ -638,7 +629,16 @@
                                                             Margin="5,5,0,0"
                                                             HorizontalAlignment="Stretch"
                                                             FlowDirection="{Binding OriginalFlowDirection}"
-                                                            TextAlignment="{Binding OriginalTextAlignment}"/>
+                                                            TextAlignment="{Binding OriginalTextAlignment}">
+                                                        <TextBox.ContextMenu>
+                                                            <ContextMenu>
+                                                                <MenuItem Header="Match Similar Fields" 
+                                                                         Command="{Binding $parent[Window].DataContext.MatchSimilarFieldsCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         ToolTip.Tip="Copy Key and Variants to all fields with same Original Value" />
+                                                            </ContextMenu>
+                                                        </TextBox.ContextMenu>
+                                                    </TextBox>
                                                 </Grid>
 
                                                 <!-- Variants -->
