@@ -1,0 +1,119 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Lingramia.ViewModels"
+        x:Class="Lingramia.Views.MoveDialog"
+        Title="Move Item"
+        Width="500"
+        Height="450"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        MinWidth="450"
+        MinHeight="400">
+    
+    <Window.DataContext>
+        <vm:MoveDialogViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="20" x:DataType="vm:MoveDialogViewModel">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Move Item"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Margin="0,0,0,15"/>
+
+        <!-- Item Description -->
+        <Border Grid.Row="1"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,15"
+                Background="{StaticResource BrushSecondaryBackground}">
+            <StackPanel>
+                <TextBlock Text="Moving:"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,5"/>
+                <TextBlock Text="{Binding ItemDescription}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Target Selection -->
+        <Border Grid.Row="2"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,15">
+            <StackPanel Spacing="15">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0"
+                               Text="Target Locbook:"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,8"/>
+                    <ComboBox Grid.Row="1"
+                              ItemsSource="{Binding AvailableLocbooks}"
+                              SelectedItem="{Binding SelectedTargetLocbook, Mode=TwoWay}"
+                              DisplayMemberBinding="{Binding DisplayName}"
+                              HorizontalAlignment="Stretch"/>
+                </Grid>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0"
+                               Text="Target Page:"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,8"
+                               Name="TargetPageLabel"/>
+                    <ComboBox Grid.Row="1"
+                              ItemsSource="{Binding AvailableTargetPages}"
+                              SelectedItem="{Binding SelectedTargetPage, Mode=TwoWay}"
+                              DisplayMemberBinding="{Binding PageId}"
+                              HorizontalAlignment="Stretch"
+                              Name="TargetPageComboBox"/>
+                    <TextBlock Grid.Row="0"
+                               Text="Note: Page will be moved to the end of the target locbook."
+                               FontSize="11"
+                               Foreground="Gray"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,8"
+                               Name="PageMoveNote"
+                               IsVisible="False"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10">
+            <Button Content="Move"
+                    Command="{Binding MoveCommand}"
+                    Width="100"
+                    Padding="15,8"
+                    IsEnabled="{Binding CanMove}"/>
+            <Button Content="Cancel"
+                    Command="{Binding CancelCommand}"
+                    Width="100"
+                    Padding="15,8"/>
+        </StackPanel>
+    </Grid>
+</Window>
+

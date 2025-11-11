@@ -22,8 +22,11 @@ public partial class FieldViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isSearchMatch = true;
 
+    [ObservableProperty]
+    private bool _isSelected = false;
+
     public PageFile Model { get; }
-    public LocbookViewModel? ParentLocbook { get; }
+    public LocbookViewModel? ParentLocbook { get; set; }
 
     /// <summary>
     /// Determines if the key is locked globally.

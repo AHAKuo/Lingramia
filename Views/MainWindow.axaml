@@ -447,6 +447,11 @@
                                                                 <MenuItem Header="Duplicate Page"
                                                                           Command="{Binding $parent[Window].DataContext.DuplicatePageCtxCommand}"
                                                                           CommandParameter="{Binding}" />
+                                                                <Separator />
+                                                                <MenuItem Header="Move Page..."
+                                                                          Command="{Binding $parent[Window].DataContext.MovePageCommand}"
+                                                                          CommandParameter="{Binding}" />
+                                                                <Separator />
                                                                 <MenuItem Header="Delete Page"
                                                                           Command="{Binding $parent[Window].DataContext.DeletePageCtxCommand}"
                                                                           CommandParameter="{Binding}" />
@@ -579,6 +584,11 @@
                                Command="{Binding TranslatePageCommand}"
                                IsEnabled="{Binding HasSelectedPage}"
                                Padding="14,8"/>
+                        <Button Content="📦 Move Selected Fields..."
+                               Command="{Binding MoveSelectedFieldsCommand}"
+                               IsEnabled="{Binding HasSelectedPage}"
+                               Padding="14,8"
+                               ToolTip.Tip="Move selected fields to another page"/>
                     </StackPanel>
 
                     <!-- Fields List -->
@@ -630,10 +640,16 @@
                                             <Expander.Header>
                                                 <Grid>
                                                 <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                                                <CheckBox Grid.Column="0"
+                                                         IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                         Margin="0,0,8,0"
+                                                         VerticalAlignment="Center"
+                                                         ToolTip.Tip="Select for bulk operations"/>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
                                                     <TextBlock Text="🔑" FontSize="14"/>
                                                     <TextBlock Text="{Binding Key}" 
                                                               FontWeight="Bold"
@@ -647,7 +663,7 @@
                                                               Foreground="{StaticResource BrushTextSecondary}"
                                                               TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
-                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5">
                                                     <Button Content="🌐" 
                                                            Padding="5"
                                                            Command="{Binding $parent[Window].DataContext.TranslateFieldCommand}"
@@ -666,6 +682,24 @@
                                                 </StackPanel>
                                             </Grid>
                                         </Expander.Header>
+                                            <Expander.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Move Field..."
+                                                             Command="{Binding $parent[Window].DataContext.MoveFieldCommand}"
+                                                             CommandParameter="{Binding}" />
+                                                    <Separator />
+                                                    <MenuItem Header="Translate Field"
+                                                             Command="{Binding $parent[Window].DataContext.TranslateFieldCommand}"
+                                                             CommandParameter="{Binding}" />
+                                                    <MenuItem Header="Duplicate Field"
+                                                             Command="{Binding $parent[Window].DataContext.DuplicateFieldCommand}"
+                                                             CommandParameter="{Binding}" />
+                                                    <Separator />
+                                                    <MenuItem Header="Delete Field"
+                                                             Command="{Binding $parent[Window].DataContext.DeleteFieldCommand}"
+                                                             CommandParameter="{Binding}" />
+                                                </ContextMenu>
+                                            </Expander.ContextMenu>
                                         <Border Padding="15" Background="{StaticResource BrushPrimaryBackground}">
                                             <StackPanel Spacing="10">
                                                 <!-- Field Key and Original Value -->

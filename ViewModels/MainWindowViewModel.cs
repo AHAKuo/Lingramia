@@ -2354,6 +2354,176 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task MoveFieldAsync(FieldViewModel? field)
+    {
+        if (field == null || SelectedLocbook?.SelectedPage == null)
+        {
+            StatusMessage = "No field selected.";
+            return;
+        }
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new MoveDialog
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            var viewModel = dialog.ViewModel;
+            viewModel.SetParentWindow(_mainWindow);
+            viewModel.InitializeForField(field, SelectedLocbook, SelectedLocbook.SelectedPage, OpenLocbooks);
+
+            await dialog.ShowDialog(_mainWindow);
+
+            if (viewModel.MoveSuccessful && viewModel.SelectedTargetLocbook != null && viewModel.SelectedTargetPage != null)
+            {
+                var command = new MoveFieldCommand(
+                    SelectedLocbook.SelectedPage,
+                    viewModel.SelectedTargetPage,
+                    field,
+                    SelectedLocbook,
+                    viewModel.SelectedTargetLocbook,
+                    () => { UpdateFilteredPages(); StatusMessage = $"Moved field to {viewModel.SelectedTargetLocbook!.DisplayName} > {viewModel.SelectedTargetPage!.PageId}."; },
+                    () => { UpdateFilteredPages(); StatusMessage = "Undid move field."; }
+                );
+
+                _undoRedoService.ExecuteCommand(command);
+                NotifyUndoRedoChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error moving field: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task MovePageAsync(PageViewModel? page)
+    {
+        if (page == null)
+        {
+            StatusMessage = "No page selected.";
+            return;
+        }
+
+        var sourceLocbook = OpenLocbooks.FirstOrDefault(lb => lb.Pages.Contains(page));
+        if (sourceLocbook == null)
+        {
+            StatusMessage = "Could not find source locbook.";
+            return;
+        }
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new MoveDialog
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            var viewModel = dialog.ViewModel;
+            viewModel.SetParentWindow(_mainWindow);
+            viewModel.InitializeForPage(page, sourceLocbook, OpenLocbooks);
+
+            await dialog.ShowDialog(_mainWindow);
+
+            if (viewModel.MoveSuccessful && viewModel.SelectedTargetLocbook != null)
+            {
+                var command = new MovePageCommand(
+                    sourceLocbook,
+                    viewModel.SelectedTargetLocbook,
+                    page,
+                    () => { UpdateFilteredPages(); StatusMessage = $"Moved page to {viewModel.SelectedTargetLocbook!.DisplayName}."; },
+                    () => { UpdateFilteredPages(); StatusMessage = "Undid move page."; }
+                );
+
+                _undoRedoService.ExecuteCommand(command);
+                NotifyUndoRedoChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error moving page: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task MoveSelectedFieldsAsync()
+    {
+        if (SelectedLocbook?.SelectedPage == null)
+        {
+            StatusMessage = "No page selected.";
+            return;
+        }
+
+        var selectedFields = SelectedLocbook.SelectedPage.Fields.Where(f => f.IsSelected).ToList();
+        if (selectedFields.Count == 0)
+        {
+            StatusMessage = "No fields selected. Select fields first, then use Move Selected Fields.";
+            return;
+        }
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new MoveDialog
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            var viewModel = dialog.ViewModel;
+            viewModel.SetParentWindow(_mainWindow);
+            viewModel.InitializeForFields(selectedFields, SelectedLocbook, SelectedLocbook.SelectedPage, OpenLocbooks);
+
+            await dialog.ShowDialog(_mainWindow);
+
+            if (viewModel.MoveSuccessful && viewModel.SelectedTargetLocbook != null && viewModel.SelectedTargetPage != null)
+            {
+                var command = new MoveFieldsCommand(
+                    SelectedLocbook.SelectedPage,
+                    viewModel.SelectedTargetPage,
+                    selectedFields,
+                    SelectedLocbook,
+                    viewModel.SelectedTargetLocbook,
+                    () => { 
+                        UpdateFilteredPages(); 
+                        StatusMessage = $"Moved {selectedFields.Count} field(s) to {viewModel.SelectedTargetLocbook!.DisplayName} > {viewModel.SelectedTargetPage!.PageId}.";
+                        // Clear selection
+                        foreach (var field in selectedFields)
+                        {
+                            field.IsSelected = false;
+                        }
+                    },
+                    () => { UpdateFilteredPages(); StatusMessage = "Undid move fields."; }
+                );
+
+                _undoRedoService.ExecuteCommand(command);
+                NotifyUndoRedoChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error moving fields: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private void ShowSearchReplaceDialog()
     {
         if (_mainWindow == null)

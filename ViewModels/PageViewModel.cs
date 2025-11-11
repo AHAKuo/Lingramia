@@ -24,7 +24,7 @@ public partial class PageViewModel : ViewModelBase
     private bool _isSearchMatch = true;
 
     public Page Model { get; }
-    public LocbookViewModel? ParentLocbook { get; }
+    public LocbookViewModel? ParentLocbook { get; set; }
 
     /// <summary>
     /// Determines if PageId is locked globally.
@@ -68,8 +68,9 @@ public partial class PageViewModel : ViewModelBase
             var fieldVm = new FieldViewModel(pageFile, parentLocbook);
             fieldVm.PropertyChanged += (s, e) =>
             {
-                // Don't notify Fields change for UI-only properties like IsSearchMatch
-                if (e.PropertyName != nameof(FieldViewModel.IsSearchMatch))
+                // Don't notify Fields change for UI-only properties like IsSearchMatch and IsSelected
+                if (e.PropertyName != nameof(FieldViewModel.IsSearchMatch) 
+                    && e.PropertyName != nameof(FieldViewModel.IsSelected))
                 {
                     OnPropertyChanged(nameof(Fields));
                 }
@@ -98,8 +99,9 @@ public partial class PageViewModel : ViewModelBase
             {
                 fieldVm.PropertyChanged += (s2, e2) =>
                 {
-                    // Don't notify Fields change for UI-only properties like IsSearchMatch
-                    if (e2.PropertyName != nameof(FieldViewModel.IsSearchMatch))
+                    // Don't notify Fields change for UI-only properties like IsSearchMatch and IsSelected
+                    if (e2.PropertyName != nameof(FieldViewModel.IsSearchMatch)
+                        && e2.PropertyName != nameof(FieldViewModel.IsSelected))
                     {
                         OnPropertyChanged(nameof(Fields));
                     }
