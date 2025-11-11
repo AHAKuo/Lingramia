@@ -42,12 +42,12 @@ public class TranslationService
                     new
                     {
                         role = "system",
-                        content = "You are a professional translator. Translate the given text accurately while preserving any formatting or special characters."
+                        content = "You are a professional translator. Return ONLY the translated text without any prefixes, labels, explanations, or additional formatting. Do not include phrases like 'Translation:', 'Japanese Translation:', or similar labels. Just output the pure translated text."
                     },
                     new
                     {
                         role = "user",
-                        content = $"Translate the following text to {GetLanguageName(targetLang)}: {text}"
+                        content = $"Translate to {GetLanguageName(targetLang)}:\n\n{text}"
                     }
                 },
                 temperature = 0.3
@@ -71,6 +71,9 @@ public class TranslationService
                 .GetProperty("content")
                 .GetString();
 
+            // Clean up any verbose prefixes that might still appear
+            translatedText = CleanTranslationResponse(translatedText);
+
             return translatedText?.Trim() ?? text;
         }
         catch (Exception ex)
@@ -78,6 +81,50 @@ public class TranslationService
             Console.WriteLine($"Translation error: {ex.Message}");
             return text; // Return original text on failure
         }
+    }
+
+    /// <summary>
+    /// Removes common verbose prefixes from AI translation responses.
+    /// </summary>
+    private static string CleanTranslationResponse(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return text ?? string.Empty;
+
+        // Common patterns to remove (case-insensitive)
+        var prefixPatterns = new[]
+        {
+            "Japanese Translation:",
+            "Arabic Translation:",
+            "English Translation:",
+            "Spanish Translation:",
+            "French Translation:",
+            "German Translation:",
+            "Chinese Translation:",
+            "Korean Translation:",
+            "Russian Translation:",
+            "Portuguese Translation:",
+            "Translation:",
+            "ترجمة النص الى العربية:",
+            "ترجمة:",
+            "الترجمة:",
+            "日本語訳:",
+            "翻訳:",
+        };
+
+        var cleaned = text.Trim();
+        
+        // Check for and remove any matching prefix
+        foreach (var pattern in prefixPatterns)
+        {
+            if (cleaned.StartsWith(pattern, StringComparison.OrdinalIgnoreCase))
+            {
+                cleaned = cleaned.Substring(pattern.Length).TrimStart();
+                break;
+            }
+        }
+
+        return cleaned;
     }
 
     private static string GetLanguageName(string languageCode)
