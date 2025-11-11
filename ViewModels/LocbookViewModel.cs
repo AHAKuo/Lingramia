@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Lingramia.Models;
+using Lingramia.Services;
 
 namespace Lingramia.ViewModels;
 
@@ -38,8 +39,16 @@ public partial class LocbookViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _aboutPagesLocked = false;
+
+    [ObservableProperty]
+    private bool _isUnlocked = false; // Tracks if password has been verified in this session
     
     public string DisplayName => HasUnsavedChanges ? $"{FileName}*" : FileName;
+
+    /// <summary>
+    /// Checks if a password is set for this locbook.
+    /// </summary>
+    public bool HasPassword => !string.IsNullOrEmpty(Model.EncryptedPassword);
 
     [ObservableProperty]
     private ObservableCollection<PageViewModel> _pages = new();
@@ -81,6 +90,9 @@ public partial class LocbookViewModel : ViewModelBase
         LockedLanguages = locbook.LockedLanguages;
         PageIdsLocked = locbook.PageIdsLocked;
         AboutPagesLocked = locbook.AboutPagesLocked;
+        
+        // Password is not unlocked by default - user must verify it
+        IsUnlocked = false;
 
         // Initialize page view models
         foreach (var page in locbook.Pages)
@@ -223,6 +235,61 @@ public partial class LocbookViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Sets a password for this locbook. Encrypts and stores it.
+    /// </summary>
+    public void SetPassword(string plainPassword)
+    {
+        if (string.IsNullOrEmpty(plainPassword))
+        {
+            Model.EncryptedPassword = string.Empty;
+        }
+        else
+        {
+            Model.EncryptedPassword = PasswordService.EncryptPassword(plainPassword);
+        }
+        MarkAsModified();
+        OnPropertyChanged(nameof(HasPassword));
+    }
+
+    /// <summary>
+    /// Verifies if the provided password matches the stored encrypted password.
+    /// If correct, unlocks the locbook for this session.
+    /// </summary>
+    public bool VerifyPassword(string plainPassword)
+    {
+        if (!HasPassword)
+        {
+            IsUnlocked = true; // No password set, allow access
+            return true;
+        }
+
+        if (PasswordService.VerifyPassword(plainPassword, Model.EncryptedPassword))
+        {
+            IsUnlocked = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Verifies if the provided password matches the stored encrypted password without unlocking.
+    /// Used for password removal/changing operations.
+    /// </summary>
+    public bool VerifyPasswordOnly(string plainPassword)
+    {
+        if (!HasPassword)
+            return false;
+
+        return PasswordService.VerifyPassword(plainPassword, Model.EncryptedPassword);
+    }
+
+    /// <summary>
+    /// Checks if unlocking is required (password is set and not yet unlocked).
+    /// </summary>
+    public bool RequiresUnlock => HasPassword && !IsUnlocked;
+
+    /// <summary>
     /// Synchronizes all changes back to the model.
     /// </summary>
     public void UpdateModel()
@@ -232,6 +299,7 @@ public partial class LocbookViewModel : ViewModelBase
         Model.LockedLanguages = LockedLanguages;
         Model.PageIdsLocked = PageIdsLocked;
         Model.AboutPagesLocked = AboutPagesLocked;
+        // EncryptedPassword is already updated via SetPassword method
         Model.Pages.Clear();
 
         foreach (var pageVm in Pages)

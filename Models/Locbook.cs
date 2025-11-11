@@ -22,6 +22,9 @@ public class Locbook
 
     [JsonPropertyName("aboutPagesLocked")]
     public bool AboutPagesLocked { get; set; } = false;
+
+    [JsonPropertyName("encryptedPassword")]
+    public string EncryptedPassword { get; set; } = string.Empty;
 }
 
 public class Page

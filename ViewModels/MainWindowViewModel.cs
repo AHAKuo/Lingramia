@@ -2245,9 +2245,13 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void UnlockKey(FieldViewModel? field)
+    private async Task UnlockKeyAsync(FieldViewModel? field)
     {
         if (SelectedLocbook == null) return;
+        
+        if (!await VerifyPasswordIfRequiredAsync(SelectedLocbook))
+            return;
+        
         SelectedLocbook.KeysLocked = false;
         SelectedLocbook.MarkAsModified();
         StatusMessage = "All keys unlocked.";
@@ -2263,9 +2267,13 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void UnlockOriginalValue(FieldViewModel? field)
+    private async Task UnlockOriginalValueAsync(FieldViewModel? field)
     {
         if (SelectedLocbook == null) return;
+        
+        if (!await VerifyPasswordIfRequiredAsync(SelectedLocbook))
+            return;
+        
         SelectedLocbook.OriginalValuesLocked = false;
         SelectedLocbook.MarkAsModified();
         StatusMessage = "All original values unlocked.";
@@ -2281,9 +2289,13 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void UnlockLanguage(VariantViewModel? variant)
+    private async Task UnlockLanguageAsync(VariantViewModel? variant)
     {
         if (variant == null || SelectedLocbook == null) return;
+        
+        if (!await VerifyPasswordIfRequiredAsync(SelectedLocbook))
+            return;
+        
         SelectedLocbook.UnlockLanguage(variant.Language);
         SelectedLocbook.MarkAsModified();
         StatusMessage = $"Language '{variant.Language}' unlocked globally.";
@@ -2299,9 +2311,13 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void UnlockPageId(PageViewModel? page)
+    private async Task UnlockPageIdAsync(PageViewModel? page)
     {
         if (SelectedLocbook == null) return;
+        
+        if (!await VerifyPasswordIfRequiredAsync(SelectedLocbook))
+            return;
+        
         SelectedLocbook.PageIdsLocked = false;
         SelectedLocbook.MarkAsModified();
         StatusMessage = "All page IDs unlocked.";
@@ -2317,11 +2333,140 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void UnlockAboutPage(PageViewModel? page)
+    private async Task UnlockAboutPageAsync(PageViewModel? page)
     {
         if (SelectedLocbook == null) return;
+        
+        if (!await VerifyPasswordIfRequiredAsync(SelectedLocbook))
+            return;
+        
         SelectedLocbook.AboutPagesLocked = false;
         SelectedLocbook.MarkAsModified();
         StatusMessage = "All about pages unlocked.";
+    }
+
+    [RelayCommand]
+    private async Task SetPasswordAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
+        {
+            StatusMessage = "No locbook selected.";
+            return;
+        }
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        if (locbook.HasPassword)
+        {
+            StatusMessage = "Password already set. Use 'Remove Password' to change it.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new PasswordSetDialog(locbook)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            await dialog.ShowDialog(_mainWindow);
+
+            if (dialog.ViewModel.PasswordSet)
+            {
+                var password = dialog.ViewModel.Password;
+                locbook.SetPassword(password);
+                StatusMessage = "Password set successfully.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error setting password: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task RemovePasswordAsync(LocbookViewModel? locbook)
+    {
+        if (locbook == null)
+        {
+            StatusMessage = "No locbook selected.";
+            return;
+        }
+
+        if (!locbook.HasPassword)
+        {
+            StatusMessage = "No password is set for this locbook.";
+            return;
+        }
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new PasswordSetDialog(locbook)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            await dialog.ShowDialog(_mainWindow);
+
+            if (dialog.ViewModel.PasswordSet)
+            {
+                // Password was verified in the dialog, now remove it
+                locbook.SetPassword(string.Empty);
+                StatusMessage = "Password removed successfully.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error removing password: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Verifies password if required. Shows unlock dialog if password is set and not yet unlocked.
+    /// Returns true if unlock is not required or password was verified successfully.
+    /// </summary>
+    private async Task<bool> VerifyPasswordIfRequiredAsync(LocbookViewModel locbook)
+    {
+        if (!locbook.RequiresUnlock)
+            return true; // No password or already unlocked
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return false;
+        }
+
+        try
+        {
+            var dialog = new PasswordUnlockDialog(locbook)
+            {
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            await dialog.ShowDialog(_mainWindow);
+
+            if (dialog.ViewModel.IsUnlocked)
+            {
+                StatusMessage = "Password verified. Fields unlocked.";
+                return true;
+            }
+
+            return false; // User cancelled or password incorrect
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error verifying password: {ex.Message}";
+            return false;
+        }
     }
 }

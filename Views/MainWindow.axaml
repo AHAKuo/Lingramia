@@ -266,6 +266,15 @@
                                                                      Command="{Binding $parent[Window].DataContext.TranslateLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
                                                             <Separator />
+                                                            <MenuItem Header="Set Password..."
+                                                                     Command="{Binding $parent[Window].DataContext.SetPasswordCommand}"
+                                                                     CommandParameter="{Binding}"
+                                                                     IsVisible="{Binding !HasPassword}" />
+                                                            <MenuItem Header="Remove Password..."
+                                                                     Command="{Binding $parent[Window].DataContext.RemovePasswordCommand}"
+                                                                     CommandParameter="{Binding}"
+                                                                     IsVisible="{Binding HasPassword}" />
+                                                            <Separator />
                                                             <MenuItem Header="Close Locbook"
                                                                      Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
                                                                      CommandParameter="{Binding}" />
@@ -327,6 +336,15 @@
                                                                          Command="{Binding $parent[Window].DataContext.TranslateLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
                                                                 <Separator />
+                                                                <MenuItem Header="Set Password..."
+                                                                         Command="{Binding $parent[Window].DataContext.SetPasswordCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         IsVisible="{Binding !HasPassword}" />
+                                                                <MenuItem Header="Remove Password..."
+                                                                         Command="{Binding $parent[Window].DataContext.RemovePasswordCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         IsVisible="{Binding HasPassword}" />
+                                                                <Separator />
                                                                 <MenuItem Header="Close Locbook"
                                                                          Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
@@ -356,6 +374,15 @@
                                                                 <MenuItem Header="Translate Locbook"
                                                                          Command="{Binding $parent[Window].DataContext.TranslateLocbookCommand}"
                                                                          CommandParameter="{Binding}" />
+                                                                <Separator />
+                                                                <MenuItem Header="Set Password..."
+                                                                         Command="{Binding $parent[Window].DataContext.SetPasswordCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         IsVisible="{Binding !HasPassword}" />
+                                                                <MenuItem Header="Remove Password..."
+                                                                         Command="{Binding $parent[Window].DataContext.RemovePasswordCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         IsVisible="{Binding HasPassword}" />
                                                                 <Separator />
                                                                 <MenuItem Header="Close Locbook"
                                                                          Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
