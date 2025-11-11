@@ -20,6 +20,7 @@ build/
 *.user
 *.suo
 *.pdb
+Directory.Build.props
 
 # ----------------------------
 # Visual Studio / Rider

@@ -41,20 +41,27 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Create version file (pre-build)
+        shell: pwsh
+        run: |
+          $hash = "${{ github.sha }}".Substring(0, 7)
+          $content = @"
+          <Project>
+            <PropertyGroup>
+              <CommitHash>$hash</CommitHash>
+            </PropertyGroup>
+          </Project>
+          "@
+          $content | Out-File -FilePath "Directory.Build.props" -Encoding UTF8
+
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build Windows x64
-        shell: pwsh
-        run: |
-          $hash = "${{ github.sha }}".Substring(0, 7)
-          dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version="1.0.0-$hash"
+        run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 
       - name: Build Windows ARM64
-        shell: pwsh
-        run: |
-          $hash = "${{ github.sha }}".Substring(0, 7)
-          dotnet publish -c Release -r win-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version="1.0.0-$hash"
+        run: dotnet publish -c Release -r win-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 
       - name: Upload Windows x64 artifacts
         uses: actions/upload-artifact@v4
@@ -87,14 +94,25 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Create version file (pre-build)
+        run: |
+          HASH="${GITHUB_SHA:0:7}"
+          cat > Directory.Build.props <<EOF
+          <Project>
+            <PropertyGroup>
+              <CommitHash>$HASH</CommitHash>
+            </PropertyGroup>
+          </Project>
+          EOF
+
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build macOS x64
-        run: dotnet publish -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version=1.0.0-${GITHUB_SHA:0:7}
+        run: dotnet publish -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 
       - name: Build macOS ARM64
-        run: dotnet publish -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version=1.0.0-${GITHUB_SHA:0:7}
+        run: dotnet publish -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 
       - name: Create macOS app icon
         run: |
@@ -137,8 +155,7 @@ jobs:
           fi
           # Copy icon to Resources
           cp ../../../../../Assets/lingramia-logo.icns Lingramia.app/Contents/Resources/
-          VERSION_SHORT="${GITHUB_SHA:0:7}"
-          VERSION_FULL="1.0.0-${VERSION_SHORT}"
+          VERSION_HASH="${GITHUB_SHA:0:7}"
           cat > Lingramia.app/Contents/Info.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -155,9 +172,9 @@ jobs:
             <key>CFBundlePackageType</key>
             <string>APPL</string>
             <key>CFBundleVersion</key>
-            <string>${VERSION_FULL}</string>
+            <string>${VERSION_HASH}</string>
             <key>CFBundleShortVersionString</key>
-            <string>${VERSION_FULL}</string>
+            <string>${VERSION_HASH}</string>
             <key>LSMinimumSystemVersion</key>
             <string>10.15</string>
             <key>NSHighResolutionCapable</key>
@@ -185,8 +202,7 @@ jobs:
           fi
           # Copy icon to Resources
           cp ../../../../../Assets/lingramia-logo.icns Lingramia.app/Contents/Resources/
-          VERSION_SHORT="${GITHUB_SHA:0:7}"
-          VERSION_FULL="1.0.0-${VERSION_SHORT}"
+          VERSION_HASH="${GITHUB_SHA:0:7}"
           cat > Lingramia.app/Contents/Info.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -203,9 +219,9 @@ jobs:
             <key>CFBundlePackageType</key>
             <string>APPL</string>
             <key>CFBundleVersion</key>
-            <string>${VERSION_FULL}</string>
+            <string>${VERSION_HASH}</string>
             <key>CFBundleShortVersionString</key>
-            <string>${VERSION_FULL}</string>
+            <string>${VERSION_HASH}</string>
             <key>LSMinimumSystemVersion</key>
             <string>10.15</string>
             <key>NSHighResolutionCapable</key>
