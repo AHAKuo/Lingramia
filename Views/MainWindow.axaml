@@ -302,6 +302,22 @@
                                                             </Style>
                                                         </Button.Styles>
                                                     </Button>
+                                                    <Button Content="✕"
+                                                            FontSize="14"
+                                                            Padding="8,2"
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            Foreground="{StaticResource BrushTextSecondary}"
+                                                            ToolTip.Tip="Close Locbook"
+                                                            Command="{Binding $parent[Window].DataContext.CloseLocbookCommand}"
+                                                            CommandParameter="{Binding}">
+                                                        <Button.Styles>
+                                                            <Style Selector="Button:pointerover">
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                                <Setter Property="Background" Value="{StaticResource BrushSurfaceHover}"/>
+                                                            </Style>
+                                                        </Button.Styles>
+                                                    </Button>
                                                     <Button Content="⋮"
                                                             FontSize="16"
                                                             FontWeight="Bold"
