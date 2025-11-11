@@ -8,6 +8,11 @@
     </Application.DataTemplates>
   
     <Application.Resources>
+        <!-- Font Family with Arabic Support -->
+        <!-- Inter for Latin characters, system fonts for Arabic and other scripts -->
+        <!-- Using system fonts on macOS that support Arabic: SF Pro, Helvetica Neue, Arial -->
+        <x:String x:Key="DefaultFontFamily">Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif</x:String>
+        
         <!-- Color Palette - Playful Tech Theme -->
         <Color x:Key="ColorPrimaryBackground">#18171C</Color>
         <Color x:Key="ColorSecondaryBackground">#222026</Color>
@@ -61,6 +66,7 @@
         
         <Style Selector="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource BrushTextPrimary}"/>
+            <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
         </Style>
         
         <Style Selector="TextBox">
@@ -69,6 +75,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource BrushBorderDivider}"/>
             <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
         </Style>
         
         <Style Selector="TextBox:focus">
@@ -82,6 +89,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
         </Style>
         
         <Style Selector="Button:pointerover">
@@ -105,6 +113,7 @@
         
         <Style Selector="MenuItem">
             <Setter Property="Foreground" Value="#D0CDD5"/>
+            <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
         </Style>
         
         <Style Selector="MenuItem:selected /template/ ContentPresenter">
