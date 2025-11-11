@@ -18,6 +18,7 @@
         <KeyBinding Gesture="Ctrl+E" Command="{Binding ExportFileCommand}"/>
         <KeyBinding Gesture="Ctrl+F" Command="{Binding FocusSearchCommand}"/>
         <KeyBinding Gesture="Ctrl+Shift+F" Command="{Binding ToggleMissingOnlyCommand}"/>
+        <KeyBinding Gesture="Ctrl+H" Command="{Binding ShowSearchReplaceDialogCommand}"/>
         <KeyBinding Gesture="Alt+Down" Command="{Binding NextPageCommand}"/>
         <KeyBinding Gesture="Alt+Up" Command="{Binding PrevPageCommand}"/>
         <KeyBinding Gesture="Escape" Command="{Binding ClearSearchCommand}"/>
@@ -45,6 +46,8 @@
             <MenuItem Header="Edit">
                 <MenuItem Header="Undo" Command="{Binding UndoCommand}" InputGesture="Ctrl+Z" IsEnabled="{Binding CanUndo}" />
                 <MenuItem Header="Redo" Command="{Binding RedoCommand}" InputGesture="Ctrl+Y" IsEnabled="{Binding CanRedo}" />
+                <Separator />
+                <MenuItem Header="Search &amp; Replace..." Command="{Binding ShowSearchReplaceDialogCommand}" InputGesture="Ctrl+H" />
             </MenuItem>
             <MenuItem Header="Translation">
                 <MenuItem Header="Configure API Key" Command="{Binding ConfigureApiKeyCommand}" />

@@ -1,0 +1,143 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Lingramia.ViewModels"
+        x:Class="Lingramia.Views.SearchReplaceDialog"
+        Title="Search &amp; Replace"
+        Width="400"
+        Height="700"
+        WindowStartupLocation="Manual"
+        CanResize="True"
+        MinWidth="400"
+        MinHeight="700"
+        ShowInTaskbar="False"
+        Topmost="False">
+    
+    <Window.DataContext>
+        <vm:SearchReplaceDialogViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="16" x:DataType="vm:SearchReplaceDialogViewModel">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Search &amp; Replace"
+                   FontSize="16"
+                   FontWeight="Bold"
+                   Margin="0,0,0,12"/>
+
+        <!-- Search Text -->
+        <StackPanel Grid.Row="1" Spacing="6" Margin="0,0,0,12">
+            <TextBlock Text="Search for:" 
+                       FontWeight="SemiBold"
+                       FontSize="12"/>
+            <TextBox Text="{Binding SearchText, Mode=TwoWay}"
+                     Watermark="Enter text to search..."
+                     MinHeight="32"/>
+        </StackPanel>
+
+        <!-- Replace Text -->
+        <StackPanel Grid.Row="2" Spacing="6" Margin="0,0,0,12">
+            <TextBlock Text="Replace with:" 
+                       FontWeight="SemiBold"
+                       FontSize="12"/>
+            <TextBox Text="{Binding ReplaceText, Mode=TwoWay}"
+                     Watermark="Enter replacement text..."
+                     MinHeight="32"/>
+        </StackPanel>
+
+        <!-- Search Options -->
+        <Border Grid.Row="3"
+                BorderBrush="{StaticResource BrushBorderDivider}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,12">
+            <StackPanel Spacing="8">
+                <TextBlock Text="Search in:" 
+                           FontWeight="SemiBold"
+                           FontSize="12"
+                           Margin="0,0,0,4"/>
+                
+                <!-- Page Details -->
+                <TextBlock Text="Page Details:" 
+                           FontSize="11"
+                           Foreground="{StaticResource BrushTextSecondary}"
+                           Margin="0,4,0,2"/>
+                <CheckBox Content="Page ID" 
+                          IsChecked="{Binding SearchInPageId, Mode=TwoWay}"
+                          Margin="8,0,0,0"/>
+                <CheckBox Content="About Page" 
+                          IsChecked="{Binding SearchInAboutPage, Mode=TwoWay}"
+                          Margin="8,0,0,0"/>
+                
+                <!-- Field Details -->
+                <TextBlock Text="Field Details:" 
+                           FontSize="11"
+                           Foreground="{StaticResource BrushTextSecondary}"
+                           Margin="0,8,0,2"/>
+                <CheckBox Content="Key" 
+                          IsChecked="{Binding SearchInKey, Mode=TwoWay}"
+                          Margin="8,0,0,0"/>
+                <CheckBox Content="Original Value" 
+                          IsChecked="{Binding SearchInOriginalValue, Mode=TwoWay}"
+                          Margin="8,0,0,0"/>
+                
+                <!-- Localization Fields -->
+                <TextBlock Text="Localization:" 
+                           FontSize="11"
+                           Foreground="{StaticResource BrushTextSecondary}"
+                           Margin="0,8,0,2"/>
+                <CheckBox Content="Translation Values (en, ar, etc...)" 
+                          IsChecked="{Binding SearchInLocalizationFields, Mode=TwoWay}"
+                          Margin="8,0,0,0"/>
+                
+                <!-- Language Codes (Optional) -->
+                <CheckBox Content="Language Codes" 
+                          IsChecked="{Binding SearchInLanguageCodes, Mode=TwoWay}"
+                          Margin="8,4,0,0"
+                          ToolTip.Tip="Search and replace language codes (e.g., 'en' to 'eng')"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Status Message -->
+        <TextBlock Grid.Row="4"
+                   Text="{Binding StatusMessage}"
+                   Foreground="{StaticResource BrushTextSecondary}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,12"
+                   MinHeight="40"
+                   IsVisible="{Binding HasStatusMessage}"/>
+
+        <!-- Spacer -->
+        <Border Grid.Row="5"/>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="6"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="8">
+            <Button Content="Find"
+                    Command="{Binding FindCommand}"
+                    Width="80"
+                    Padding="12,6"/>
+            <Button Content="Replace"
+                    Command="{Binding ReplaceCommand}"
+                    Width="80"
+                    Padding="12,6"/>
+            <Button Content="Close"
+                    Click="OnCloseButtonClick"
+                    Width="80"
+                    Padding="12,6"/>
+        </StackPanel>
+    </Grid>
+</Window>
+

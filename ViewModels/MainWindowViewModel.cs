@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 using Lingramia.Models;
 using Lingramia.Services;
 using Lingramia.Views;
+using Avalonia;
 
 namespace Lingramia.ViewModels;
 
@@ -2272,6 +2273,63 @@ public partial class MainWindowViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = $"Error showing translation help: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private void ShowSearchReplaceDialog()
+    {
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        if (SelectedLocbook == null)
+        {
+            StatusMessage = "No locbook selected.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new SearchReplaceDialog
+            {
+                WindowStartupLocation = WindowStartupLocation.Manual
+            };
+
+            // Position the dialog on the right side of the main window
+            var mainWindowPosition = _mainWindow.Position;
+            var mainWindowWidth = _mainWindow.Width;
+            var dialogWidth = 380; // Default width
+            var padding = 20; // Padding from the edge
+
+            // Calculate position - ensure it doesn't go off-screen
+            var screenBounds = _mainWindow.Screens.Primary?.Bounds ?? new PixelRect(0, 0, 1920, 1080);
+            var x = mainWindowPosition.X + (int)mainWindowWidth + padding;
+            var y = mainWindowPosition.Y + 50; // Offset from top
+
+            // If dialog would go off-screen, position it on the left side instead
+            if (x + dialogWidth > screenBounds.Width)
+            {
+                x = mainWindowPosition.X - dialogWidth - padding;
+            }
+
+            // Ensure dialog stays within screen bounds vertically
+            if (y < screenBounds.Y)
+            {
+                y = screenBounds.Y + 50;
+            }
+
+            dialog.Position = new PixelPoint(x, y);
+            dialog.ViewModel.SetTargetLocbook(SelectedLocbook);
+
+            // Show as non-modal window (hovering)
+            dialog.Show(_mainWindow);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error showing search/replace dialog: {ex.Message}";
         }
     }
     
