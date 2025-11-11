@@ -1,18 +1,29 @@
+AHAKuo Open Use License
+Version 1.0 — 2025
 Copyright (c) 2025 AHAKuo
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to use,
-copy, modify, merge, publish, distribute, and/or sublicense copies of the
-Software, subject to the following conditions:
+modify, integrate, and distribute the Software as part of a larger project,
+including commercial products, subject to the following conditions:
 
-1. The Software may not be sold, resold, or redistributed as-is in any form.
-2. The Software may be used as part of a larger project, including commercial ones.
-3. The above copyright notice and this permission notice shall be included in all
-   copies or substantial portions of the Software.
+1. No Standalone Resale
+   The Software may not be sold, sublicensed, or distributed on its own,
+   whether in original or modified form. It may only be distributed as part
+   of a larger project where it is not the primary item of value.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+2. No Misrepresentation
+   You may not claim to be the original author of the unmodified Software.
+   No explicit visible credit is required, but false attribution is prohibited.
+
+3. Modified Versions
+   Substantial modifications must not be presented as the original Software.
+   Modified versions must include a notice that changes were made.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE,
+ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
