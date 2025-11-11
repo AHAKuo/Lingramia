@@ -25,6 +25,12 @@ public partial class FieldViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isSelected = false;
 
+    [ObservableProperty]
+    private bool _isExpanded = false;
+
+    [ObservableProperty]
+    private bool _isTranslationsExpanded = false;
+
     public PageFile Model { get; }
     public LocbookViewModel? ParentLocbook { get; set; }
 

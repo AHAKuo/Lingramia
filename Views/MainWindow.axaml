@@ -650,7 +650,7 @@
                                                  BorderThickness="1"
                                                  Margin="0,0,0,12"
                                                  CornerRadius="6"
-                                                 IsExpanded="False"
+                                                 IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
                                                  HorizontalAlignment="Stretch"
                                                  IsVisible="{Binding IsSearchMatch}">
                                             <Expander.Header>
@@ -806,7 +806,7 @@
                                                 </Grid>
 
                                                 <!-- Variants -->
-                                                <Expander IsExpanded="False"
+                                                <Expander IsExpanded="{Binding IsTranslationsExpanded, Mode=TwoWay}"
                                                          HorizontalAlignment="Stretch"
                                                          Margin="0,10,0,0">
                                                     <Expander.Header>

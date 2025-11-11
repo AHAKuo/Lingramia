@@ -29,6 +29,7 @@ public class AddPageCommand : IUndoableCommand
         _locbook.Pages.Add(_page);
         _locbook.SelectedPage = _page;
         _page.IsSelected = true;
+        _locbook.IsExpanded = true; // Expand locbook when adding a page
         _locbook.MarkAsModified();
         _onExecute?.Invoke();
     }
@@ -141,6 +142,7 @@ public class DuplicatePageCommand : IUndoableCommand
         _locbook.Pages.Add(_duplicatedPage);
         _locbook.SelectedPage = _duplicatedPage;
         _duplicatedPage.IsSelected = true;
+        _locbook.IsExpanded = true; // Expand locbook when duplicating a page
         _locbook.MarkAsModified();
         _onExecute?.Invoke();
     }
@@ -185,6 +187,7 @@ public class AddFieldCommand : IUndoableCommand
     public void Execute()
     {
         _page.Fields.Add(_field);
+        _field.IsExpanded = true; // Expand field when adding it
         _locbook.MarkAsModified();
         _onExecute?.Invoke();
     }
@@ -272,6 +275,7 @@ public class DuplicateFieldCommand : IUndoableCommand
 
         _duplicatedField = new FieldViewModel(cloned, _locbook);
         _page.Fields.Add(_duplicatedField);
+        _duplicatedField.IsExpanded = true; // Expand duplicated field
         _locbook.MarkAsModified();
         _onExecute?.Invoke();
     }
@@ -310,6 +314,7 @@ public class AddVariantCommand : IUndoableCommand
     public void Execute()
     {
         _field.Variants.Add(_variant);
+        _field.IsTranslationsExpanded = true; // Expand translations section when adding a variant
         _locbook.MarkAsModified();
         _onExecute?.Invoke();
     }
