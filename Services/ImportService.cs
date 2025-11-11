@@ -8,6 +8,18 @@ namespace Lingramia.Services;
 public static class ImportService
 {
     /// <summary>
+    /// Checks if a language code is locked globally in a locbook.
+    /// </summary>
+    private static bool IsLanguageLocked(Locbook locbook, string languageCode)
+    {
+        if (string.IsNullOrEmpty(locbook.LockedLanguages))
+            return false;
+
+        var lockedCodes = locbook.LockedLanguages.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return lockedCodes.Any(code => code.Equals(languageCode, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
     /// Imports data from a source locbook into a target locbook based on import options.
     /// </summary>
     public static ImportResult ImportLocbook(
@@ -34,38 +46,77 @@ public static class ImportService
                 var targetPage = targetLocbook.Pages.FirstOrDefault(p => 
                     p.PageId.Equals(sourcePage.PageId, StringComparison.OrdinalIgnoreCase));
 
-                if (targetPage == null)
-                {
-                    // Create new page if it doesn't exist
-                    if (options.ImportPages)
+                    if (targetPage == null)
                     {
-                        targetPage = new Page
+                        // Create new page if it doesn't exist
+                        if (options.ImportPages)
                         {
-                            PageId = sourcePage.PageId,
-                            AboutPage = options.ImportAbout ? sourcePage.AboutPage : string.Empty,
-                            PageFiles = new()
-                        };
-                        targetLocbook.Pages.Add(targetPage);
-                        result.PagesAdded++;
+                            targetPage = new Page
+                            {
+                                PageId = sourcePage.PageId,
+                                AboutPage = options.ImportAbout ? sourcePage.AboutPage : string.Empty,
+                                PageFiles = new()
+                            };
+                            targetLocbook.Pages.Add(targetPage);
+                            result.PagesAdded++;
+                        }
+                        else
+                        {
+                            continue; // Skip this page if we're not importing new pages
+                        }
                     }
                     else
                     {
-                        continue; // Skip this page if we're not importing new pages
+                        result.PagesUpdated++;
                     }
-                }
-                else
-                {
-                    result.PagesUpdated++;
-                }
 
-                // Update AboutPage if option is enabled
-                if (options.ImportAbout && !string.IsNullOrEmpty(sourcePage.AboutPage))
-                {
-                    if (string.IsNullOrEmpty(targetPage.AboutPage) || options.OverwriteExisting)
+                    // Update AboutPage if option is enabled
+                    if (options.ImportAbout && !string.IsNullOrEmpty(sourcePage.AboutPage))
                     {
-                        targetPage.AboutPage = sourcePage.AboutPage;
+                        // Skip if target locbook's AboutPages are locked globally
+                        if (!targetLocbook.AboutPagesLocked && (string.IsNullOrEmpty(targetPage.AboutPage) || options.OverwriteExisting))
+                        {
+                            targetPage.AboutPage = sourcePage.AboutPage;
+                        }
                     }
-                }
+
+                    // Import global lock information from source
+                    if (sourceLocbook.PageIdsLocked)
+                    {
+                        targetLocbook.PageIdsLocked = true;
+                    }
+                    if (sourceLocbook.AboutPagesLocked)
+                    {
+                        targetLocbook.AboutPagesLocked = true;
+                    }
+                    if (sourceLocbook.KeysLocked)
+                    {
+                        targetLocbook.KeysLocked = true;
+                    }
+                    if (sourceLocbook.OriginalValuesLocked)
+                    {
+                        targetLocbook.OriginalValuesLocked = true;
+                    }
+                    // Merge language locks
+                    if (!string.IsNullOrEmpty(sourceLocbook.LockedLanguages))
+                    {
+                        var existingLocks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        if (!string.IsNullOrEmpty(targetLocbook.LockedLanguages))
+                        {
+                            foreach (var code in targetLocbook.LockedLanguages.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                            {
+                                existingLocks.Add(code);
+                            }
+                        }
+                        foreach (var code in sourceLocbook.LockedLanguages.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        {
+                            existingLocks.Add(code);
+                        }
+                        if (existingLocks.Count > 0)
+                        {
+                            targetLocbook.LockedLanguages = string.Join(", ", existingLocks.OrderBy(c => c));
+                        }
+                    }
 
                 // Import fields
                 foreach (var sourceField in sourcePage.PageFiles)
@@ -91,19 +142,19 @@ public static class ImportService
                         result.FieldsUpdated++;
                     }
 
-                    // Update Key if option is enabled
+                    // Update Key if option is enabled and not locked globally
                     if (options.ImportKeys && !string.IsNullOrEmpty(sourceField.Key))
                     {
-                        if (string.IsNullOrEmpty(targetField.Key) || options.OverwriteExisting)
+                        if (!targetLocbook.KeysLocked && (string.IsNullOrEmpty(targetField.Key) || options.OverwriteExisting))
                         {
                             targetField.Key = sourceField.Key;
                         }
                     }
 
-                    // Update OriginalValue if option is enabled
+                    // Update OriginalValue if option is enabled and not locked globally
                     if (options.ImportOriginalValues && !string.IsNullOrEmpty(sourceField.OriginalValue))
                     {
-                        if (string.IsNullOrEmpty(targetField.OriginalValue) || options.OverwriteExisting)
+                        if (!targetLocbook.OriginalValuesLocked && (string.IsNullOrEmpty(targetField.OriginalValue) || options.OverwriteExisting))
                         {
                             targetField.OriginalValue = sourceField.OriginalValue;
                         }
@@ -114,6 +165,12 @@ public static class ImportService
                     {
                         foreach (var languageCode in options.SelectedLanguageCodes)
                         {
+                            // Skip if this language is locked globally in the target locbook
+                            if (IsLanguageLocked(targetLocbook, languageCode))
+                            {
+                                continue;
+                            }
+
                             var sourceVariant = sourceField.Variants.FirstOrDefault(v => 
                                 v.Language.Equals(languageCode, StringComparison.OrdinalIgnoreCase));
 

@@ -7,6 +7,21 @@ public class Locbook
 {
     [JsonPropertyName("pages")]
     public List<Page> Pages { get; set; } = new();
+
+    [JsonPropertyName("keysLocked")]
+    public bool KeysLocked { get; set; } = false;
+
+    [JsonPropertyName("originalValuesLocked")]
+    public bool OriginalValuesLocked { get; set; } = false;
+
+    [JsonPropertyName("lockedLanguages")]
+    public string LockedLanguages { get; set; } = string.Empty; // Comma-separated language codes
+
+    [JsonPropertyName("pageIdsLocked")]
+    public bool PageIdsLocked { get; set; } = false;
+
+    [JsonPropertyName("aboutPagesLocked")]
+    public bool AboutPagesLocked { get; set; } = false;
 }
 
 public class Page

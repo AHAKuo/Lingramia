@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -19,6 +20,17 @@ public partial class FieldViewModel : ViewModelBase
     private ObservableCollection<VariantViewModel> _variants = new();
 
     public PageFile Model { get; }
+    public LocbookViewModel? ParentLocbook { get; }
+
+    /// <summary>
+    /// Determines if the key is locked globally.
+    /// </summary>
+    public bool IsKeyLocked => ParentLocbook?.KeysLocked ?? false;
+
+    /// <summary>
+    /// Determines if the original value is locked globally.
+    /// </summary>
+    public bool IsOriginalValueLocked => ParentLocbook?.OriginalValuesLocked ?? false;
 
     /// <summary>
     /// Determines if the original value should use RTL text direction (based on content detection).
@@ -39,22 +51,36 @@ public partial class FieldViewModel : ViewModelBase
         ? Avalonia.Media.TextAlignment.Right 
         : Avalonia.Media.TextAlignment.Left;
 
-    public FieldViewModel(PageFile pageFile)
+    public FieldViewModel(PageFile pageFile, LocbookViewModel? parentLocbook = null)
     {
         Model = pageFile;
         Key = pageFile.Key;
         OriginalValue = pageFile.OriginalValue;
+        ParentLocbook = parentLocbook;
 
         // Initialize variant view models
         foreach (var variant in pageFile.Variants)
         {
-            var variantVm = new VariantViewModel(variant);
+            var variantVm = new VariantViewModel(variant, this);
             variantVm.PropertyChanged += (s, e) => OnPropertyChanged(nameof(Variants));
             Variants.Add(variantVm);
         }
 
         // Monitor collection changes
         Variants.CollectionChanged += OnVariantsCollectionChanged;
+    }
+
+    /// <summary>
+    /// Called when lock state changes to notify UI.
+    /// </summary>
+    public void OnLockStateChanged()
+    {
+        OnPropertyChanged(nameof(IsKeyLocked));
+        OnPropertyChanged(nameof(IsOriginalValueLocked));
+        foreach (var variant in Variants)
+        {
+            variant.OnLockStateChanged();
+        }
     }
 
     partial void OnOriginalValueChanged(string value)
@@ -104,6 +130,12 @@ public partial class VariantViewModel : ViewModelBase
     private string _value = string.Empty;
 
     public Variant Model { get; }
+    public FieldViewModel? ParentField { get; }
+
+    /// <summary>
+    /// Determines if this variant is locked based on the parent locbook's global language lock.
+    /// </summary>
+    public bool IsLocked => ParentField?.ParentLocbook?.IsLanguageLocked(Language) ?? false;
 
     /// <summary>
     /// Determines if this variant should use RTL text direction.
@@ -124,11 +156,20 @@ public partial class VariantViewModel : ViewModelBase
         ? Avalonia.Media.TextAlignment.Right 
         : Avalonia.Media.TextAlignment.Left;
 
-    public VariantViewModel(Variant variant)
+    public VariantViewModel(Variant variant, FieldViewModel? parentField = null)
     {
         Model = variant;
         Language = variant.Language;
         Value = variant.Value;
+        ParentField = parentField;
+    }
+
+    /// <summary>
+    /// Called when lock state changes to notify UI.
+    /// </summary>
+    public void OnLockStateChanged()
+    {
+        OnPropertyChanged(nameof(IsLocked));
     }
 
     partial void OnLanguageChanged(string value)

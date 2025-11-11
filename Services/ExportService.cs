@@ -181,6 +181,26 @@ public static class ExportService
                 }
             }
 
+            // Set global locks for contractors - lock everything except the selected language
+            filteredLocbook.PageIdsLocked = true;
+            filteredLocbook.AboutPagesLocked = true;
+            filteredLocbook.KeysLocked = true;
+            filteredLocbook.OriginalValuesLocked = true;
+            
+            // Lock all languages except the one being exported
+            var allLanguages = sourceLocbook.Pages
+                .SelectMany(p => p.PageFiles)
+                .SelectMany(f => f.Variants.Select(v => v.Language))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(lang => !lang.Equals(languageCode, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(l => l)
+                .ToList();
+            
+            if (allLanguages.Count > 0)
+            {
+                filteredLocbook.LockedLanguages = string.Join(", ", allLanguages);
+            }
+
             return filteredLocbook;
         }
         catch (Exception ex)

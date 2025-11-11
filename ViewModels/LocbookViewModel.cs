@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Lingramia.Models;
 
@@ -20,6 +23,21 @@ public partial class LocbookViewModel : ViewModelBase
     
     [ObservableProperty]
     private bool _isSelected = false;
+
+    [ObservableProperty]
+    private bool _keysLocked = false;
+
+    [ObservableProperty]
+    private bool _originalValuesLocked = false;
+
+    [ObservableProperty]
+    private string _lockedLanguages = string.Empty; // Comma-separated language codes
+
+    [ObservableProperty]
+    private bool _pageIdsLocked = false;
+
+    [ObservableProperty]
+    private bool _aboutPagesLocked = false;
     
     public string DisplayName => HasUnsavedChanges ? $"{FileName}*" : FileName;
 
@@ -57,10 +75,17 @@ public partial class LocbookViewModel : ViewModelBase
             FileName = System.IO.Path.GetFileName(filePath);
         }
 
+        // Initialize global locks from model
+        KeysLocked = locbook.KeysLocked;
+        OriginalValuesLocked = locbook.OriginalValuesLocked;
+        LockedLanguages = locbook.LockedLanguages;
+        PageIdsLocked = locbook.PageIdsLocked;
+        AboutPagesLocked = locbook.AboutPagesLocked;
+
         // Initialize page view models
         foreach (var page in locbook.Pages)
         {
-            var pageVm = new PageViewModel(page);
+            var pageVm = new PageViewModel(page, this);
             // Only mark as modified for content-related property changes
             pageVm.PropertyChanged += (s, e) =>
             {
@@ -104,11 +129,109 @@ public partial class LocbookViewModel : ViewModelBase
         }
     }
 
+    partial void OnKeysLockedChanged(bool value)
+    {
+        NotifyAllFieldsLockStateChanged();
+    }
+
+    partial void OnOriginalValuesLockedChanged(bool value)
+    {
+        NotifyAllFieldsLockStateChanged();
+    }
+
+    partial void OnLockedLanguagesChanged(string value)
+    {
+        NotifyAllFieldsLockStateChanged();
+    }
+
+    partial void OnPageIdsLockedChanged(bool value)
+    {
+        NotifyAllPagesLockStateChanged();
+    }
+
+    partial void OnAboutPagesLockedChanged(bool value)
+    {
+        NotifyAllPagesLockStateChanged();
+    }
+
+    private void NotifyAllFieldsLockStateChanged()
+    {
+        foreach (var page in Pages)
+        {
+            foreach (var field in page.Fields)
+            {
+                field.OnLockStateChanged();
+            }
+        }
+    }
+
+    private void NotifyAllPagesLockStateChanged()
+    {
+        foreach (var page in Pages)
+        {
+            page.OnLockStateChanged();
+        }
+    }
+
+    /// <summary>
+    /// Checks if a language code is locked globally.
+    /// </summary>
+    public bool IsLanguageLocked(string languageCode)
+    {
+        if (string.IsNullOrEmpty(LockedLanguages))
+            return false;
+
+        var lockedCodes = LockedLanguages.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return lockedCodes.Any(code => code.Equals(languageCode, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Locks a language code globally across all fields.
+    /// </summary>
+    public void LockLanguage(string languageCode)
+    {
+        if (IsLanguageLocked(languageCode))
+            return; // Already locked
+
+        var lockedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        
+        if (!string.IsNullOrEmpty(LockedLanguages))
+        {
+            foreach (var code in LockedLanguages.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                lockedCodes.Add(code);
+            }
+        }
+
+        lockedCodes.Add(languageCode);
+        LockedLanguages = string.Join(", ", lockedCodes.OrderBy(c => c));
+    }
+
+    /// <summary>
+    /// Unlocks a language code globally.
+    /// </summary>
+    public void UnlockLanguage(string languageCode)
+    {
+        if (string.IsNullOrEmpty(LockedLanguages))
+            return;
+
+        var lockedCodes = LockedLanguages.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(code => !code.Equals(languageCode, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        LockedLanguages = lockedCodes.Count > 0 ? string.Join(", ", lockedCodes.OrderBy(c => c)) : string.Empty;
+    }
+
     /// <summary>
     /// Synchronizes all changes back to the model.
     /// </summary>
     public void UpdateModel()
     {
+        Model.KeysLocked = KeysLocked;
+        Model.OriginalValuesLocked = OriginalValuesLocked;
+        Model.LockedLanguages = LockedLanguages;
+        Model.PageIdsLocked = PageIdsLocked;
+        Model.AboutPagesLocked = AboutPagesLocked;
         Model.Pages.Clear();
 
         foreach (var pageVm in Pages)

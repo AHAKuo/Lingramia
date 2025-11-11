@@ -28,6 +28,8 @@
         <Color x:Key="ColorActiveLocbook">#3A3644</Color>
         <Color x:Key="ColorHoverState">#2E2A34</Color>
         <Color x:Key="ColorPlaceholder">#8A8692</Color>
+        <Color x:Key="ColorLockedBackground">#2A252F</Color>
+        <Color x:Key="ColorLockedBorder">#5A4A6A</Color>
         
         <!-- SolidColorBrushes -->
         <SolidColorBrush x:Key="BrushPrimaryBackground" Color="{StaticResource ColorPrimaryBackground}"/>
@@ -49,6 +51,8 @@
         <SolidColorBrush x:Key="BrushActiveLocbook" Color="{StaticResource ColorActiveLocbook}"/>
         <SolidColorBrush x:Key="BrushHoverState" Color="{StaticResource ColorHoverState}"/>
         <SolidColorBrush x:Key="BrushPlaceholder" Color="{StaticResource ColorPlaceholder}"/>
+        <SolidColorBrush x:Key="BrushLockedBackground" Color="{StaticResource ColorLockedBackground}"/>
+        <SolidColorBrush x:Key="BrushLockedBorder" Color="{StaticResource ColorLockedBorder}"/>
     </Application.Resources>
   
     <Application.Styles>
@@ -76,6 +80,19 @@
         
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource BrushAccentPrimary}"/>
+        </Style>
+        
+        <!-- Locked TextBox Style - Visual indicator for locked fields -->
+        <Style Selector="TextBox.locked">
+            <Setter Property="Background" Value="{StaticResource BrushLockedBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BrushLockedBorder}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushDisabledText}"/>
+            <Setter Property="Opacity" Value="0.7"/>
+        </Style>
+        
+        <Style Selector="TextBox.locked:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource BrushLockedBorder}"/>
         </Style>
         
         <Style Selector="Button">

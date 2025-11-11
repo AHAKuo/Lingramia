@@ -137,7 +137,7 @@ public class DuplicatePageCommand : IUndoableCommand
             }).ToList()
         };
 
-        _duplicatedPage = new PageViewModel(clonedPage);
+        _duplicatedPage = new PageViewModel(clonedPage, _locbook);
         _locbook.Pages.Add(_duplicatedPage);
         _locbook.SelectedPage = _duplicatedPage;
         _duplicatedPage.IsSelected = true;
@@ -270,7 +270,7 @@ public class DuplicateFieldCommand : IUndoableCommand
             }).ToList()
         };
 
-        _duplicatedField = new FieldViewModel(cloned);
+        _duplicatedField = new FieldViewModel(cloned, _locbook);
         _page.Fields.Add(_duplicatedField);
         _locbook.MarkAsModified();
         _onExecute?.Invoke();
@@ -420,6 +420,12 @@ public class MatchSimilarFieldsCommand : IUndoableCommand
         // Store original states and apply changes
         foreach (var (field, locbook) in matchingFields)
         {
+            // Skip if key is locked globally
+            if (field.IsKeyLocked)
+            {
+                continue;
+            }
+
             // Store original state
             _originalStates[field] = new FieldState
             {
@@ -440,12 +446,18 @@ public class MatchSimilarFieldsCommand : IUndoableCommand
             // Copy variants from source field
             foreach (var sourceVariant in _sourceField.Variants)
             {
+                // Skip if this language is locked globally
+                if (field.ParentLocbook?.IsLanguageLocked(sourceVariant.Language) ?? false)
+                {
+                    continue;
+                }
+
                 var newVariant = new Variant
                 {
                     Language = sourceVariant.Language,
                     Value = sourceVariant.Value
                 };
-                var variantVm = new VariantViewModel(newVariant);
+                var variantVm = new VariantViewModel(newVariant, field);
                 field.Variants.Add(variantVm);
             }
 
@@ -479,7 +491,7 @@ public class MatchSimilarFieldsCommand : IUndoableCommand
                                 Language = variantState.Language,
                                 Value = variantState.Value
                             };
-                            var variantVm = new VariantViewModel(variant);
+                            var variantVm = new VariantViewModel(variant, field);
                             field.Variants.Add(variantVm);
                         }
 

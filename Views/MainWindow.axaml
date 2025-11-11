@@ -471,8 +471,23 @@
                                             Text="{Binding SelectedLocbook.SelectedPage.PageId, Mode=TwoWay}"
                                             Watermark="Required"
                                             IsEnabled="{Binding HasSelectedPage}"
+                                            IsReadOnly="{Binding SelectedLocbook.SelectedPage.IsPageIdLocked}"
                                             Margin="0"
-                                            HorizontalAlignment="Stretch"/>
+                                            HorizontalAlignment="Stretch"
+                                            Classes.locked="{Binding SelectedLocbook.SelectedPage.IsPageIdLocked}">
+                                        <TextBox.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Lock Page ID" 
+                                                         Command="{Binding LockPageIdCommand}"
+                                                         CommandParameter="{Binding SelectedLocbook.SelectedPage}"
+                                                         IsVisible="{Binding !SelectedLocbook.PageIdsLocked}"/>
+                                                <MenuItem Header="Unlock Page ID" 
+                                                         Command="{Binding UnlockPageIdCommand}"
+                                                         CommandParameter="{Binding SelectedLocbook.SelectedPage}"
+                                                         IsVisible="{Binding SelectedLocbook.PageIdsLocked}"/>
+                                            </ContextMenu>
+                                        </TextBox.ContextMenu>
+                                    </TextBox>
                                     
                                     <!-- About Field -->
                                     <TextBlock Grid.Row="1"
@@ -486,13 +501,28 @@
                                             Grid.Column="1"
                                             Text="{Binding SelectedLocbook.SelectedPage.AboutPage, Mode=TwoWay}"
                                             IsEnabled="{Binding HasSelectedPage}"
+                                            IsReadOnly="{Binding SelectedLocbook.SelectedPage.IsAboutPageLocked}"
                                             AcceptsReturn="True"
                                             TextWrapping="Wrap"
                                             MinHeight="60"
                                             Margin="0,8,0,0"
                                             HorizontalAlignment="Stretch"
                                             FlowDirection="{Binding SelectedLocbook.SelectedPage.AboutFlowDirection}"
-                                            TextAlignment="{Binding SelectedLocbook.SelectedPage.AboutTextAlignment}"/>
+                                            TextAlignment="{Binding SelectedLocbook.SelectedPage.AboutTextAlignment}"
+                                            Classes.locked="{Binding SelectedLocbook.SelectedPage.IsAboutPageLocked}">
+                                        <TextBox.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Lock About Page" 
+                                                         Command="{Binding LockAboutPageCommand}"
+                                                         CommandParameter="{Binding SelectedLocbook.SelectedPage}"
+                                                         IsVisible="{Binding !SelectedLocbook.AboutPagesLocked}"/>
+                                                <MenuItem Header="Unlock About Page" 
+                                                         Command="{Binding UnlockAboutPageCommand}"
+                                                         CommandParameter="{Binding SelectedLocbook.SelectedPage}"
+                                                         IsVisible="{Binding SelectedLocbook.AboutPagesLocked}"/>
+                                            </ContextMenu>
+                                        </TextBox.ContextMenu>
+                                    </TextBox>
                                 </Grid>
                             </Border>
                         </Expander>
@@ -624,8 +654,23 @@
                                                     <TextBox Grid.Row="0" Grid.Column="1" 
                                                             Text="{Binding Key}"
                                                             AcceptsReturn="False"
+                                                            IsReadOnly="{Binding IsKeyLocked}"
                                                             Margin="5,0,0,0"
-                                                            HorizontalAlignment="Stretch"/>
+                                                            HorizontalAlignment="Stretch"
+                                                            Classes.locked="{Binding IsKeyLocked}">
+                                                        <TextBox.ContextMenu>
+                                                            <ContextMenu>
+                                                                <MenuItem Header="Lock All Keys" 
+                                                                         Command="{Binding $parent[Window].DataContext.LockKeyCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         IsVisible="{Binding !$parent[Window].DataContext.SelectedLocbook.KeysLocked}"/>
+                                                                <MenuItem Header="Unlock All Keys" 
+                                                                         Command="{Binding $parent[Window].DataContext.UnlockKeyCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         IsVisible="{Binding $parent[Window].DataContext.SelectedLocbook.KeysLocked}"/>
+                                                            </ContextMenu>
+                                                        </TextBox.ContextMenu>
+                                                    </TextBox>
 
                                                     <StackPanel Grid.Row="1" Grid.Column="0"
                                                                Orientation="Horizontal"
@@ -644,12 +689,23 @@
                                                             AcceptsReturn="True"
                                                             TextWrapping="Wrap"
                                                             MinHeight="60"
+                                                            IsReadOnly="{Binding IsOriginalValueLocked}"
                                                             Margin="5,5,0,0"
                                                             HorizontalAlignment="Stretch"
                                                             FlowDirection="{Binding OriginalFlowDirection}"
-                                                            TextAlignment="{Binding OriginalTextAlignment}">
+                                                            TextAlignment="{Binding OriginalTextAlignment}"
+                                                            Classes.locked="{Binding IsOriginalValueLocked}">
                                                         <TextBox.ContextMenu>
                                                             <ContextMenu>
+                                                                <MenuItem Header="Lock All Original Values" 
+                                                                         Command="{Binding $parent[Window].DataContext.LockOriginalValueCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         IsVisible="{Binding !$parent[Window].DataContext.SelectedLocbook.OriginalValuesLocked}"/>
+                                                                <MenuItem Header="Unlock All Original Values" 
+                                                                         Command="{Binding $parent[Window].DataContext.UnlockOriginalValueCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         IsVisible="{Binding $parent[Window].DataContext.SelectedLocbook.OriginalValuesLocked}"/>
+                                                                <Separator />
                                                                 <MenuItem Header="Match Similar Fields" 
                                                                          Command="{Binding $parent[Window].DataContext.MatchSimilarFieldsCommand}"
                                                                          CommandParameter="{Binding}"
@@ -678,18 +734,44 @@
                                                                         Text="{Binding Language}"
                                                                         MinWidth="80"
                                                                         VerticalAlignment="Top"
-                                                                        Margin="0,0,5,0"/>
+                                                                        IsReadOnly="{Binding IsLocked}"
+                                                                        Margin="0,0,5,0"
+                                                                        Classes.locked="{Binding IsLocked}">
+                                                                    <TextBox.ContextMenu>
+                                                                        <ContextMenu>
+                                                                            <MenuItem Header="Lock Language Globally" 
+                                                                                     Command="{Binding $parent[Window].DataContext.LockLanguageCommand}"
+                                                                                     CommandParameter="{Binding}"
+                                                                                     IsVisible="{Binding !IsLocked}"/>
+                                                                            <MenuItem Header="Unlock Language Globally" 
+                                                                                     Command="{Binding $parent[Window].DataContext.UnlockLanguageCommand}"
+                                                                                     CommandParameter="{Binding}"
+                                                                                     IsVisible="{Binding IsLocked}"/>
+                                                                        </ContextMenu>
+                                                                    </TextBox.ContextMenu>
+                                                                </TextBox>
                                                                 <TextBox Grid.Column="1" 
                                                                         Text="{Binding Value}"
                                                                         AcceptsReturn="True"
                                                                         TextWrapping="Wrap"
                                                                         MinHeight="60"
+                                                                        IsReadOnly="{Binding IsLocked}"
                                                                         Margin="0,0,5,0"
                                                                         HorizontalAlignment="Stretch"
                                                                         FlowDirection="{Binding FlowDirection}"
-                                                                        TextAlignment="{Binding TextAlignment}">
+                                                                        TextAlignment="{Binding TextAlignment}"
+                                                                        Classes.locked="{Binding IsLocked}">
                                                                     <TextBox.ContextMenu>
                                                                         <ContextMenu>
+                                                                            <MenuItem Header="Lock Language Globally" 
+                                                                                     Command="{Binding $parent[Window].DataContext.LockLanguageCommand}"
+                                                                                     CommandParameter="{Binding}"
+                                                                                     IsVisible="{Binding !IsLocked}"/>
+                                                                            <MenuItem Header="Unlock Language Globally" 
+                                                                                     Command="{Binding $parent[Window].DataContext.UnlockLanguageCommand}"
+                                                                                     CommandParameter="{Binding}"
+                                                                                     IsVisible="{Binding IsLocked}"/>
+                                                                            <Separator />
                                                                             <MenuItem Header="Translate This Variant" 
                                                                                      Command="{Binding $parent[Window].DataContext.TranslateVariantCommand}"
                                                                                      CommandParameter="{Binding}" />

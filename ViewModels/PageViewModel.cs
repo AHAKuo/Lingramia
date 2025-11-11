@@ -24,6 +24,17 @@ public partial class PageViewModel : ViewModelBase
     private bool _isSearchMatch = true;
 
     public Page Model { get; }
+    public LocbookViewModel? ParentLocbook { get; }
+
+    /// <summary>
+    /// Determines if PageId is locked globally.
+    /// </summary>
+    public bool IsPageIdLocked => ParentLocbook?.PageIdsLocked ?? false;
+
+    /// <summary>
+    /// Determines if AboutPage is locked globally.
+    /// </summary>
+    public bool IsAboutPageLocked => ParentLocbook?.AboutPagesLocked ?? false;
 
     /// <summary>
     /// Determines if the AboutPage should use RTL text direction (based on content detection).
@@ -44,22 +55,32 @@ public partial class PageViewModel : ViewModelBase
         ? Avalonia.Media.TextAlignment.Right 
         : Avalonia.Media.TextAlignment.Left;
 
-    public PageViewModel(Page page)
+    public PageViewModel(Page page, LocbookViewModel? parentLocbook = null)
     {
         Model = page;
         PageId = page.PageId;
         AboutPage = page.AboutPage;
+        ParentLocbook = parentLocbook;
 
         // Initialize field view models
         foreach (var pageFile in page.PageFiles)
         {
-            var fieldVm = new FieldViewModel(pageFile);
+            var fieldVm = new FieldViewModel(pageFile, parentLocbook);
             fieldVm.PropertyChanged += (s, e) => OnPropertyChanged(nameof(Fields));
             Fields.Add(fieldVm);
         }
 
         // Monitor collection changes
         Fields.CollectionChanged += OnFieldsCollectionChanged;
+    }
+
+    /// <summary>
+    /// Called when lock state changes to notify UI.
+    /// </summary>
+    public void OnLockStateChanged()
+    {
+        OnPropertyChanged(nameof(IsPageIdLocked));
+        OnPropertyChanged(nameof(IsAboutPageLocked));
     }
 
     private void OnFieldsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

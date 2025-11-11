@@ -650,7 +650,7 @@ public partial class MainWindowViewModel : ViewModelBase
             PageFiles = new()
         };
 
-        var pageVm = new PageViewModel(newPage);
+        var pageVm = new PageViewModel(newPage, SelectedLocbook);
         
         var command = new AddPageCommand(
             SelectedLocbook, 
@@ -680,7 +680,7 @@ public partial class MainWindowViewModel : ViewModelBase
             PageFiles = new()
         };
 
-        var pageVm = new PageViewModel(newPage);
+        var pageVm = new PageViewModel(newPage, locbook);
         
         var command = new AddPageCommand(
             locbook, 
@@ -764,7 +764,7 @@ public partial class MainWindowViewModel : ViewModelBase
             }).ToList()
         };
 
-        var fieldVm = new FieldViewModel(newField);
+        var fieldVm = new FieldViewModel(newField, SelectedLocbook);
         
         var command = new AddFieldCommand(
             SelectedLocbook.SelectedPage, 
@@ -1285,7 +1285,7 @@ public partial class MainWindowViewModel : ViewModelBase
             Value = string.Empty
         };
 
-        var variantVm = new VariantViewModel(newVariant);
+        var variantVm = new VariantViewModel(newVariant, field);
         
         var command = new AddVariantCommand(
             field, 
@@ -2233,5 +2233,95 @@ public partial class MainWindowViewModel : ViewModelBase
         dialog.Show(_mainWindow);
         
         return dialog;
+    }
+
+    [RelayCommand]
+    private void LockKey(FieldViewModel? field)
+    {
+        if (SelectedLocbook == null) return;
+        SelectedLocbook.KeysLocked = true;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "All keys locked globally.";
+    }
+
+    [RelayCommand]
+    private void UnlockKey(FieldViewModel? field)
+    {
+        if (SelectedLocbook == null) return;
+        SelectedLocbook.KeysLocked = false;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "All keys unlocked.";
+    }
+
+    [RelayCommand]
+    private void LockOriginalValue(FieldViewModel? field)
+    {
+        if (SelectedLocbook == null) return;
+        SelectedLocbook.OriginalValuesLocked = true;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "All original values locked globally.";
+    }
+
+    [RelayCommand]
+    private void UnlockOriginalValue(FieldViewModel? field)
+    {
+        if (SelectedLocbook == null) return;
+        SelectedLocbook.OriginalValuesLocked = false;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "All original values unlocked.";
+    }
+
+    [RelayCommand]
+    private void LockLanguage(VariantViewModel? variant)
+    {
+        if (variant == null || SelectedLocbook == null) return;
+        SelectedLocbook.LockLanguage(variant.Language);
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = $"Language '{variant.Language}' locked globally across all fields.";
+    }
+
+    [RelayCommand]
+    private void UnlockLanguage(VariantViewModel? variant)
+    {
+        if (variant == null || SelectedLocbook == null) return;
+        SelectedLocbook.UnlockLanguage(variant.Language);
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = $"Language '{variant.Language}' unlocked globally.";
+    }
+
+    [RelayCommand]
+    private void LockPageId(PageViewModel? page)
+    {
+        if (SelectedLocbook == null) return;
+        SelectedLocbook.PageIdsLocked = true;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "All page IDs locked globally.";
+    }
+
+    [RelayCommand]
+    private void UnlockPageId(PageViewModel? page)
+    {
+        if (SelectedLocbook == null) return;
+        SelectedLocbook.PageIdsLocked = false;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "All page IDs unlocked.";
+    }
+
+    [RelayCommand]
+    private void LockAboutPage(PageViewModel? page)
+    {
+        if (SelectedLocbook == null) return;
+        SelectedLocbook.AboutPagesLocked = true;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "All about pages locked globally.";
+    }
+
+    [RelayCommand]
+    private void UnlockAboutPage(PageViewModel? page)
+    {
+        if (SelectedLocbook == null) return;
+        SelectedLocbook.AboutPagesLocked = false;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "All about pages unlocked.";
     }
 }
