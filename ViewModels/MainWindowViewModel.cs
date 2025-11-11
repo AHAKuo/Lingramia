@@ -25,6 +25,9 @@ public partial class MainWindowViewModel : ViewModelBase
     // Undo/Redo service
     private readonly UndoRedoService _undoRedoService = new();
     
+    // File watcher service for detecting external changes
+    private readonly FileWatcherService _fileWatcherService = new();
+    
     public bool CanUndo => _undoRedoService.CanUndo;
     public bool CanRedo => _undoRedoService.CanRedo;
     
@@ -132,6 +135,35 @@ public partial class MainWindowViewModel : ViewModelBase
         
         // Load saved settings
         _ = LoadSettingsAsync();
+        
+        // Setup file watcher to detect external changes
+        _fileWatcherService.FileChanged += OnFileChangedExternally;
+        
+        // Monitor OpenLocbooks collection for changes
+        OpenLocbooks.CollectionChanged += (s, e) =>
+        {
+            if (e.NewItems != null)
+            {
+                foreach (LocbookViewModel locbook in e.NewItems)
+                {
+                    if (!string.IsNullOrEmpty(locbook.FilePath) && File.Exists(locbook.FilePath))
+                    {
+                        _fileWatcherService.WatchFile(locbook.FilePath);
+                    }
+                }
+            }
+            
+            if (e.OldItems != null)
+            {
+                foreach (LocbookViewModel locbook in e.OldItems)
+                {
+                    if (!string.IsNullOrEmpty(locbook.FilePath))
+                    {
+                        _fileWatcherService.StopWatching(locbook.FilePath);
+                    }
+                }
+            }
+        };
         
         UpdateFilteredPages();
     }
@@ -269,6 +301,10 @@ public partial class MainWindowViewModel : ViewModelBase
                 locbookVm.IsSelected = true;
                 OpenLocbooks.Add(locbookVm);
                 SelectedLocbook = locbookVm;
+                
+                // Start watching the file for external changes
+                _fileWatcherService.WatchFile(filePath);
+                
                 UpdateFilteredPages();
                 StatusMessage = $"Opened: {locbookVm.FileName}";
             }
@@ -340,6 +376,10 @@ public partial class MainWindowViewModel : ViewModelBase
             }
 
             locbook.UpdateModel();
+            
+            // Temporarily ignore file watcher events for this save operation
+            _fileWatcherService.IgnoreNextChange(filePath);
+            
             var success = await FileService.SaveLocbookAsync(filePath, locbook.Model);
 
             if (success)
@@ -399,10 +439,21 @@ public partial class MainWindowViewModel : ViewModelBase
             if (file != null)
             {
                 var filePath = file.Path.LocalPath;
+                var oldFilePath = locbook.FilePath;
                 locbook.FilePath = filePath;
                 locbook.FileName = Path.GetFileName(filePath);
                 
                 locbook.UpdateModel();
+                
+                // Update file watcher if path changed
+                if (!string.IsNullOrEmpty(oldFilePath) && oldFilePath != filePath)
+                {
+                    _fileWatcherService.UpdateWatchedPath(oldFilePath, filePath);
+                }
+                
+                // Temporarily ignore file watcher events for this save operation
+                _fileWatcherService.IgnoreNextChange(filePath);
+                
                 var success = await FileService.SaveLocbookAsync(filePath, locbook.Model);
 
                 if (success)
@@ -2467,6 +2518,78 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             StatusMessage = $"Error verifying password: {ex.Message}";
             return false;
+        }
+    }
+    
+    /// <summary>
+    /// Handles external file changes detected by the file watcher.
+    /// Reloads the locbook if it was changed externally, but only if there are no unsaved changes.
+    /// </summary>
+    private async void OnFileChangedExternally(object? sender, FileChangedEventArgs e)
+    {
+        try
+        {
+            var changedFilePath = Path.GetFullPath(e.FilePath);
+            
+            // Find the locbook with this file path
+            var locbook = OpenLocbooks.FirstOrDefault(lb =>
+                !string.IsNullOrEmpty(lb.FilePath) &&
+                Path.GetFullPath(lb.FilePath).Equals(changedFilePath, StringComparison.OrdinalIgnoreCase));
+            
+            if (locbook == null)
+                return; // File not currently open
+            
+            // If there are unsaved changes, don't auto-reload - user should decide
+            if (locbook.HasUnsavedChanges)
+            {
+                StatusMessage = $"{locbook.FileName} was changed externally, but you have unsaved changes. Please save or discard changes first.";
+                return;
+            }
+            
+            // Reload the file
+            var reloadedLocbook = await FileService.OpenLocbookAsync(changedFilePath);
+            
+            if (reloadedLocbook == null)
+            {
+                StatusMessage = $"Failed to reload {locbook.FileName} after external change.";
+                return;
+            }
+            
+            // Preserve selection state
+            var selectedPageId = locbook.SelectedPage?.PageId;
+            var wasSelected = locbook.IsSelected;
+            
+            // Create new view model from reloaded data
+            var newLocbookVm = new LocbookViewModel(reloadedLocbook, changedFilePath);
+            
+            // Restore selection state
+            if (!string.IsNullOrEmpty(selectedPageId))
+            {
+                var newSelectedPage = newLocbookVm.Pages.FirstOrDefault(p => p.PageId == selectedPageId);
+                if (newSelectedPage != null)
+                {
+                    newLocbookVm.SelectedPage = newSelectedPage;
+                }
+            }
+            
+            // Replace the locbook in the collection
+            var index = OpenLocbooks.IndexOf(locbook);
+            if (index >= 0)
+            {
+                OpenLocbooks[index] = newLocbookVm;
+                
+                if (wasSelected)
+                {
+                    SelectedLocbook = newLocbookVm;
+                }
+            }
+            
+            UpdateFilteredPages();
+            StatusMessage = $"Reloaded {newLocbookVm.FileName} (changed externally).";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error handling external file change: {ex.Message}";
         }
     }
 }
