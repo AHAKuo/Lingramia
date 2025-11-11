@@ -390,6 +390,11 @@
                                                                 <MenuItem Header="Duplicate Page"
                                                                           Command="{Binding $parent[Window].DataContext.DuplicatePageCtxCommand}"
                                                                           CommandParameter="{Binding}" />
+                                                                <Separator />
+                                                                <MenuItem Header="Move Page to Another Locbook..."
+                                                                          Command="{Binding $parent[Window].DataContext.MovePageCommand}"
+                                                                          CommandParameter="{Binding}" />
+                                                                <Separator />
                                                                 <MenuItem Header="Delete Page"
                                                                           Command="{Binding $parent[Window].DataContext.DeletePageCtxCommand}"
                                                                           CommandParameter="{Binding}" />
@@ -560,7 +565,7 @@
                                                               TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
-                                                    <Button Content="🌐" 
+                                                                <Button Content="🌐" 
                                                            Padding="5"
                                                            Command="{Binding $parent[Window].DataContext.TranslateFieldCommand}"
                                                            CommandParameter="{Binding}"
@@ -570,6 +575,11 @@
                                                            Command="{Binding $parent[Window].DataContext.DuplicateFieldCommand}"
                                                            CommandParameter="{Binding}"
                                                            ToolTip.Tip="Duplicate Field"/>
+                                                    <Button Content="📦"
+                                                           Padding="5"
+                                                           Command="{Binding $parent[Window].DataContext.MoveFieldCommand}"
+                                                           CommandParameter="{Binding}"
+                                                           ToolTip.Tip="Move Field to Another Page"/>
                                                     <Button Content="🗑️" 
                                                            Padding="5"
                                                            Command="{Binding $parent[Window].DataContext.DeleteFieldCommand}"
@@ -681,12 +691,17 @@
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
 
-                                                <!-- Field Actions -->
+                                                                <!-- Field Actions -->
                                                 <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,10,0,0">
                                                     <Button Content="➕ Add Variant" 
                                                            Padding="8,4"
                                                            Command="{Binding $parent[Window].DataContext.AddVariantCommand}"
                                                            CommandParameter="{Binding}" />
+                                                    <Button Content="📦 Move Field..." 
+                                                           Padding="8,4"
+                                                           Command="{Binding $parent[Window].DataContext.MoveFieldCommand}"
+                                                           CommandParameter="{Binding}" 
+                                                           ToolTip.Tip="Move this field to another page"/>
                                                 </StackPanel>
                                             </StackPanel>
                                         </Border>

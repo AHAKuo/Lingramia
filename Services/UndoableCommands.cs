@@ -360,3 +360,293 @@ public class DeleteVariantCommand : IUndoableCommand
         _onUndo?.Invoke();
     }
 }
+
+/// <summary>
+/// Command for moving a field from one page to another (same or different locbook).
+/// </summary>
+public class MoveFieldCommand : IUndoableCommand
+{
+    private readonly PageViewModel _sourcePage;
+    private readonly PageViewModel _targetPage;
+    private readonly FieldViewModel _field;
+    private readonly int _originalIndex;
+    private readonly LocbookViewModel _sourceLocbook;
+    private readonly LocbookViewModel _targetLocbook;
+    private readonly Action _onExecute;
+    private readonly Action _onUndo;
+
+    public MoveFieldCommand(
+        PageViewModel sourcePage, 
+        PageViewModel targetPage, 
+        FieldViewModel field, 
+        LocbookViewModel sourceLocbook,
+        LocbookViewModel targetLocbook,
+        Action onExecute, 
+        Action onUndo)
+    {
+        _sourcePage = sourcePage;
+        _targetPage = targetPage;
+        _field = field;
+        _originalIndex = sourcePage.Fields.IndexOf(field);
+        _sourceLocbook = sourceLocbook;
+        _targetLocbook = targetLocbook;
+        _onExecute = onExecute;
+        _onUndo = onUndo;
+    }
+
+    public void Execute()
+    {
+        _sourcePage.Fields.Remove(_field);
+        _targetPage.Fields.Add(_field);
+        _sourceLocbook.MarkAsModified();
+        if (_sourceLocbook != _targetLocbook)
+        {
+            _targetLocbook.MarkAsModified();
+        }
+        _onExecute?.Invoke();
+    }
+
+    public void Undo()
+    {
+        _targetPage.Fields.Remove(_field);
+        var insertIndex = Math.Min(_originalIndex, _sourcePage.Fields.Count);
+        _sourcePage.Fields.Insert(insertIndex, _field);
+        _sourceLocbook.MarkAsModified();
+        if (_sourceLocbook != _targetLocbook)
+        {
+            _targetLocbook.MarkAsModified();
+        }
+        _onUndo?.Invoke();
+    }
+}
+
+/// <summary>
+/// Command for moving multiple fields from one page to another (same or different locbook).
+/// </summary>
+public class MoveFieldsCommand : IUndoableCommand
+{
+    private readonly PageViewModel _sourcePage;
+    private readonly PageViewModel _targetPage;
+    private readonly List<FieldViewModel> _fields;
+    private readonly Dictionary<FieldViewModel, int> _originalIndices;
+    private readonly LocbookViewModel _sourceLocbook;
+    private readonly LocbookViewModel _targetLocbook;
+    private readonly Action _onExecute;
+    private readonly Action _onUndo;
+
+    public MoveFieldsCommand(
+        PageViewModel sourcePage, 
+        PageViewModel targetPage, 
+        List<FieldViewModel> fields, 
+        LocbookViewModel sourceLocbook,
+        LocbookViewModel targetLocbook,
+        Action onExecute, 
+        Action onUndo)
+    {
+        _sourcePage = sourcePage;
+        _targetPage = targetPage;
+        _fields = fields;
+        _originalIndices = new Dictionary<FieldViewModel, int>();
+        foreach (var field in fields)
+        {
+            _originalIndices[field] = sourcePage.Fields.IndexOf(field);
+        }
+        _sourceLocbook = sourceLocbook;
+        _targetLocbook = targetLocbook;
+        _onExecute = onExecute;
+        _onUndo = onUndo;
+    }
+
+    public void Execute()
+    {
+        foreach (var field in _fields)
+        {
+            _sourcePage.Fields.Remove(field);
+            _targetPage.Fields.Add(field);
+        }
+        _sourceLocbook.MarkAsModified();
+        if (_sourceLocbook != _targetLocbook)
+        {
+            _targetLocbook.MarkAsModified();
+        }
+        _onExecute?.Invoke();
+    }
+
+    public void Undo()
+    {
+        // Sort by original index to restore proper order
+        var sortedFields = _fields.OrderBy(f => _originalIndices[f]).ToList();
+        
+        foreach (var field in sortedFields)
+        {
+            _targetPage.Fields.Remove(field);
+        }
+        
+        foreach (var field in sortedFields)
+        {
+            var insertIndex = Math.Min(_originalIndices[field], _sourcePage.Fields.Count);
+            _sourcePage.Fields.Insert(insertIndex, field);
+        }
+        
+        _sourceLocbook.MarkAsModified();
+        if (_sourceLocbook != _targetLocbook)
+        {
+            _targetLocbook.MarkAsModified();
+        }
+        _onUndo?.Invoke();
+    }
+}
+
+/// <summary>
+/// Command for moving a page from one locbook to another.
+/// </summary>
+public class MovePageCommand : IUndoableCommand
+{
+    private readonly LocbookViewModel _sourceLocbook;
+    private readonly LocbookViewModel _targetLocbook;
+    private readonly PageViewModel _page;
+    private readonly int _originalIndex;
+    private readonly Action _onExecute;
+    private readonly Action _onUndo;
+
+    public MovePageCommand(
+        LocbookViewModel sourceLocbook, 
+        LocbookViewModel targetLocbook, 
+        PageViewModel page, 
+        Action onExecute, 
+        Action onUndo)
+    {
+        _sourceLocbook = sourceLocbook;
+        _targetLocbook = targetLocbook;
+        _page = page;
+        _originalIndex = sourceLocbook.Pages.IndexOf(page);
+        _onExecute = onExecute;
+        _onUndo = onUndo;
+    }
+
+    public void Execute()
+    {
+        _page.IsSelected = false;
+        _sourceLocbook.Pages.Remove(_page);
+        _targetLocbook.Pages.Add(_page);
+        
+        // Update selection
+        _targetLocbook.SelectedPage = _page;
+        _page.IsSelected = true;
+        
+        _sourceLocbook.MarkAsModified();
+        if (_sourceLocbook != _targetLocbook)
+        {
+            _targetLocbook.MarkAsModified();
+        }
+        _onExecute?.Invoke();
+    }
+
+    public void Undo()
+    {
+        _page.IsSelected = false;
+        _targetLocbook.Pages.Remove(_page);
+        
+        var insertIndex = Math.Min(_originalIndex, _sourceLocbook.Pages.Count);
+        _sourceLocbook.Pages.Insert(insertIndex, _page);
+        
+        // Update selection
+        _sourceLocbook.SelectedPage = _page;
+        _page.IsSelected = true;
+        
+        _sourceLocbook.MarkAsModified();
+        if (_sourceLocbook != _targetLocbook)
+        {
+            _targetLocbook.MarkAsModified();
+        }
+        _onUndo?.Invoke();
+    }
+}
+
+/// <summary>
+/// Command for moving multiple pages from one locbook to another.
+/// </summary>
+public class MovePagesCommand : IUndoableCommand
+{
+    private readonly LocbookViewModel _sourceLocbook;
+    private readonly LocbookViewModel _targetLocbook;
+    private readonly List<PageViewModel> _pages;
+    private readonly Dictionary<PageViewModel, int> _originalIndices;
+    private readonly Action _onExecute;
+    private readonly Action _onUndo;
+
+    public MovePagesCommand(
+        LocbookViewModel sourceLocbook, 
+        LocbookViewModel targetLocbook, 
+        List<PageViewModel> pages, 
+        Action onExecute, 
+        Action onUndo)
+    {
+        _sourceLocbook = sourceLocbook;
+        _targetLocbook = targetLocbook;
+        _pages = pages;
+        _originalIndices = new Dictionary<PageViewModel, int>();
+        foreach (var page in pages)
+        {
+            _originalIndices[page] = sourceLocbook.Pages.IndexOf(page);
+        }
+        _onExecute = onExecute;
+        _onUndo = onUndo;
+    }
+
+    public void Execute()
+    {
+        foreach (var page in _pages)
+        {
+            page.IsSelected = false;
+            _sourceLocbook.Pages.Remove(page);
+            _targetLocbook.Pages.Add(page);
+        }
+        
+        // Select the first moved page in target locbook
+        if (_pages.Count > 0)
+        {
+            _targetLocbook.SelectedPage = _pages[0];
+            _pages[0].IsSelected = true;
+        }
+        
+        _sourceLocbook.MarkAsModified();
+        if (_sourceLocbook != _targetLocbook)
+        {
+            _targetLocbook.MarkAsModified();
+        }
+        _onExecute?.Invoke();
+    }
+
+    public void Undo()
+    {
+        // Sort by original index to restore proper order
+        var sortedPages = _pages.OrderBy(p => _originalIndices[p]).ToList();
+        
+        foreach (var page in sortedPages)
+        {
+            page.IsSelected = false;
+            _targetLocbook.Pages.Remove(page);
+        }
+        
+        foreach (var page in sortedPages)
+        {
+            var insertIndex = Math.Min(_originalIndices[page], _sourceLocbook.Pages.Count);
+            _sourceLocbook.Pages.Insert(insertIndex, page);
+        }
+        
+        // Select the first restored page in source locbook
+        if (_pages.Count > 0)
+        {
+            _sourceLocbook.SelectedPage = _pages[0];
+            _pages[0].IsSelected = true;
+        }
+        
+        _sourceLocbook.MarkAsModified();
+        if (_sourceLocbook != _targetLocbook)
+        {
+            _targetLocbook.MarkAsModified();
+        }
+        _onUndo?.Invoke();
+    }
+}

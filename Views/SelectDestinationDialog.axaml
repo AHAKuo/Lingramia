@@ -1,0 +1,69 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Lingramia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
+        x:Class="Lingramia.Views.SelectDestinationDialog"
+        Title="Select Destination"
+        Width="500" Height="400"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True">
+    
+    <Grid RowDefinitions="Auto,*,Auto" Margin="20">
+        <!-- Title -->
+        <TextBlock Grid.Row="0" 
+                   Text="Select Destination Page"
+                   FontSize="16"
+                   FontWeight="Bold"
+                   Margin="0,0,0,15"/>
+        
+        <!-- Locbooks and Pages List -->
+        <ScrollViewer Grid.Row="1" 
+                      Margin="0,0,0,15">
+            <ItemsControl x:Name="LocbooksItemsControl">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="{StaticResource BrushBorderDivider}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="10"
+                                Margin="0,0,0,10">
+                            <Expander IsExpanded="True">
+                                <Expander.Header>
+                                    <TextBlock Text="{Binding FileName}"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"/>
+                                </Expander.Header>
+                                <ItemsControl ItemsSource="{Binding Pages}"
+                                              Margin="10,5,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Content="{Binding PageId}"
+                                                    Tag="{Binding}"
+                                                    Click="PageButton_Click"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Left"
+                                                    Margin="0,2"
+                                                    Padding="8,4"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Expander>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right" 
+                    Spacing="10">
+            <Button Content="Cancel" 
+                    Width="80"
+                    Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

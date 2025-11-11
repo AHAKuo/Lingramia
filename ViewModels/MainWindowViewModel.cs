@@ -1220,6 +1220,138 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task MoveFieldAsync(FieldViewModel? field)
+    {
+        if (field == null || SelectedLocbook?.SelectedPage == null)
+        {
+            StatusMessage = "No field selected.";
+            return;
+        }
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new SelectDestinationDialog();
+            dialog.SetLocbooks(OpenLocbooks);
+            
+            var result = await dialog.ShowDialog<bool>(_mainWindow);
+            
+            if (result && dialog.SelectedPage != null && dialog.SelectedLocbook != null)
+            {
+                var sourcePage = SelectedLocbook.SelectedPage;
+                var targetPage = dialog.SelectedPage;
+                var targetLocbook = dialog.SelectedLocbook;
+                
+                // Don't move to the same page
+                if (sourcePage == targetPage)
+                {
+                    StatusMessage = "Cannot move field to the same page.";
+                    return;
+                }
+                
+                var command = new MoveFieldCommand(
+                    sourcePage,
+                    targetPage,
+                    field,
+                    SelectedLocbook,
+                    targetLocbook,
+                    () =>
+                    {
+                        UpdateFilteredPages();
+                        StatusMessage = $"Moved field '{field.Key}' to page '{targetPage.PageId}' in '{targetLocbook.FileName}'.";
+                    },
+                    () =>
+                    {
+                        UpdateFilteredPages();
+                        StatusMessage = $"Undid move field '{field.Key}'.";
+                    }
+                );
+                
+                _undoRedoService.ExecuteCommand(command);
+                NotifyUndoRedoChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error moving field: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task MovePageAsync(PageViewModel? page)
+    {
+        if (page == null)
+        {
+            StatusMessage = "No page selected.";
+            return;
+        }
+
+        if (_mainWindow == null)
+        {
+            StatusMessage = "Window not initialized.";
+            return;
+        }
+
+        // Find which locbook contains this page
+        var sourceLocbook = OpenLocbooks.FirstOrDefault(lb => lb.Pages.Contains(page));
+        if (sourceLocbook == null)
+        {
+            StatusMessage = "Could not find source locbook.";
+            return;
+        }
+
+        // If there's only one locbook, can't move
+        if (OpenLocbooks.Count < 2)
+        {
+            StatusMessage = "Need at least two open locbooks to move pages between them.";
+            return;
+        }
+
+        try
+        {
+            var dialog = new SelectLocbookDialog();
+            // Only show other locbooks (not the source)
+            var otherLocbooks = OpenLocbooks.Where(lb => lb != sourceLocbook).ToList();
+            dialog.SetLocbooks(otherLocbooks);
+            
+            var result = await dialog.ShowDialog<bool>(_mainWindow);
+            
+            if (result && dialog.SelectedLocbook != null)
+            {
+                var targetLocbook = dialog.SelectedLocbook;
+                
+                var command = new MovePageCommand(
+                    sourceLocbook,
+                    targetLocbook,
+                    page,
+                    () =>
+                    {
+                        UpdateFilteredPages();
+                        StatusMessage = $"Moved page '{page.PageId}' from '{sourceLocbook.FileName}' to '{targetLocbook.FileName}'.";
+                    },
+                    () =>
+                    {
+                        UpdateFilteredPages();
+                        StatusMessage = $"Undid move page '{page.PageId}'.";
+                    }
+                );
+                
+                _undoRedoService.ExecuteCommand(command);
+                NotifyUndoRedoChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error moving page: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private void SelectPage(PageViewModel? page)
     {
         if (page == null) return;
