@@ -1,0 +1,24 @@
+{
+  "name": "lingramia-reader",
+  "version": "1.0.0",
+  "description": "Lightweight reader class for .locbook files",
+  "main": "l.js",
+  "scripts": {
+    "test": "node l.test.js",
+    "example": "node example.js"
+  },
+  "keywords": [
+    "localization",
+    "locbook",
+    "i18n",
+    "translation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "files": [
+    "l.js",
+    "l.ts",
+    "README.md"
+  ]
+}
+

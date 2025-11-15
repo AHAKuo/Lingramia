@@ -23,6 +23,9 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
+    <!-- Exclude Readers folder from builds - these are standalone implementations for external use -->
+    <Compile Remove="Readers\**" />
+    <None Include="Readers\**" />
   </ItemGroup>
 
   <ItemGroup>
