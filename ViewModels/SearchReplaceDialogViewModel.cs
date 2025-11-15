@@ -35,6 +35,9 @@ public partial class SearchReplaceDialogViewModel : ViewModelBase
     private bool _searchInLanguageCodes = false; // Optional checkbox
 
     [ObservableProperty]
+    private bool _searchInAliases = true;
+
+    [ObservableProperty]
     private string _statusMessage = string.Empty;
 
     private LocbookViewModel? _targetLocbook;
@@ -97,6 +100,19 @@ public partial class SearchReplaceDialogViewModel : ViewModelBase
                 if (SearchInOriginalValue && !field.IsOriginalValueLocked && field.OriginalValue.Contains(searchText))
                 {
                     matchCount++;
+                }
+
+                // Search in Aliases
+                if (SearchInAliases && !field.IsAliasesLocked)
+                {
+                    foreach (var alias in field.Aliases)
+                    {
+                        if (!string.IsNullOrEmpty(alias) && alias.Contains(searchText))
+                        {
+                            matchCount++;
+                            break; // Count once per field
+                        }
+                    }
                 }
 
                 // Search in Localization Fields
@@ -204,6 +220,19 @@ public partial class SearchReplaceDialogViewModel : ViewModelBase
                     else
                     {
                         skippedCount++;
+                    }
+                }
+
+                // Replace in Aliases
+                if (SearchInAliases && !field.IsAliasesLocked)
+                {
+                    for (int i = 0; i < field.Aliases.Count; i++)
+                    {
+                        if (field.Aliases[i].Contains(searchText))
+                        {
+                            field.Aliases[i] = field.Aliases[i].Replace(searchText, replaceText);
+                            replaceCount++;
+                        }
                     }
                 }
 

@@ -23,6 +23,9 @@ public class Locbook
     [JsonPropertyName("aboutPagesLocked")]
     public bool AboutPagesLocked { get; set; } = false;
 
+    [JsonPropertyName("aliasesLocked")]
+    public bool AliasesLocked { get; set; } = false;
+
     [JsonPropertyName("encryptedPassword")]
     public string EncryptedPassword { get; set; } = string.Empty;
 }
@@ -49,6 +52,9 @@ public class PageFile
 
     [JsonPropertyName("variants")]
     public List<Variant> Variants { get; set; } = new();
+
+    [JsonPropertyName("aliases")]
+    public List<string> Aliases { get; set; } = new();
 }
 
 public class Variant

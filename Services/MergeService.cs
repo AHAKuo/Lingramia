@@ -96,9 +96,13 @@ public static class MergeService
                 // Merge fields
                 foreach (var sourceField in sourcePage.PageFiles)
                 {
-                    // Find matching field by Key
+                    // Find matching field by Key or any alias
                     var targetField = targetPage.PageFiles.FirstOrDefault(f => 
-                        f.Key.Equals(sourceField.Key, StringComparison.OrdinalIgnoreCase));
+                        f.Key.Equals(sourceField.Key, StringComparison.OrdinalIgnoreCase) ||
+                        (f.Aliases != null && f.Aliases.Any(a => a.Equals(sourceField.Key, StringComparison.OrdinalIgnoreCase))) ||
+                        (sourceField.Aliases != null && sourceField.Aliases.Any(a => a.Equals(f.Key, StringComparison.OrdinalIgnoreCase))) ||
+                        (f.Aliases != null && sourceField.Aliases != null && 
+                         f.Aliases.Any(fa => sourceField.Aliases.Any(sa => fa.Equals(sa, StringComparison.OrdinalIgnoreCase)))));
 
                     if (targetField == null)
                     {
@@ -107,7 +111,8 @@ public static class MergeService
                         {
                             Key = sourceField.Key,
                             OriginalValue = sourceField.OriginalValue,
-                            Variants = new()
+                            Variants = new(),
+                            Aliases = sourceField.Aliases != null ? new List<string>(sourceField.Aliases) : new()
                         };
                         targetPage.PageFiles.Add(targetField);
                         result.FieldsAdded++;
@@ -137,6 +142,23 @@ public static class MergeService
                             if (!string.IsNullOrEmpty(sourceField.OriginalValue))
                             {
                                 targetField.OriginalValue = sourceField.OriginalValue;
+                            }
+                        }
+                    }
+
+                    // Merge aliases if not locked
+                    if (!targetLocbook.AliasesLocked && sourceField.Aliases != null && sourceField.Aliases.Count > 0)
+                    {
+                        if (targetField.Aliases == null)
+                        {
+                            targetField.Aliases = new();
+                        }
+                        foreach (var alias in sourceField.Aliases)
+                        {
+                            if (!string.IsNullOrWhiteSpace(alias) && 
+                                !targetField.Aliases.Any(a => a.Equals(alias, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                targetField.Aliases.Add(alias);
                             }
                         }
                     }

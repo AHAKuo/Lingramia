@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Lingramia.ViewModels;
 using Avalonia;
 using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Lingramia.Views;
 
@@ -99,6 +101,53 @@ public partial class MainWindow : Window
             var search = this.FindControl<TextBox>("SearchTextBox");
             search?.Focus();
             search?.SelectAll();
+        }
+    }
+
+    private void OnAddAliasClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.DataContext is FieldViewModel field)
+        {
+            field.Aliases.Add(string.Empty);
+        }
+    }
+
+    private void OnRemoveAliasClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is string aliasToRemove)
+        {
+            // Find the parent ItemsControl to get the FieldViewModel
+            var itemsControl = button.FindAncestorOfType<ItemsControl>();
+            if (itemsControl?.DataContext is FieldViewModel field)
+            {
+                field.Aliases.Remove(aliasToRemove);
+            }
+        }
+    }
+
+    private void OnAliasLostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox textBox && textBox.Tag is string oldAlias)
+        {
+            var itemsControl = textBox.FindAncestorOfType<ItemsControl>();
+            if (itemsControl?.DataContext is FieldViewModel field)
+            {
+                var index = field.Aliases.IndexOf(oldAlias);
+                if (index >= 0)
+                {
+                    var newAlias = textBox.Text ?? string.Empty;
+                    // Only update if the value actually changed
+                    if (newAlias != oldAlias)
+                    {
+                        // Remove and re-add to trigger proper collection change notification
+                        // This is necessary because ObservableCollection doesn't notify on index assignment
+                        field.Aliases.RemoveAt(index);
+                        field.Aliases.Insert(index, newAlias);
+                        // Update the tag for future reference
+                        textBox.Tag = newAlias;
+                    }
+                }
+            }
         }
     }
 }

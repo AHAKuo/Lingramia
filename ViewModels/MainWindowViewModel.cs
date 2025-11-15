@@ -1897,6 +1897,16 @@ public partial class MainWindowViewModel : ViewModelBase
                             fieldMatches = true;
                         }
 
+                        // Check aliases
+                        foreach (var alias in field.Aliases)
+                        {
+                            if (!string.IsNullOrEmpty(alias) && alias.ToLowerInvariant().Contains(query))
+                            {
+                                fieldMatches = true;
+                                break;
+                            }
+                        }
+
                         foreach (var variant in field.Variants)
                         {
                             if (!string.IsNullOrEmpty(variant.Value) && variant.Value.ToLowerInvariant().Contains(query))
@@ -2768,6 +2778,28 @@ public partial class MainWindowViewModel : ViewModelBase
         SelectedLocbook.OriginalValuesLocked = false;
         SelectedLocbook.MarkAsModified();
         StatusMessage = "All original values unlocked.";
+    }
+
+    [RelayCommand]
+    private void LockAliases(FieldViewModel? field)
+    {
+        if (SelectedLocbook == null) return;
+        SelectedLocbook.AliasesLocked = true;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "All aliases locked globally.";
+    }
+
+    [RelayCommand]
+    private async Task UnlockAliasesAsync(FieldViewModel? field)
+    {
+        if (SelectedLocbook == null) return;
+        
+        if (!await VerifyPasswordIfRequiredAsync(SelectedLocbook))
+            return;
+        
+        SelectedLocbook.AliasesLocked = false;
+        SelectedLocbook.MarkAsModified();
+        StatusMessage = "All aliases unlocked.";
     }
 
     [RelayCommand]

@@ -97,6 +97,10 @@ public static class ImportService
                     {
                         targetLocbook.OriginalValuesLocked = true;
                     }
+                    if (sourceLocbook.AliasesLocked)
+                    {
+                        targetLocbook.AliasesLocked = true;
+                    }
                     // Merge language locks
                     if (!string.IsNullOrEmpty(sourceLocbook.LockedLanguages))
                     {
@@ -121,9 +125,13 @@ public static class ImportService
                 // Import fields
                 foreach (var sourceField in sourcePage.PageFiles)
                 {
-                    // Find matching field by Key
+                    // Find matching field by Key or any alias
                     var targetField = targetPage.PageFiles.FirstOrDefault(f => 
-                        f.Key.Equals(sourceField.Key, StringComparison.OrdinalIgnoreCase));
+                        f.Key.Equals(sourceField.Key, StringComparison.OrdinalIgnoreCase) ||
+                        (f.Aliases != null && f.Aliases.Any(a => a.Equals(sourceField.Key, StringComparison.OrdinalIgnoreCase))) ||
+                        (sourceField.Aliases != null && sourceField.Aliases.Any(a => a.Equals(f.Key, StringComparison.OrdinalIgnoreCase))) ||
+                        (f.Aliases != null && sourceField.Aliases != null && 
+                         f.Aliases.Any(fa => sourceField.Aliases.Any(sa => fa.Equals(sa, StringComparison.OrdinalIgnoreCase)))));
 
                     if (targetField == null)
                     {
@@ -132,7 +140,8 @@ public static class ImportService
                         {
                             Key = options.ImportKeys ? sourceField.Key : string.Empty,
                             OriginalValue = options.ImportOriginalValues ? sourceField.OriginalValue : string.Empty,
-                            Variants = new()
+                            Variants = new(),
+                            Aliases = new()
                         };
                         targetPage.PageFiles.Add(targetField);
                         result.FieldsAdded++;
@@ -157,6 +166,23 @@ public static class ImportService
                         if (!targetLocbook.OriginalValuesLocked && (string.IsNullOrEmpty(targetField.OriginalValue) || options.OverwriteExisting))
                         {
                             targetField.OriginalValue = sourceField.OriginalValue;
+                        }
+                    }
+
+                    // Import aliases if not locked globally
+                    if (!targetLocbook.AliasesLocked && sourceField.Aliases != null && sourceField.Aliases.Count > 0)
+                    {
+                        if (targetField.Aliases == null)
+                        {
+                            targetField.Aliases = new();
+                        }
+                        foreach (var alias in sourceField.Aliases)
+                        {
+                            if (!string.IsNullOrWhiteSpace(alias) && 
+                                !targetField.Aliases.Any(a => a.Equals(alias, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                targetField.Aliases.Add(alias);
+                            }
                         }
                     }
 

@@ -90,6 +90,9 @@
                 <CheckBox Content="Original Value" 
                           IsChecked="{Binding SearchInOriginalValue, Mode=TwoWay}"
                           Margin="8,0,0,0"/>
+                <CheckBox Content="Aliases" 
+                          IsChecked="{Binding SearchInAliases, Mode=TwoWay}"
+                          Margin="8,0,0,0"/>
                 
                 <!-- Localization Fields -->
                 <TextBlock Text="Localization:" 

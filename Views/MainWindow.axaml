@@ -121,7 +121,7 @@
                 <TextBox Grid.Column="1" 
                         x:Name="SearchTextBox"
                         Text="{Binding SearchQuery, Mode=TwoWay}"
-                        Watermark="Search Page ID, About, Key, Original, or Variant..."
+                        Watermark="Search Page ID, About, Key, Original, Aliases, or Variant..."
                         VerticalAlignment="Center"
                         HorizontalAlignment="Stretch"/>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" Margin="10,0,0,0">
@@ -804,6 +804,76 @@
                                                         </TextBox.ContextMenu>
                                                     </TextBox>
                                                 </Grid>
+
+                                                <!-- Aliases -->
+                                                <Expander IsExpanded="False"
+                                                         HorizontalAlignment="Stretch"
+                                                         Margin="0,10,0,0">
+                                                    <Expander.Header>
+                                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                                            <TextBlock Text="Aliases:" 
+                                                                      FontWeight="Bold"
+                                                                      Foreground="{StaticResource BrushTextPrimary}"/>
+                                                            <TextBlock Text="(Optional)"
+                                                                      FontSize="11"
+                                                                      Foreground="{StaticResource BrushTextSecondary}"/>
+                                                        </StackPanel>
+                                                    </Expander.Header>
+                                                    <StackPanel Spacing="5" Margin="0,5,0,0">
+                                                        <ItemsControl ItemsSource="{Binding Aliases}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid Margin="0,3">
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="*" />
+                                                                            <ColumnDefinition Width="Auto" />
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <TextBox Grid.Column="0"
+                                                                                Text="{Binding}"
+                                                                                AcceptsReturn="False"
+                                                                                IsReadOnly="{Binding $parent[ItemsControl].DataContext.IsAliasesLocked}"
+                                                                                Margin="0,0,5,0"
+                                                                                HorizontalAlignment="Stretch"
+                                                                                Classes.locked="{Binding $parent[ItemsControl].DataContext.IsAliasesLocked}"
+                                                                                LostFocus="OnAliasLostFocus"
+                                                                                Tag="{Binding}">
+                                                                            <TextBox.ContextMenu>
+                                                                                <ContextMenu>
+                                                                                    <MenuItem Header="Lock All Aliases" 
+                                                                                             Command="{Binding $parent[Window].DataContext.LockAliasesCommand}"
+                                                                                             CommandParameter="{Binding $parent[ItemsControl].DataContext}"
+                                                                                             IsVisible="{Binding !$parent[Window].DataContext.SelectedLocbook.AliasesLocked}"/>
+                                                                                    <MenuItem Header="Unlock All Aliases" 
+                                                                                             Command="{Binding $parent[Window].DataContext.UnlockAliasesCommand}"
+                                                                                             CommandParameter="{Binding $parent[ItemsControl].DataContext}"
+                                                                                             IsVisible="{Binding $parent[Window].DataContext.SelectedLocbook.AliasesLocked}"/>
+                                                                                </ContextMenu>
+                                                                            </TextBox.ContextMenu>
+                                                                        </TextBox>
+                                                                        <Button Grid.Column="1"
+                                                                                Content="✕"
+                                                                                Width="30"
+                                                                                Height="30"
+                                                                                Padding="0"
+                                                                                HorizontalContentAlignment="Center"
+                                                                                VerticalContentAlignment="Center"
+                                                                                IsEnabled="{Binding !$parent[ItemsControl].DataContext.IsAliasesLocked}"
+                                                                                Click="OnRemoveAliasClick"
+                                                                                Tag="{Binding}"
+                                                                                ToolTip.Tip="Remove alias"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                        <Button Content="+ Add Alias"
+                                                                HorizontalAlignment="Left"
+                                                                Margin="0,5,0,0"
+                                                                Padding="10,5"
+                                                                IsEnabled="{Binding !IsAliasesLocked}"
+                                                                Click="OnAddAliasClick"
+                                                                ToolTip.Tip="Add a new alias"/>
+                                                    </StackPanel>
+                                                </Expander>
 
                                                 <!-- Variants -->
                                                 <Expander IsExpanded="{Binding IsTranslationsExpanded, Mode=TwoWay}"

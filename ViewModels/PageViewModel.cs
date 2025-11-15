@@ -68,9 +68,11 @@ public partial class PageViewModel : ViewModelBase
             var fieldVm = new FieldViewModel(pageFile, parentLocbook);
             fieldVm.PropertyChanged += (s, e) =>
             {
-                // Don't notify Fields change for UI-only properties like IsSearchMatch and IsSelected
+                // Don't notify Fields change for UI-only properties like IsSearchMatch, IsSelected, and Aliases
+                // Aliases changes are handled separately and don't need to trigger Fields re-evaluation
                 if (e.PropertyName != nameof(FieldViewModel.IsSearchMatch) 
-                    && e.PropertyName != nameof(FieldViewModel.IsSelected))
+                    && e.PropertyName != nameof(FieldViewModel.IsSelected)
+                    && e.PropertyName != nameof(FieldViewModel.Aliases))
                 {
                     OnPropertyChanged(nameof(Fields));
                 }

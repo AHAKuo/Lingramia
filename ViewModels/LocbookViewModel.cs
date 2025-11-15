@@ -41,6 +41,9 @@ public partial class LocbookViewModel : ViewModelBase
     private bool _aboutPagesLocked = false;
 
     [ObservableProperty]
+    private bool _aliasesLocked = false;
+
+    [ObservableProperty]
     private bool _isUnlocked = false; // Tracks if password has been verified in this session
     
     public string DisplayName => HasUnsavedChanges ? $"{FileName}*" : FileName;
@@ -90,6 +93,7 @@ public partial class LocbookViewModel : ViewModelBase
         LockedLanguages = locbook.LockedLanguages;
         PageIdsLocked = locbook.PageIdsLocked;
         AboutPagesLocked = locbook.AboutPagesLocked;
+        AliasesLocked = locbook.AliasesLocked;
         
         // Password is not unlocked by default - user must verify it
         IsUnlocked = false;
@@ -164,6 +168,11 @@ public partial class LocbookViewModel : ViewModelBase
     partial void OnAboutPagesLockedChanged(bool value)
     {
         NotifyAllPagesLockStateChanged();
+    }
+
+    partial void OnAliasesLockedChanged(bool value)
+    {
+        NotifyAllFieldsLockStateChanged();
     }
 
     private void NotifyAllFieldsLockStateChanged()
@@ -299,6 +308,7 @@ public partial class LocbookViewModel : ViewModelBase
         Model.LockedLanguages = LockedLanguages;
         Model.PageIdsLocked = PageIdsLocked;
         Model.AboutPagesLocked = AboutPagesLocked;
+        Model.AliasesLocked = AliasesLocked;
         // EncryptedPassword is already updated via SetPassword method
         Model.Pages.Clear();
 

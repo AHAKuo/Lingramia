@@ -20,6 +20,9 @@ public partial class FieldViewModel : ViewModelBase
     private ObservableCollection<VariantViewModel> _variants = new();
 
     [ObservableProperty]
+    private ObservableCollection<string> _aliases = new();
+
+    [ObservableProperty]
     private bool _isSearchMatch = true;
 
     [ObservableProperty]
@@ -43,6 +46,11 @@ public partial class FieldViewModel : ViewModelBase
     /// Determines if the original value is locked globally.
     /// </summary>
     public bool IsOriginalValueLocked => ParentLocbook?.OriginalValuesLocked ?? false;
+
+    /// <summary>
+    /// Determines if aliases are locked globally.
+    /// </summary>
+    public bool IsAliasesLocked => ParentLocbook?.AliasesLocked ?? false;
 
     /// <summary>
     /// Determines if the original value should use RTL text direction (based on content detection).
@@ -78,8 +86,18 @@ public partial class FieldViewModel : ViewModelBase
             Variants.Add(variantVm);
         }
 
+        // Initialize aliases
+        if (pageFile.Aliases != null)
+        {
+            foreach (var alias in pageFile.Aliases)
+            {
+                Aliases.Add(alias);
+            }
+        }
+
         // Monitor collection changes
         Variants.CollectionChanged += OnVariantsCollectionChanged;
+        Aliases.CollectionChanged += OnAliasesCollectionChanged;
     }
 
     /// <summary>
@@ -89,6 +107,7 @@ public partial class FieldViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(IsKeyLocked));
         OnPropertyChanged(nameof(IsOriginalValueLocked));
+        OnPropertyChanged(nameof(IsAliasesLocked));
         foreach (var variant in Variants)
         {
             variant.OnLockStateChanged();
@@ -116,6 +135,19 @@ public partial class FieldViewModel : ViewModelBase
         OnPropertyChanged(nameof(Variants));
     }
 
+    private void OnAliasesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        // Notify that aliases have changed, but don't trigger Fields change notification
+        // This prevents cascading updates that can cause SelectedPage to become null
+        OnPropertyChanged(nameof(Aliases));
+        
+        // Mark as modified if parent locbook exists
+        if (ParentLocbook != null)
+        {
+            ParentLocbook.MarkAsModified();
+        }
+    }
+
     /// <summary>
     /// Synchronizes changes back to the model.
     /// </summary>
@@ -129,6 +161,15 @@ public partial class FieldViewModel : ViewModelBase
         {
             variantVm.UpdateModel();
             Model.Variants.Add(variantVm.Model);
+        }
+
+        Model.Aliases.Clear();
+        foreach (var alias in Aliases)
+        {
+            if (!string.IsNullOrWhiteSpace(alias))
+            {
+                Model.Aliases.Add(alias);
+            }
         }
     }
 }
