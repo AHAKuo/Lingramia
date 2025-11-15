@@ -38,6 +38,15 @@ public partial class MainWindowViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanRedo));
     }
 
+    /// <summary>
+    /// Executes an undoable command and notifies UI of undo/redo state changes.
+    /// </summary>
+    public void ExecuteUndoableCommand(IUndoableCommand command)
+    {
+        _undoRedoService.ExecuteCommand(command);
+        NotifyUndoRedoChanged();
+    }
+
     partial void OnSelectedLocbookChanging(LocbookViewModel? value)
     {
         if (_selectedLocbook != null)

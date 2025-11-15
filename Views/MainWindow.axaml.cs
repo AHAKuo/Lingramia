@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia.Controls;
 using Lingramia.ViewModels;
+using Lingramia.Services;
 using Avalonia;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -106,28 +107,50 @@ public partial class MainWindow : Window
 
     private void OnAddAliasClick(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.DataContext is FieldViewModel field)
+        if (sender is Button button && button.DataContext is FieldViewModel field && DataContext is MainWindowViewModel viewModel)
         {
-            field.Aliases.Add(string.Empty);
+            var locbook = field.ParentLocbook;
+            if (locbook != null)
+            {
+                var command = new AddAliasCommand(
+                    field,
+                    string.Empty,
+                    locbook,
+                    () => viewModel.StatusMessage = "Added alias.",
+                    () => viewModel.StatusMessage = "Undid add alias."
+                );
+                viewModel.ExecuteUndoableCommand(command);
+            }
         }
     }
 
     private void OnRemoveAliasClick(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.Tag is string aliasToRemove)
+        if (sender is Button button && button.Tag is string aliasToRemove && DataContext is MainWindowViewModel viewModel)
         {
             // Find the parent ItemsControl to get the FieldViewModel
             var itemsControl = button.FindAncestorOfType<ItemsControl>();
             if (itemsControl?.DataContext is FieldViewModel field)
             {
-                field.Aliases.Remove(aliasToRemove);
+                var locbook = field.ParentLocbook;
+                if (locbook != null)
+                {
+                    var command = new RemoveAliasCommand(
+                        field,
+                        aliasToRemove,
+                        locbook,
+                        () => viewModel.StatusMessage = "Removed alias.",
+                        () => viewModel.StatusMessage = "Undid remove alias."
+                    );
+                    viewModel.ExecuteUndoableCommand(command);
+                }
             }
         }
     }
 
     private void OnAliasLostFocus(object? sender, RoutedEventArgs e)
     {
-        if (sender is TextBox textBox && textBox.Tag is string oldAlias)
+        if (sender is TextBox textBox && textBox.Tag is string oldAlias && DataContext is MainWindowViewModel viewModel)
         {
             var itemsControl = textBox.FindAncestorOfType<ItemsControl>();
             if (itemsControl?.DataContext is FieldViewModel field)
@@ -139,12 +162,21 @@ public partial class MainWindow : Window
                     // Only update if the value actually changed
                     if (newAlias != oldAlias)
                     {
-                        // Remove and re-add to trigger proper collection change notification
-                        // This is necessary because ObservableCollection doesn't notify on index assignment
-                        field.Aliases.RemoveAt(index);
-                        field.Aliases.Insert(index, newAlias);
-                        // Update the tag for future reference
-                        textBox.Tag = newAlias;
+                        var locbook = field.ParentLocbook;
+                        if (locbook != null)
+                        {
+                            var command = new EditAliasCommand(
+                                field,
+                                oldAlias,
+                                newAlias,
+                                locbook,
+                                () => viewModel.StatusMessage = "Edited alias.",
+                                () => viewModel.StatusMessage = "Undid edit alias."
+                            );
+                            viewModel.ExecuteUndoableCommand(command);
+                            // Update the tag for future reference
+                            textBox.Tag = newAlias;
+                        }
                     }
                 }
             }

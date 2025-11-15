@@ -771,3 +771,126 @@ public class MovePageCommand : IUndoableCommand
         _onUndo?.Invoke();
     }
 }
+
+/// <summary>
+/// Command for adding an alias to a field.
+/// </summary>
+public class AddAliasCommand : IUndoableCommand
+{
+    private readonly FieldViewModel _field;
+    private readonly string _alias;
+    private readonly int _index;
+    private readonly LocbookViewModel _locbook;
+    private readonly Action _onExecute;
+    private readonly Action _onUndo;
+
+    public AddAliasCommand(FieldViewModel field, string alias, LocbookViewModel locbook, Action onExecute, Action onUndo)
+    {
+        _field = field;
+        _alias = alias;
+        _index = field.Aliases.Count; // Will be added at the end
+        _locbook = locbook;
+        _onExecute = onExecute;
+        _onUndo = onUndo;
+    }
+
+    public void Execute()
+    {
+        _field.Aliases.Add(_alias);
+        _locbook.MarkAsModified();
+        _onExecute?.Invoke();
+    }
+
+    public void Undo()
+    {
+        _field.Aliases.RemoveAt(_index);
+        _locbook.MarkAsModified();
+        _onUndo?.Invoke();
+    }
+}
+
+/// <summary>
+/// Command for removing an alias from a field.
+/// </summary>
+public class RemoveAliasCommand : IUndoableCommand
+{
+    private readonly FieldViewModel _field;
+    private readonly string _alias;
+    private readonly int _index;
+    private readonly LocbookViewModel _locbook;
+    private readonly Action _onExecute;
+    private readonly Action _onUndo;
+
+    public RemoveAliasCommand(FieldViewModel field, string alias, LocbookViewModel locbook, Action onExecute, Action onUndo)
+    {
+        _field = field;
+        _alias = alias;
+        _index = field.Aliases.IndexOf(alias);
+        _locbook = locbook;
+        _onExecute = onExecute;
+        _onUndo = onUndo;
+    }
+
+    public void Execute()
+    {
+        _field.Aliases.RemoveAt(_index);
+        _locbook.MarkAsModified();
+        _onExecute?.Invoke();
+    }
+
+    public void Undo()
+    {
+        // Re-insert at original position (or at end if index is out of bounds)
+        var insertIndex = Math.Min(_index, _field.Aliases.Count);
+        _field.Aliases.Insert(insertIndex, _alias);
+        _locbook.MarkAsModified();
+        _onUndo?.Invoke();
+    }
+}
+
+/// <summary>
+/// Command for editing an alias in a field.
+/// </summary>
+public class EditAliasCommand : IUndoableCommand
+{
+    private readonly FieldViewModel _field;
+    private readonly string _oldAlias;
+    private readonly string _newAlias;
+    private readonly int _index;
+    private readonly LocbookViewModel _locbook;
+    private readonly Action _onExecute;
+    private readonly Action _onUndo;
+
+    public EditAliasCommand(FieldViewModel field, string oldAlias, string newAlias, LocbookViewModel locbook, Action onExecute, Action onUndo)
+    {
+        _field = field;
+        _oldAlias = oldAlias;
+        _newAlias = newAlias;
+        _index = field.Aliases.IndexOf(oldAlias);
+        _locbook = locbook;
+        _onExecute = onExecute;
+        _onUndo = onUndo;
+    }
+
+    public void Execute()
+    {
+        if (_index >= 0 && _index < _field.Aliases.Count)
+        {
+            _field.Aliases.RemoveAt(_index);
+            _field.Aliases.Insert(_index, _newAlias);
+            _locbook.MarkAsModified();
+        }
+        _onExecute?.Invoke();
+    }
+
+    public void Undo()
+    {
+        if (_index >= 0 && _index < _field.Aliases.Count)
+        {
+            _field.Aliases.RemoveAt(_index);
+            _field.Aliases.Insert(_index, _oldAlias);
+            _locbook.MarkAsModified();
+        }
+        _onUndo?.Invoke();
+    }
+}
